@@ -6,6 +6,7 @@
   subtalk glossary-check             validate the JW glossary and show review status
   subtalk zoom-probe --url URL --i-confirm-test-meeting   (M0-A: test meeting only)
   subtalk replay FILE.wav            stream a recording to the engine like the sender
+  subtalk eval-claude --yes          glossary evaluation cases through real Claude (paid)
   subtalk bench-asr DIR              ASR benchmark on recordings (production GPU)
 """
 from __future__ import annotations
@@ -264,6 +265,41 @@ def cmd_replay(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------- claude eval
+def cmd_eval_claude(args) -> int:
+    """Run the JW glossary evaluation cases through real Claude (paid, ~29 requests)."""
+    from subtalk.config import anthropic_api_key
+    from subtalk.evalrun import run_eval, summarize, write_report
+    from subtalk.glossary.store import load_glossary
+    from subtalk.translate.claude import ClaudeTranslator
+
+    cfg = _cfg(args)
+    key = anthropic_api_key()
+    if not key:
+        print("No ANTHROPIC_API_KEY / CLAUDE_KEY (environment or .env).")
+        return 2
+    if args.model:
+        cfg.translate.model = args.model
+    g = load_glossary(cfg.path(cfg.paths.glossary_dir), cfg.path(cfg.paths.bible_dir))
+    ids = [s.strip() for s in args.cases.split(",")] if args.cases else None
+    n = len([c for c in g.eval_cases if (not ids or c["id"] in ids)])
+    if not args.yes:
+        print(f"This sends up to {n} real requests to {cfg.translate.model} (roughly $0.01 each). Add --yes to run.")
+        return 2
+    t = ClaudeTranslator(cfg.translate, g, key)
+    results = asyncio.run(run_eval(t, g, ids))
+    for r in results:
+        tr = r.turkish if r.display else "(withheld)"
+        print(f"{r.auto:8s} {r.id:22s} {round(r.latency_ms):5d}ms  {tr[:70]}")
+        for p in r.problems:
+            print(f"{'':31s}- {p}")
+    s = summarize(results)
+    print(json.dumps(s, ensure_ascii=False, indent=2))
+    jl, md = write_report(results, cfg.path("bench_out"))
+    print(f"Report: {md}")
+    return 0 if s["fail"] == 0 and s["error"] == 0 else 1
+
+
 # ---------------------------------------------------------------------- bench
 def cmd_bench_asr(args) -> int:
     from subtalk.bench import run_benchmark
@@ -297,6 +333,11 @@ def main(argv=None) -> int:
     p.add_argument("--token")
     p.add_argument("--speed", type=float, default=1.0)
     p.set_defaults(fn=cmd_replay)
+    p = sub.add_parser("eval-claude", help="glossary evaluation cases through real Claude (paid)")
+    p.add_argument("--yes", action="store_true", help="confirm the paid requests")
+    p.add_argument("--model", help="override translate.model (e.g. claude-sonnet-5-5)")
+    p.add_argument("--cases", help="comma-separated case IDs (default: all)")
+    p.set_defaults(fn=cmd_eval_claude)
     p = sub.add_parser("bench-asr")
     p.add_argument("dir", help="folder of 16-bit WAV files (+ optional .txt references)")
     p.add_argument("--models", default="large-v3,large-v3-turbo")
