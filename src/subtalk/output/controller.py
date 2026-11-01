@@ -212,14 +212,26 @@ class OutputController:
         self._set_state(OutputState.CONNECTED if self.sender.url else OutputState.DISCONNECTED, "estop_reset")
 
     # ----------------------------------------------------------- submission
-    def submit(self, text: str, *, speech_end: float, source_event_ids: tuple = ()) -> bool:
-        """Queue an automatic caption. Returns False if rejected at the gate."""
+    def submit(self, text: str, *, speech_end: float, source_event_ids: tuple = (),
+               origin_epoch: int | None = None) -> bool:
+        """Queue an automatic caption. Returns False if rejected at the gate.
+
+        ``origin_epoch`` is the output epoch when the source speech entered the
+        pipeline. Any state change since then (pause, stop, E-STOP, reset,
+        reconnect, going live) makes the work stale. This check does not depend
+        on clock resolution (time.monotonic() ticks every ~15.6 ms on some
+        Windows/Python versions), unlike the speech_end comparison below.
+        """
         now = self._clock()
         probe = Caption(text=text, speech_end=speech_end, source_event_ids=source_event_ids)
         if self.state is not OutputState.LIVE:
             self._record(probe, "dropped_not_live")
             return False
-        if self.live_since is not None and speech_end < self.live_since:
+        if origin_epoch is not None and origin_epoch != self.epoch:
+            self._record(probe, "dropped_epoch")
+            return False
+        # "<=": speech ending in the same clock tick as going live counts as before it.
+        if self.live_since is not None and speech_end <= self.live_since:
             self._record(probe, "dropped_before_live")
             return False
         deadline = speech_end + self.cfg.caption_ttl_s

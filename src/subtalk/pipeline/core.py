@@ -98,7 +98,8 @@ class Pipeline:
     def submit_decision(self, d: Decision, t_start: float, t_end: float, asr_ms: float | None = None) -> SpeechEvent:
         kind = "MUSIC" if self.ctx.music_mode else d.kind
         ev = SpeechEvent(kind=kind, text=d.text, t_start=t_start, t_end=t_end, quality=d.quality,
-                         main_speech=self.ctx.main_speech, reasons=list(d.reasons), asr_ms=asr_ms)
+                         main_speech=self.ctx.main_speech, reasons=list(d.reasons), asr_ms=asr_ms,
+                         output_epoch=self.output.epoch)
         self.events.add(ev)
         self.stats.inc(f"seg_{kind}")
         if kind == "MUSIC":
@@ -202,7 +203,7 @@ class Pipeline:
         ev.status = "translated"
         self.recent_pairs.append(ContextPair(lang, ev.text, g.text))
         self.recent_pairs = self.recent_pairs[-20:]
-        self.emitter.complete(slot, g.text, ev.t_end, (ev.id,))
+        self.emitter.complete(slot, g.text, ev.t_end, (ev.id,), ev.output_epoch)
         return True
 
     # ------------------------------------------------------------------ Japanese
@@ -313,8 +314,9 @@ class Pipeline:
         self._on_change()
 
     # ------------------------------------------------------------------ output
-    def _emit(self, text: str, speech_end: float, source_ids: tuple) -> None:
-        accepted = self.output.submit(text, speech_end=speech_end, source_event_ids=source_ids)
+    def _emit(self, text: str, speech_end: float, source_ids: tuple, origin_epoch: int | None = None) -> None:
+        accepted = self.output.submit(text, speech_end=speech_end, source_event_ids=source_ids,
+                                      origin_epoch=origin_epoch)
         for i in source_ids:
             ev = self.events.get(i)
             if ev:

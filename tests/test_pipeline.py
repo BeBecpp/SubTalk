@@ -17,6 +17,7 @@ from subtalk.translate.base import TranslationResult
 from subtalk.translate.mock import MockTranslator
 from subtalk.zoom.sender import ZoomCaptionSender
 from subtalk.zoom.seqstore import SeqStore
+from conftest import clock_tick, go_live
 
 ROOT = Path(__file__).resolve().parents[1]
 URL = "http://127.0.0.1/mock-zoom/closedcaption?id=mock&ns=mock&expire=86400&signature=mock"
@@ -35,7 +36,7 @@ async def rig(zoom_http, mock_zoom, glossary, tmp_path):
     out = OutputController(sender, OutputConfig(min_interval_s=0.0, caption_ttl_s=10))
     run = asyncio.create_task(out.run())
     await out.connect(URL, Target.TEST)
-    out.start_live()
+    await go_live(out)
     tr = MockTranslator({}, latency_s=(0.01, 0.03), seed=1)
     alerts = []
     p = Pipeline(cfg, GlossaryService(glossary), Guards(glossary), tr, out, ContextState(),
@@ -227,6 +228,42 @@ async def test_slow_translation_does_not_block_following_captions(rig):
     assert sent(mz) == ["Hızlı."]
     for t in list(p._tasks):
         t.cancel()
+
+
+@pytest.mark.parametrize("interrupt", ["estop_reset_live", "pause_resume", "stop_live"])
+async def test_translation_in_flight_across_output_change_is_dropped(rig, interrupt):
+    """Speech recognised before an E-STOP / pause / stop must never be sent afterwards,
+    even when output is LIVE again by the time its translation finishes."""
+    p, tr, mz = rig
+    out = p.output
+
+    async def slow(req):
+        await asyncio.sleep(0.4)
+        return TranslationResult(True, "Eski cümle.")
+
+    tr.translate = slow
+    ev = p.submit_decision(mn("Хуучин өгүүлбэр"), now() - 1, now())
+    await asyncio.sleep(0.05)  # translation is now in flight
+    if interrupt == "estop_reset_live":
+        out.estop()
+        out.reset_estop()
+    elif interrupt == "pause_resume":
+        out.pause()
+        out.resume()
+        await clock_tick(out.live_since)
+    else:
+        out.stop()
+    if out.state.value != "LIVE":
+        await go_live(out)
+    await settle(p, mz)
+    assert sent(mz) == []
+    assert out.history[-1].status in ("dropped_epoch", "dropped_before_live")
+    assert ev.status == "not_sent"
+    # Fresh speech after the change is captioned normally.
+    tr.translate = lambda req: asyncio.sleep(0.01, result=TranslationResult(True, "Yeni cümle."))
+    p.submit_decision(mn("Шинэ өгүүлбэр"), now() - 1, now())
+    await settle(p, mz, 1)
+    assert sent(mz) == ["Yeni cümle."]
 
 
 async def test_translation_failure_is_reported_not_guessed(rig):

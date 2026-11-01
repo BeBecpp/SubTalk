@@ -25,9 +25,13 @@
   E_STOPPED (latched; reset returns to CONNECTED, never LIVE). Target TEST or EVENT is an attribute.
 * **Context:** Main Speech on/off, music mode, Japanese policy (Auto / All / Off), auto matching.
 
-Every output transition bumps an **epoch**. A caption carries the epoch from when it was queued
-and is rejected at the gate if the epoch changed, if output is not LIVE, if its speech ended before
-output became LIVE, or if it is older than `caption_ttl_s`. Pause drops; nothing queues behind it.
+Every output transition bumps an **epoch**. Each speech event records the epoch when it entered the
+pipeline; its caption is rejected if the epoch changed since (pause, stop, E-STOP, reset, reconnect,
+going live), if output is not LIVE, if its speech ended at or before the moment output became LIVE,
+or if it is older than `caption_ttl_s`. The epoch check does not depend on clock resolution: on
+Windows with Python ≤ 3.12, `time.monotonic()` advances in 15.6 ms steps, so timestamp comparisons
+alone could let same-tick work through (this was caught by CI and fixed). Pause drops; nothing
+queues behind it.
 E-STOP is synchronous: latch, clear queue, cancel the request in flight. A caption already accepted
 by Zoom cannot be withdrawn.
 

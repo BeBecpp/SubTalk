@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import httpx
 import pytest
@@ -24,6 +25,22 @@ class FakeClock:
 
     def rng(self) -> float:
         return 1.0  # worst-case backoff: makes budget arithmetic predictable
+
+
+async def clock_tick(t: float) -> None:
+    """Wait until time.monotonic() > t.
+
+    On Windows with Python <= 3.12, time.monotonic() is GetTickCount64() and
+    advances in 15.625 ms steps, so two reads can be equal. Real speech always
+    ends after the operator goes LIVE; tests must not fake a same-instant end.
+    """
+    while time.monotonic() <= t:
+        await asyncio.sleep(0.005)
+
+
+async def go_live(ctl) -> None:
+    ctl.start_live()
+    await clock_tick(ctl.live_since)
 
 
 @pytest.fixture

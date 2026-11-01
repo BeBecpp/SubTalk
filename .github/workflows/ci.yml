@@ -7,15 +7,21 @@ on:
 jobs:
   test:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.12: time.monotonic() = GetTickCount64 (15.6 ms steps) - the likely production setup.
+        # 3.13: high-resolution monotonic clock. Both must pass.
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
       - name: Install
         run: |
           python -m pip install --upgrade pip uv
-          python -m uv sync --frozen --extra dev
+          python -m uv sync --frozen --extra dev --python ${{ matrix.python-version }}
       - name: Glossary validator (pack's own script)
         run: python -I resources/glossary/validate.py
       - name: Tests (no paid API calls)

@@ -18,10 +18,11 @@ class _Slot:
     text: str | None = None
     speech_end: float = 0.0
     source_ids: tuple = ()
+    origin_epoch: int | None = None
 
 
 class OrderedEmitter:
-    def __init__(self, emit: Callable[[str, float, tuple], None], head_timeout_s: float = 8.0,
+    def __init__(self, emit: Callable[[str, float, tuple, int | None], None], head_timeout_s: float = 8.0,
                  clock: Callable[[], float] = time.monotonic):
         self._emit = emit
         self._head_timeout = head_timeout_s
@@ -37,11 +38,13 @@ class OrderedEmitter:
         self._slots[n] = _Slot(reserved_at=self._clock())
         return n
 
-    def complete(self, slot: int, text: str, speech_end: float, source_ids: tuple = ()) -> None:
+    def complete(self, slot: int, text: str, speech_end: float, source_ids: tuple = (),
+                 origin_epoch: int | None = None) -> None:
         s = self._slots.get(slot)
         if s is None:
             return  # already skipped by timeout - a late result is never emitted
         s.done, s.text, s.speech_end, s.source_ids = True, text, speech_end, source_ids
+        s.origin_epoch = origin_epoch
         self._flush()
 
     def skip(self, slot: int) -> None:
@@ -72,7 +75,7 @@ class OrderedEmitter:
             del self._slots[self._next_emit]
             self._next_emit += 1
             if head.text:
-                self._emit(head.text, head.speech_end, head.source_ids)
+                self._emit(head.text, head.speech_end, head.source_ids, head.origin_epoch)
 
     @property
     def pending(self) -> int:

@@ -17,6 +17,7 @@ class SpeechEvent:
     t_end: float    # monotonic - used for caption freshness
     quality: str = "ok"
     main_speech: bool = False
+    output_epoch: int | None = None  # output epoch when this speech entered the pipeline
     id: int = field(default_factory=lambda: next(_ids))
     wall: float = field(default_factory=time.time)
     status: str = "heard"

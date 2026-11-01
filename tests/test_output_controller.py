@@ -8,6 +8,7 @@ from subtalk.output.controller import CommandError, OutputConfig, OutputControll
 from subtalk.state import OutputState, Target
 from subtalk.zoom.sender import ZoomCaptionSender
 from subtalk.zoom.seqstore import SeqStore
+from conftest import clock_tick, go_live
 
 URL = "http://127.0.0.1/mock-zoom/closedcaption?id=mock&ns=mock&expire=86400&signature=mock"
 REAL = "https://wmcc.zoom.us/closedcaption?id=1&ns=a&expire=86400&signature=s"
@@ -46,7 +47,7 @@ async def test_nothing_sent_unless_live(ctl, mock_zoom):
 
 async def test_live_sends_in_order(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     for i in range(3):
         assert ctl.submit(f"altyazı {i}", speech_end=time.monotonic())
     assert await wait_for(lambda: len(mock_zoom.meeting().captions) == 3)
@@ -57,7 +58,7 @@ async def test_live_sends_in_order(ctl, mock_zoom):
 
 async def test_pause_drops_instead_of_queueing(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     ctl.pause()
     for i in range(20):
         assert not ctl.submit(f"duraklatıldı {i}", speech_end=time.monotonic())
@@ -69,7 +70,7 @@ async def test_pause_drops_instead_of_queueing(ctl, mock_zoom):
 
 async def test_speech_from_before_resume_is_rejected(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     ctl.pause()
     spoken_while_paused = time.monotonic()
     await asyncio.sleep(0.01)
@@ -80,7 +81,7 @@ async def test_speech_from_before_resume_is_rejected(ctl, mock_zoom):
 
 async def test_stale_caption_never_sent(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     ctl.cfg.caption_ttl_s = 0.05
     spoken = time.monotonic()
     await asyncio.sleep(0.1)  # translation took longer than the TTL
@@ -90,7 +91,7 @@ async def test_stale_caption_never_sent(ctl, mock_zoom):
 
 async def test_queued_caption_expiring_is_dropped_at_gate(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     ctl.cfg.caption_ttl_s = 0.2
     ctl.cfg.min_interval_s = 0.5  # the second caption must wait past its deadline
     ctl.submit("bir", speech_end=time.monotonic())
@@ -101,7 +102,7 @@ async def test_queued_caption_expiring_is_dropped_at_gate(ctl, mock_zoom):
 
 async def test_estop_is_immediate_and_latched(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     mock_zoom.stall_seconds = 0.15
     mock_zoom.script.append("accept_then_timeout")  # first caption hangs in flight
     for i in range(5):
@@ -126,12 +127,39 @@ async def test_estop_is_immediate_and_latched(ctl, mock_zoom):
 
 async def test_estop_rejects_work_created_before_it(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     t_before = time.monotonic()
     ctl.estop()
     ctl.reset_estop()
-    ctl.start_live()
+    await go_live(ctl)
     assert not ctl.submit("E-STOP öncesi", speech_end=t_before)
+
+
+async def test_same_clock_tick_counts_as_before_live(zoom_http, mock_zoom, tmp_path):
+    """Frozen clock = worst case of a coarse clock: everything happens in one tick."""
+    sender = ZoomCaptionSender(zoom_http, SeqStore(None), attempt_timeout=0.2)
+    c = OutputController(sender, OutputConfig(min_interval_s=0.0), clock=lambda: 500.0)
+    await c.connect(URL, Target.TEST)
+    c.start_live()
+    c.estop()
+    c.reset_estop()
+    c.start_live()
+    assert not c.submit("aynı an", speech_end=500.0)
+    assert c.history[-1].status == "dropped_before_live"
+
+
+async def test_work_from_an_older_epoch_is_rejected(ctl, mock_zoom):
+    """Clock-independent: anything that entered the pipeline before a pause/stop/E-STOP is stale."""
+    await ctl.connect(URL, Target.TEST)
+    await go_live(ctl)
+    old_epoch = ctl.epoch
+    ctl.estop()
+    ctl.reset_estop()
+    await go_live(ctl)
+    assert not ctl.submit("eski iş", speech_end=time.monotonic(), origin_epoch=old_epoch)
+    assert ctl.history[-1].status == "dropped_epoch"
+    assert ctl.submit("yeni iş", speech_end=time.monotonic(), origin_epoch=ctl.epoch)
+    assert await wait_for(lambda: [c.text for c in mock_zoom.meeting().captions] == ["yeni iş"])
 
 
 async def test_event_target_requires_config_and_confirmation(ctl):
@@ -151,7 +179,7 @@ async def test_real_zoom_disabled_by_default(ctl):
 
 async def test_auto_pause_after_repeated_zoom_failures(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     mock_zoom.script.extend([403] * 500)
     for i in range(4):
         ctl.submit(f"f{i}", speech_end=time.monotonic())
@@ -162,7 +190,7 @@ async def test_auto_pause_after_repeated_zoom_failures(ctl, mock_zoom):
 
 async def test_manual_phrase_allowed_when_paused(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     ctl.pause()
     ctl.send_manual("[Müzik]")
     assert await wait_for(lambda: len(mock_zoom.meeting().captions) == 1)
@@ -171,7 +199,7 @@ async def test_manual_phrase_allowed_when_paused(ctl, mock_zoom):
 
 async def test_long_caption_chunked_and_ordered(ctl, mock_zoom):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     text = ("Sevgili kardeşler, bugün burada Galkhuu ile Akane'nin evliliğine tanıklık etmek için "
             "toplandık. Evlilik Yehova'nın bir düzenlemesidir ve sevgi, saygı ve sadakat ister.")
     ctl.submit(text, speech_end=time.monotonic())
@@ -185,7 +213,7 @@ async def test_long_caption_chunked_and_ordered(ctl, mock_zoom):
 
 async def test_disconnect_while_live_rejected(ctl):
     await ctl.connect(URL, Target.TEST)
-    ctl.start_live()
+    await go_live(ctl)
     with pytest.raises(CommandError):
         await ctl.disconnect()
     ctl.stop()
