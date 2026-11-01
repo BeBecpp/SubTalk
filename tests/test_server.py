@@ -1,5 +1,6 @@
 """Server, auth, roles, lease and a full mock run through the HTTP API."""
 import time
+import uuid
 from pathlib import Path
 
 import httpx
@@ -47,7 +48,8 @@ def login(c, role="operator", code=None, name="Op"):
 
 
 def cmd(c, type_, args=None, **kw):
-    return c.post("/api/command", json={"command_id": f"{type_}-{time.monotonic_ns()}", "type": type_,
+    # uuid4, never a clock: time.monotonic_ns() repeats within a 15.6 ms tick on Windows/Python 3.12.
+    return c.post("/api/command", json={"command_id": uuid.uuid4().hex, "type": type_,
                                         "args": args or {}, **kw}).json()
 
 
@@ -135,6 +137,22 @@ def test_idempotent_command_id(client):
     r1 = c.post("/api/command", json=body).json()
     r2 = c.post("/api/command", json=body).json()
     assert r1 == r2 and r1["accepted"]
+    r3 = c.post("/api/command", json={**body, "type": "estop"}).json()
+    assert not r3["accepted"] and "reused" in r3["error"]  # same id, different command: never replayed
+    assert engine.output.state.value != "E_STOPPED"
+
+
+def test_command_ids_are_scoped_per_session(tmp_path):
+    cfg = make_cfg(tmp_path, session=[])
+    a, engine = make_client(cfg)
+    with a:
+        login(a, name="Alpha")
+        b = TestClient(a.app, base_url="http://127.0.0.1:8000")
+        login(b, name="Beta")
+        body = {"command_id": "shared-id", "type": "set_music_mode", "args": {"on": True}}
+        assert a.post("/api/command", json=body).json()["accepted"]
+        r = b.post("/api/command", json={**body, "args": {"on": False}}).json()
+        assert not r["accepted"] and "Alpha" in r["error"]  # evaluated for Beta, not a replay of Alpha's result
 
 
 def test_restart_invalidates_sessions(tmp_path):

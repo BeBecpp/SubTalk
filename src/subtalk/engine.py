@@ -453,11 +453,15 @@ class Engine:
         cid = str(cmd.get("command_id") or "")[:64]
         ctype = cmd.get("type")
         args = cmd.get("args") or {}
-        if cid and cid in self._recent_cmds:
-            return self._recent_cmds[cid]  # idempotent replay
+        key = f"{session.sid}:{cid}"  # replays are scoped to the session that sent the command
+        if cid and key in self._recent_cmds:
+            prev_type, prev = self._recent_cmds[key]
+            if prev_type != ctype:
+                return CommandResult(cid, False, "command_id reused for a different command", self.control_version)
+            return prev  # idempotent replay (e.g. a retried request)
         result = await self._execute(session, lease, cid, ctype, args, cmd.get("expected_version"))
         if cid:
-            self._recent_cmds[cid] = result
+            self._recent_cmds[key] = (ctype, result)
             while len(self._recent_cmds) > 500:
                 self._recent_cmds.popitem(last=False)
         log.info("command", extra={"type": ctype, "role": session.role.value, "who": session.name,

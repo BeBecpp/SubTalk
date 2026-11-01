@@ -15,8 +15,11 @@ const ST = {
   },
 
   uuid() {
+    // randomUUID needs a secure context (HTTPS/localhost); plain-HTTP LAN access falls back
+    // to getRandomValues, which is available everywhere.
     if (crypto.randomUUID) return crypto.randomUUID();
-    return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    return Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
   },
 
   // Sends a command. The UI never shows success before the server acknowledges.

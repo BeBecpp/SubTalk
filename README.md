@@ -44,7 +44,7 @@ Run the tests: `.venv\Scripts\python.exe -m pytest -q`
 
 ## Status
 
-Implemented and tested in mock mode (168 automated tests on Python 3.12 and 3.13, plus one live
+Implemented and tested in mock mode (169 automated tests on Python 3.12 and 3.13, plus one live
 Claude test that runs only when an API key is present). **Not yet verified:** real Zoom
 caption delivery (M0-A), Whisper accuracy on real Mongolian/Japanese audio (M0-B), live Claude
 latency/quality, and the audio sender on Computer A's actual mixer input. See docs/VALIDATION.md.
