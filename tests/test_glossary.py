@@ -1,0 +1,316 @@
+"""Glossary validation, terminology selection, citation parsing and guard
+regressions - many cases come straight from SubTalk JW Glossary v1
+evaluation_cases.json (synthetic)."""
+import json
+import shutil
+from pathlib import Path
+
+import pytest
+
+from subtalk.glossary.citations import format_tr
+from subtalk.glossary.guards import Guards
+from subtalk.glossary.numerals import kanji_to_int, mn_token_number, parse_mn_numbers
+from subtalk.glossary.match import mn_tokens
+from subtalk.glossary.service import GlossaryService
+from subtalk.glossary.store import GlossaryError, load_glossary
+
+ROOT = Path(__file__).resolve().parents[1]
+GDIR = ROOT / "resources" / "glossary"
+BDIR = ROOT / "resources" / "bible"
+
+
+@pytest.fixture(scope="module")
+def glossary():
+    return load_glossary(GDIR, BDIR)
+
+
+@pytest.fixture(scope="module")
+def svc(glossary):
+    return GlossaryService(glossary)
+
+
+@pytest.fixture(scope="module")
+def guards(glossary):
+    return Guards(glossary)
+
+
+def cases(glossary):
+    return {c["id"]: c for c in glossary.eval_cases}
+
+
+# --------------------------------------------------------------- validation
+def test_pack_validates(glossary):
+    s = glossary.summary()
+    assert s["books"] == 66
+    assert s["terms"] == 86
+    assert s["terms_by_status"] == {"tr_attested": 48, "review_required": 38}
+    assert len(glossary.eval_cases) == 31
+    assert all(not n.approved for n in glossary.names)  # example names are never approved
+
+
+def test_review_status_is_preserved(glossary):
+    by_id = {t.id: t for t in glossary.terms}
+    assert by_id["amen"].status == "review_required" and not by_id["amen"].reviewed
+    assert by_id["jehovah"].status == "tr_attested" and by_id["jehovah"].reviewed
+
+
+def test_approvals_promote_terms(tmp_path):
+    ap = tmp_path / "approvals.json"
+    ap.write_text(json.dumps({"reviewer": "Test Reviewer", "approved_term_ids": ["amen"]}), encoding="utf-8")
+    g = load_glossary(GDIR, BDIR, approvals_path=ap)
+    assert {t.id: t for t in g.terms}["amen"].status == "human_approved"
+
+
+def test_unknown_approval_id_rejected(tmp_path):
+    ap = tmp_path / "approvals.json"
+    ap.write_text(json.dumps({"approved_term_ids": ["no_such_term"]}), encoding="utf-8")
+    with pytest.raises(GlossaryError, match="unknown term"):
+        load_glossary(GDIR, BDIR, approvals_path=ap)
+
+
+def test_event_names_file_can_approve(tmp_path):
+    p = tmp_path / "names.json"
+    p.write_text(json.dumps({"entries": [
+        {"id": "groom_galkhuu", "mn": ["Галхүү"], "ja": [], "tr": "Galkhuu", "role": "groom", "approved": True}
+    ]}), encoding="utf-8")
+    g = load_glossary(GDIR, BDIR, event_names_path=p)
+    assert g.names[0].approved and g.names_source == "event"
+
+
+@pytest.mark.parametrize("mutation,message", [
+    (lambda d: d["books"].pop(), "66 Bible books"),
+    (lambda d: d["books"][1].update(id="GEN"), "duplicate book id"),
+])
+def test_broken_books_rejected(tmp_path, mutation, message):
+    g2 = tmp_path / "g"
+    shutil.copytree(GDIR, g2)
+    data = json.loads((g2 / "bible_books.json").read_text(encoding="utf-8"))
+    mutation(data)
+    (g2 / "bible_books.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(GlossaryError, match=message):
+        load_glossary(g2, BDIR)
+
+
+def test_bad_term_status_rejected(tmp_path):
+    g2 = tmp_path / "g"
+    shutil.copytree(GDIR, g2)
+    data = json.loads((g2 / "jw_terms.json").read_text(encoding="utf-8"))
+    data["items"][0]["status"] = "approved_by_me"
+    (g2 / "jw_terms.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(GlossaryError, match="invalid status"):
+        load_glossary(g2, BDIR)
+
+
+# --------------------------------------------------------------- numerals
+@pytest.mark.parametrize("text,values", [
+    ("тавдугаар бүлэг гучин гуравдугаар зүйл", [5, 33]),
+    ("хоёрын хорин дөрөв", [2, 24]),
+    ("арван гурвын дөрөв", [13, 4]),
+    ("зургаадугаар бүлэг дөрөвдүгээр зүйл", [6, 4]),
+    ("хоёр мянга хорин зургаа", [2026]),
+    ("хоёр гурав", [2, 3]),
+    ("Гучин хүн биш, арван хүн ирнэ", [30, 10]),
+])
+def test_mn_numbers(text, values):
+    assert [s.value for s in parse_mn_numbers(mn_tokens(text))] == values
+
+
+def test_mn_digit_tokens():
+    assert mn_token_number("5-р")[0] == 5 and mn_token_number("5-р")[2] is True
+
+
+@pytest.mark.parametrize("s,v", [("三十三", 33), ("五", 5), ("十三", 13), ("百二十", 120), ("21", 21)])
+def test_kanji(s, v):
+    assert kanji_to_int(s) == v
+
+
+# --------------------------------------------------------------- citations
+def cite(svc, text, lang="mn"):
+    return svc.citations.detect(text, lang)
+
+
+@pytest.mark.parametrize("case_id,expected", [
+    ("ephesians_alias", ("EPH", 5, 33, "valid", "Efesliler 5:33")),
+    ("ephesians_current", ("EPH", 5, 33, "valid", "Efesliler 5:33")),
+    ("first_corinthians", ("1CO", 13, 4, "valid", "1. Korintliler 13:4")),
+    ("genesis", ("GEN", 2, 24, "valid", "Başlangıç 2:24")),
+    ("deuteronomy", ("DEU", 6, 4, "valid", "Kanun’un Tekrarı 6:4")),
+    ("revelation", ("REV", 21, 4, "valid", "Vahiy 21:4")),
+])
+def test_eval_case_citations(glossary, svc, case_id, expected):
+    c = cases(glossary)[case_id]
+    found = cite(svc, c["source_text"])
+    assert len(found) == 1
+    got = found[0]
+    assert (got.book_id, got.chapter, got.verse, got.status) == expected[:4]
+    assert format_tr(glossary, got) == expected[4]
+
+
+def test_invalid_reference_flagged_not_corrected(glossary, svc):
+    c = cite(svc, cases(glossary)["invalid_reference"]["source_text"])[0]
+    assert (c.book_id, c.chapter, c.verse, c.status) == ("EPH", 5, 34, "invalid")
+    assert format_tr(glossary, c) is None  # never rendered, never "fixed" to 5:33
+
+
+def test_book_without_numbers_has_no_reference(glossary, svc):
+    c = cite(svc, cases(glossary)["book_no_verse"]["source_text"])
+    assert len(c) == 1 and c[0].status == "book_only" and c[0].chapter is None
+    assert format_tr(glossary, c[0]) == "Efesliler"
+
+
+def test_policy_format_examples(glossary, svc):
+    for ex in glossary.policy["bible_ref_handling"]["reference_examples"]:
+        c = cite(svc, ex["mn"])
+        assert len(c) == 1, ex
+        assert format_tr(glossary, c[0]) == ex["tr"]
+
+
+def test_ordinary_words_are_not_books(svc):
+    # "Эхлэл" (beginning) and "Дуулал" (song) without numbers or Bible cues
+    assert cite(svc, "Шинэ амьдралын эхлэл өнөөдөр") == []
+    assert cite(svc, "Энэ дуулал маш сайхан байна") == []
+    assert cite(svc, "Бид гэрлэлтийн тухай Библийн зарчим үзнэ.") == []  # title_reference case
+
+
+def test_unverified_when_verse_count_unknown(svc):
+    c = cite(svc, "Матай 5:9")[0]
+    assert c.status == "unverified"
+
+
+def test_chapter_out_of_range_invalid(svc):
+    assert cite(svc, "Эфэс 7:1")[0].status == "invalid"  # Ephesians has 6 chapters
+
+
+def test_japanese_citations(glossary, svc):
+    c = cite(svc, "エフェソス5章33節を読みましょう", "ja")[0]
+    assert (c.book_id, c.chapter, c.verse, c.status) == ("EPH", 5, 33, "valid")
+    c2 = cite(svc, "コリント第一 十三章四節", "ja")[0]
+    assert (c2.book_id, c2.chapter, c2.verse) == ("1CO", 13, 4)
+    assert cite(svc, "ヨナさんが来ました", "ja") == []  # name, no Bible cue
+
+
+# --------------------------------------------------------------- term selection
+def ids(hints):
+    return {h.id for h in hints}
+
+
+def test_short_terms_do_not_overmatch(svc):
+    assert "brother_jw" not in ids(svc.select_terms("Хурлын ахлагч үг хэлнэ.", "mn"))
+    assert "elder" in ids(svc.select_terms("Хурлын ахлагч үг хэлнэ.", "mn"))
+
+
+def test_suffixes_match(svc):
+    assert "jehovah" in ids(svc.select_terms("Еховагийн хайр", "mn"))
+
+
+def test_fleeting_vowel_stems_match(svc):
+    assert "marriage_vow" in ids(svc.select_terms("Бид гэрлэлтийн тангаргаа өгнө.", "mn"))
+    assert "prayer" in ids(svc.select_terms("Залбирлын дараа", "mn"))
+
+
+def test_single_kanji_not_inside_words(svc):
+    assert "god" not in ids(svc.select_terms("神戸から来ました", "ja"))
+    assert "god" in ids(svc.select_terms("神は愛です", "ja"))
+
+
+def test_only_present_terms_selected(svc):
+    hints = svc.select_terms("Эрхэм зочид оо, тавтай морилно уу.", "mn")
+    assert "jehovah" not in ids(hints)  # "always" terms only when the referent is present
+
+
+def test_review_required_labelled_candidate(svc):
+    h = {x.id: x for x in svc.select_terms("Амен", "mn")}["amen"]
+    assert h.label().startswith("CANDIDATE")
+
+
+def test_names_selected_and_marked_unapproved(svc):
+    h = {x.id: x for x in svc.select_terms("Галхүүд баяр хүргэе.", "mn")}
+    assert h["groom_galkhuu"].kind == "name" and h["groom_galkhuu"].status == "unapproved"
+
+
+# --------------------------------------------------------------- guards
+def check(guards, svc, src, out, lang="mn"):
+    return guards.check(src, lang, svc.citations.detect(src, lang), out)
+
+
+def test_guard_passes_faithful_output(guards, svc, glossary):
+    src = cases(glossary)["ephesians_alias"]["source_text"]
+    r = check(guards, svc, src, "Efesliler 5:33.")
+    assert r.ok, r.blocked
+
+
+def test_guard_rewrites_legacy_book_name(guards, svc):
+    r = check(guards, svc, "Эфэс 5:33.", "Efesoslular 5:33.")
+    assert r.ok and r.text == "Efesliler 5:33." and "legacy_book_name_rewritten" in r.flags
+
+
+def test_guard_blocks_silent_correction(guards, svc, glossary):
+    src = cases(glossary)["invalid_reference"]["source_text"]
+    r = check(guards, svc, src, "Efesliler 5:33.")
+    assert not r.ok and any(b.startswith("unsupported_citation") for b in r.blocked)
+
+
+def test_guard_blocks_inserted_reference(guards, svc, glossary):
+    src = cases(glossary)["book_no_verse"]["source_text"]
+    assert not check(guards, svc, src, "Efesliler 5:33'ü açın.").ok
+    src2 = cases(glossary)["title_reference"]["source_text"]
+    assert not check(guards, svc, src2, "Evlilikle ilgili Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz.").ok
+
+
+def test_guard_divine_name(guards, svc, glossary):
+    src = cases(glossary)["divine_name"]["source_text"]
+    assert check(guards, svc, src, "Yehova bizi seviyor.").ok
+    assert "divine_name_missing" in check(guards, svc, src, "Tanrı bizi seviyor.").blocked
+
+
+def test_guard_human_father_not_god(guards, svc, glossary):
+    src = cases(glossary)["human_father"]["source_text"]
+    assert check(guards, svc, src, "Babam bugün konuşma yapacak.").ok
+    assert "divine_reference_invented" in check(guards, svc, src, "Göksel Babamız Tanrı bugün konuşacak.").blocked
+
+
+def test_guard_god_not_upgraded_to_jehovah(guards, svc, glossary):
+    src = cases(glossary)["god_not_jehovah"]["source_text"]
+    assert check(guards, svc, src, "Tanrı hakkında birlikte konuşalım.").ok
+    assert "divine_name_invented" in check(guards, svc, src, "Yehova hakkında birlikte konuşalım.").blocked
+
+
+def test_guard_prayer_and_vow(guards, svc, glossary):
+    assert check(guards, svc, cases(glossary)["prayer"]["source_text"], "Şimdi birlikte dua edelim.").ok
+    src = cases(glossary)["vow_not_inferred"]["source_text"]
+    assert check(guards, svc, src, "Biz ikimiz birbirimizi seviyoruz.").ok
+    assert "vow_invented" in check(guards, svc, src, "Birbirimize evlilik yemini ediyoruz.").blocked
+    assert check(guards, svc, cases(glossary)["explicit_vow"]["source_text"], "Evlilik yeminimizi edeceğiz.").ok
+
+
+def test_guard_numbers(guards, svc, glossary):
+    src = cases(glossary)["numerical_difference"]["source_text"]
+    assert check(guards, svc, src, "30 kişi değil, 10 kişi gelecek.").ok
+    assert "number_invented:20" in check(guards, svc, src, "20 kişi gelecek.").blocked
+
+
+def test_guard_name_invented(guards, svc, glossary):
+    src = cases(glossary)["mc_welcome"]["source_text"]
+    assert check(guards, svc, src, "Değerli misafirler, hoş geldiniz.").ok
+    assert "name_invented:bride_akane" in check(guards, svc, src, "Değerli misafirler, Akane hoş geldiniz.").blocked
+    r = check(guards, svc, cases(glossary)["groom_name"]["source_text"], "Galkhuu'yu tebrik edelim.")
+    assert r.ok and "name_spelling_unapproved:groom_galkhuu" in r.flags
+
+
+def test_guard_japanese_name(guards, svc, glossary):
+    src = cases(glossary)["akane_name"]["source_text"]
+    assert check(guards, svc, src, "Akane, tebrikler.", "ja").ok
+
+
+def test_guard_length_ratio(guards, svc):
+    r = check(guards, svc, "Сайн байна уу.", "Merhaba. " + "Evlilik Yehova'nın bir armağanıdır ve " * 5)
+    assert "length_ratio" in r.blocked
+
+
+def test_guard_bible_explanation_not_quote(guards, svc, glossary):
+    src = cases(glossary)["bible_explanation"]["source_text"]
+    assert check(guards, svc, src, "Bu bir ayet değil, bir açıklamadır.").ok
+
+
+def test_guard_empty(guards, svc):
+    assert check(guards, svc, "Сайн уу", "").blocked == ["empty_output"]

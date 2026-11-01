@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "description": "Verses per chapter for a small curated set of wedding-relevant chapters. A reference to a chapter NOT listed here is reported as 'unverified' (allowed only when explicitly spoken), never as validated. Add the ceremony's planned references here after checking them on jw.org.",
+  "status": "curated_needs_spot_check",
+  "verses": {
+    "GEN 2": 25,
+    "DEU 6": 25,
+    "PRO 31": 31,
+    "ECC 4": 16,
+    "MAT 19": 30,
+    "MRK 10": 52,
+    "JHN 13": 38,
+    "1CO 13": 13,
+    "EPH 5": 33,
+    "COL 3": 25,
+    "1PE 3": 22,
+    "REV 21": 27
+  }
+}
