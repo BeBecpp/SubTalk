@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Secrets and private event data - NEVER commit
+.env
+secrets/
+event/
+config/local.yaml
+
+# Runtime state, logs, models, recordings
+state/
+logs/
+models/
+recordings/
+bench_out/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

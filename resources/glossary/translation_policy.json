@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "name": "SubTalk glossary and translation policy",
+  "target": "tr-TR",
+  "translation_rules": [
+    "Translate the actual spoken content, not the prepared script by default.",
+    "Use Bible book canonical Turkish names from bible_books.json, but allow recognition aliases for older editions.",
+    "Apply terms marked always sparingly; do not force them into sentences unless their referent appears.",
+    "Use context to distinguish an older brother (ağabey) from a JW brother (birader), and an older sister (abla) from a JW sister (hemşire).",
+    "Never replace a human father (baba) with God (Tanrı) or Yehova.",
+    "Never replace the divine name Yehova with a generic title.",
+    "Preserve negation, quantity, numbers, speaker commitments, and names.",
+    "Do not output a full Bible verse merely because the speaker mentions the reference.",
+    "For Bible readings, use only translated spoken content unless a separately approved, fully matched excerpt is configured.",
+    "If chapter, verse, or book is uncertain, do not create a precise reference; emit source-confirmed content only.",
+    "Do not hallucinate speech from silence, music, or Japanese interpretation duplicates.",
+    "Any uncertain language or garbled ASR text must be withheld or resolved from the Japanese interpretation when appropriate.",
+    "Do not silently use review_required glossary terms as authoritative JW-specific terms until a human Turkish reviewer signs off."
+  ],
+  "bible_ref_handling": {
+    "required_inputs": [
+      "source_transcript",
+      "book_match",
+      "chapter",
+      "verse",
+      "detector_evidence"
+    ],
+    "allowed_only_if": "Book/chapter/verse are explicitly supported by audio, or explicitly verified matching prepared passage AND configured for approval.",
+    "never_infer": "Missing book, chapter, verse, or full quotation from topic or script alone.",
+    "full_verse_texts_included": false,
+    "reference_examples": [
+      {
+        "mn": "Эфэс тавдугаар бүлэг гучин гуравдугаар зүйл",
+        "tr": "Efesliler 5:33",
+        "status": "format_example_not_audio_verified"
+      },
+      {
+        "mn": "Эхлэл хоёрын хорин дөрөв",
+        "tr": "Başlangıç 2:24",
+        "status": "format_example_not_audio_verified"
+      },
+      {
+        "mn": "1 Коринт арван гурвын дөрөв",
+        "tr": "1. Korintliler 13:4",
+        "status": "format_example_not_audio_verified"
+      }
+    ]
+  },
+  "readiness": {
+    "core_book_names": "source_checked",
+    "tr_attested_terms": "Turkish wording appears in cited JW.org sources; verify contextual applicability.",
+    "review_required_terms": "Human Turkish-speaking reviewer recommended before live use.",
+    "event_names": "Not approved until explicitly confirmed."
+  }
+}

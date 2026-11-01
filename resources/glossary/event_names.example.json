@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "description": "Example names only. Confirm preferred Latin spellings with family before going live. Do not assume Japanese kanji or surname.",
+  "entries": [
+    {
+      "id": "groom_galkhuu",
+      "mn": [
+        "Галхүү"
+      ],
+      "ja": [],
+      "tr": "Galkhuu",
+      "role": "groom",
+      "approved": false,
+      "notes": "Confirm Latin-script spelling before live event."
+    },
+    {
+      "id": "bride_akane",
+      "mn": [
+        "Акане"
+      ],
+      "ja": [
+        "あかね",
+        "アカネ"
+      ],
+      "tr": "Akane",
+      "role": "bride",
+      "approved": false,
+      "notes": "Kanji deliberately absent because none was supplied."
+    }
+  ]
+}

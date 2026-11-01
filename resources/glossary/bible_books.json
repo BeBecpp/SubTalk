@@ -1,0 +1,1205 @@
+{
+  "schema_version": 1,
+  "edition_target": "Turkish NWT revised 2025",
+  "count": 66,
+  "books": [
+    {
+      "order": 1,
+      "id": "GEN",
+      "mn": "Эхлэл",
+      "mn_aliases": [
+        "Эхлэл ном"
+      ],
+      "ja": "創世記",
+      "ja_aliases": [],
+      "tr": "Başlangıç",
+      "tr_recognition_aliases": [
+        "Yaratılış"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 2,
+      "id": "EXO",
+      "mn": "Египетээс гарсан нь",
+      "mn_aliases": [
+        "Египетээс гарсан нь ном"
+      ],
+      "ja": "出エジプト記",
+      "ja_aliases": [],
+      "tr": "Çıkış",
+      "tr_recognition_aliases": [
+        "Mısır’dan Çıkış"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 3,
+      "id": "LEV",
+      "mn": "Левит",
+      "mn_aliases": [],
+      "ja": "レビ記",
+      "ja_aliases": [],
+      "tr": "Levioğulları",
+      "tr_recognition_aliases": [
+        "Levililer"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 4,
+      "id": "NUM",
+      "mn": "Тооллого",
+      "mn_aliases": [],
+      "ja": "民数記",
+      "ja_aliases": [],
+      "tr": "Sayılar",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 5,
+      "id": "DEU",
+      "mn": "Дэд хууль",
+      "mn_aliases": [
+        "Дэд хууль ном"
+      ],
+      "ja": "申命記",
+      "ja_aliases": [],
+      "tr": "Kanun’un Tekrarı",
+      "tr_recognition_aliases": [
+        "Tekrar",
+        "Yasanın Tekrarı"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 6,
+      "id": "JOS",
+      "mn": "Иошуа",
+      "mn_aliases": [],
+      "ja": "ヨシュア",
+      "ja_aliases": [
+        "ヨシュア記"
+      ],
+      "tr": "Yeşu",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 7,
+      "id": "JDG",
+      "mn": "Шүүгчид",
+      "mn_aliases": [],
+      "ja": "裁き人",
+      "ja_aliases": [
+        "裁き人の書"
+      ],
+      "tr": "Hâkimler",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 8,
+      "id": "RUT",
+      "mn": "Рут",
+      "mn_aliases": [],
+      "ja": "ルツ",
+      "ja_aliases": [
+        "ルツ記"
+      ],
+      "tr": "Rut",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 9,
+      "id": "1SA",
+      "mn": "1 Самуел",
+      "mn_aliases": [],
+      "ja": "サムエル第一",
+      "ja_aliases": [],
+      "tr": "1. Samuel",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 10,
+      "id": "2SA",
+      "mn": "2 Самуел",
+      "mn_aliases": [],
+      "ja": "サムエル第二",
+      "ja_aliases": [],
+      "tr": "2. Samuel",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 11,
+      "id": "1KI",
+      "mn": "Хаадын дээд",
+      "mn_aliases": [
+        "1 Хаад",
+        "Хаадын 1-р ном"
+      ],
+      "ja": "列王第一",
+      "ja_aliases": [],
+      "tr": "1. Krallar",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 12,
+      "id": "2KI",
+      "mn": "Хаадын дэд",
+      "mn_aliases": [
+        "2 Хаад",
+        "Хаадын 2-р ном"
+      ],
+      "ja": "列王第二",
+      "ja_aliases": [],
+      "tr": "2. Krallar",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 13,
+      "id": "1CH",
+      "mn": "Шастирын дээд",
+      "mn_aliases": [
+        "1 Шастир"
+      ],
+      "ja": "歴代第一",
+      "ja_aliases": [],
+      "tr": "1. Tarihler",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 14,
+      "id": "2CH",
+      "mn": "Шастирын дэд",
+      "mn_aliases": [
+        "2 Шастир"
+      ],
+      "ja": "歴代第二",
+      "ja_aliases": [],
+      "tr": "2. Tarihler",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 15,
+      "id": "EZR",
+      "mn": "Езра",
+      "mn_aliases": [],
+      "ja": "エズラ",
+      "ja_aliases": [],
+      "tr": "Ezra",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 16,
+      "id": "NEH",
+      "mn": "Нехемиа",
+      "mn_aliases": [],
+      "ja": "ネヘミヤ",
+      "ja_aliases": [],
+      "tr": "Nehemya",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 17,
+      "id": "EST",
+      "mn": "Естер",
+      "mn_aliases": [],
+      "ja": "エステル",
+      "ja_aliases": [],
+      "tr": "Ester",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 18,
+      "id": "JOB",
+      "mn": "Иов",
+      "mn_aliases": [],
+      "ja": "ヨブ",
+      "ja_aliases": [],
+      "tr": "Eyüp",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 19,
+      "id": "PSA",
+      "mn": "Дуулал",
+      "mn_aliases": [],
+      "ja": "詩編",
+      "ja_aliases": [
+        "詩篇"
+      ],
+      "tr": "Mezmurlar",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 20,
+      "id": "PRO",
+      "mn": "Сургаалт үгс",
+      "mn_aliases": [],
+      "ja": "格言",
+      "ja_aliases": [
+        "箴言"
+      ],
+      "tr": "Özdeyişler",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 21,
+      "id": "ECC",
+      "mn": "Номлогчийн үгс",
+      "mn_aliases": [],
+      "ja": "伝道の書",
+      "ja_aliases": [],
+      "tr": "Vaiz",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 22,
+      "id": "SNG",
+      "mn": "Соломоны дуун",
+      "mn_aliases": [],
+      "ja": "ソロモンの歌",
+      "ja_aliases": [],
+      "tr": "Ezgiler Ezgisi",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 23,
+      "id": "ISA",
+      "mn": "Исаиа",
+      "mn_aliases": [],
+      "ja": "イザヤ",
+      "ja_aliases": [],
+      "tr": "İşaya",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 24,
+      "id": "JER",
+      "mn": "Иеремиа",
+      "mn_aliases": [],
+      "ja": "エレミヤ",
+      "ja_aliases": [],
+      "tr": "Yeremya",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 25,
+      "id": "LAM",
+      "mn": "Иеремиагийн гашуудал",
+      "mn_aliases": [],
+      "ja": "哀歌",
+      "ja_aliases": [],
+      "tr": "Ağıtlar",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 26,
+      "id": "EZK",
+      "mn": "Езекиел",
+      "mn_aliases": [],
+      "ja": "エゼキエル",
+      "ja_aliases": [],
+      "tr": "Hezekiel",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 27,
+      "id": "DAN",
+      "mn": "Даниел",
+      "mn_aliases": [],
+      "ja": "ダニエル",
+      "ja_aliases": [],
+      "tr": "Daniel",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 28,
+      "id": "HOS",
+      "mn": "Хосеа",
+      "mn_aliases": [
+        "Хосеа"
+      ],
+      "ja": "ホセア",
+      "ja_aliases": [],
+      "tr": "Hoşea",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 29,
+      "id": "JOL",
+      "mn": "Иоел",
+      "mn_aliases": [],
+      "ja": "ヨエル",
+      "ja_aliases": [],
+      "tr": "Yoel",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 30,
+      "id": "AMO",
+      "mn": "Амос",
+      "mn_aliases": [],
+      "ja": "アモス",
+      "ja_aliases": [],
+      "tr": "Amos",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 31,
+      "id": "OBA",
+      "mn": "Обадиа",
+      "mn_aliases": [],
+      "ja": "オバデヤ",
+      "ja_aliases": [],
+      "tr": "Obadya",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 32,
+      "id": "JON",
+      "mn": "Иона",
+      "mn_aliases": [],
+      "ja": "ヨナ",
+      "ja_aliases": [],
+      "tr": "Yunus",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 33,
+      "id": "MIC",
+      "mn": "Мика",
+      "mn_aliases": [],
+      "ja": "ミカ",
+      "ja_aliases": [],
+      "tr": "Mika",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 34,
+      "id": "NAM",
+      "mn": "Нахум",
+      "mn_aliases": [],
+      "ja": "ナホム",
+      "ja_aliases": [],
+      "tr": "Nahum",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 35,
+      "id": "HAB",
+      "mn": "Хабаккук",
+      "mn_aliases": [],
+      "ja": "ハバクク",
+      "ja_aliases": [],
+      "tr": "Habakkuk",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 36,
+      "id": "ZEP",
+      "mn": "Зефаниа",
+      "mn_aliases": [],
+      "ja": "ゼパニヤ",
+      "ja_aliases": [],
+      "tr": "Tsefanya",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 37,
+      "id": "HAG",
+      "mn": "Хаггаи",
+      "mn_aliases": [],
+      "ja": "ハガイ",
+      "ja_aliases": [],
+      "tr": "Haggay",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 38,
+      "id": "ZEC",
+      "mn": "Зехариа",
+      "mn_aliases": [],
+      "ja": "ゼカリヤ",
+      "ja_aliases": [],
+      "tr": "Zekeriya",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 39,
+      "id": "MAL",
+      "mn": "Малахи",
+      "mn_aliases": [],
+      "ja": "マラキ",
+      "ja_aliases": [],
+      "tr": "Malaki",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 40,
+      "id": "MAT",
+      "mn": "Матай",
+      "mn_aliases": [],
+      "ja": "マタイ",
+      "ja_aliases": [],
+      "tr": "Matta",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 41,
+      "id": "MRK",
+      "mn": "Марк",
+      "mn_aliases": [
+        "Маркаас"
+      ],
+      "ja": "マルコ",
+      "ja_aliases": [],
+      "tr": "Markos",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 42,
+      "id": "LUK",
+      "mn": "Лук",
+      "mn_aliases": [
+        "Лука"
+      ],
+      "ja": "ルカ",
+      "ja_aliases": [],
+      "tr": "Luka",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 43,
+      "id": "JHN",
+      "mn": "Ёохан",
+      "mn_aliases": [
+        "Иохан",
+        "Иохан ном"
+      ],
+      "ja": "ヨハネ",
+      "ja_aliases": [],
+      "tr": "Yuhanna",
+      "tr_recognition_aliases": [
+        "Yuhanna İncili"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 44,
+      "id": "ACT",
+      "mn": "Үйлс",
+      "mn_aliases": [
+        "Элч нарын үйлс"
+      ],
+      "ja": "使徒",
+      "ja_aliases": [
+        "使徒の活動"
+      ],
+      "tr": "Elçiler",
+      "tr_recognition_aliases": [
+        "Elçilerin İşleri"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 45,
+      "id": "ROM",
+      "mn": "Ром",
+      "mn_aliases": [],
+      "ja": "ローマ",
+      "ja_aliases": [],
+      "tr": "Romalılar",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 46,
+      "id": "1CO",
+      "mn": "1 Коринт",
+      "mn_aliases": [],
+      "ja": "コリント第一",
+      "ja_aliases": [],
+      "tr": "1. Korintliler",
+      "tr_recognition_aliases": [
+        "1. Korintoslular"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 47,
+      "id": "2CO",
+      "mn": "2 Коринт",
+      "mn_aliases": [],
+      "ja": "コリント第二",
+      "ja_aliases": [],
+      "tr": "2. Korintliler",
+      "tr_recognition_aliases": [
+        "2. Korintoslular"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 48,
+      "id": "GAL",
+      "mn": "Галат",
+      "mn_aliases": [],
+      "ja": "ガラテア",
+      "ja_aliases": [],
+      "tr": "Galatyalılar",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 49,
+      "id": "EPH",
+      "mn": "Эфэс",
+      "mn_aliases": [
+        "Ефес",
+        "Ефесчүүд"
+      ],
+      "ja": "エフェソス",
+      "ja_aliases": [],
+      "tr": "Efesliler",
+      "tr_recognition_aliases": [
+        "Efesoslular"
+      ],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 50,
+      "id": "PHP",
+      "mn": "Филиппой",
+      "mn_aliases": [],
+      "ja": "フィリピ",
+      "ja_aliases": [],
+      "tr": "Filipililer",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 51,
+      "id": "COL",
+      "mn": "Колосай",
+      "mn_aliases": [],
+      "ja": "コロサイ",
+      "ja_aliases": [],
+      "tr": "Koloseliler",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 52,
+      "id": "1TH",
+      "mn": "1 Тесалоник",
+      "mn_aliases": [],
+      "ja": "テサロニケ第一",
+      "ja_aliases": [],
+      "tr": "1. Selanikliler",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 53,
+      "id": "2TH",
+      "mn": "2 Тесалоник",
+      "mn_aliases": [],
+      "ja": "テサロニケ第二",
+      "ja_aliases": [],
+      "tr": "2. Selanikliler",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 54,
+      "id": "1TI",
+      "mn": "1 Тимот",
+      "mn_aliases": [],
+      "ja": "テモテ第一",
+      "ja_aliases": [],
+      "tr": "1. Timoteos",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 55,
+      "id": "2TI",
+      "mn": "2 Тимот",
+      "mn_aliases": [],
+      "ja": "テモテ第二",
+      "ja_aliases": [],
+      "tr": "2. Timoteos",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 56,
+      "id": "TIT",
+      "mn": "Тит",
+      "mn_aliases": [],
+      "ja": "テトス",
+      "ja_aliases": [],
+      "tr": "Titus",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 57,
+      "id": "PHM",
+      "mn": "Филемон",
+      "mn_aliases": [],
+      "ja": "フィレモン",
+      "ja_aliases": [],
+      "tr": "Filimon",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 58,
+      "id": "HEB",
+      "mn": "Еврей",
+      "mn_aliases": [],
+      "ja": "ヘブライ",
+      "ja_aliases": [],
+      "tr": "İbraniler",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 59,
+      "id": "JAS",
+      "mn": "Яаков",
+      "mn_aliases": [
+        "Иаков",
+        "Иаков ном"
+      ],
+      "ja": "ヤコブ",
+      "ja_aliases": [],
+      "tr": "Yakup",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 60,
+      "id": "1PE",
+      "mn": "1 Петр",
+      "mn_aliases": [],
+      "ja": "ペテロ第一",
+      "ja_aliases": [],
+      "tr": "1. Petrus",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 61,
+      "id": "2PE",
+      "mn": "2 Петр",
+      "mn_aliases": [],
+      "ja": "ペテロ第二",
+      "ja_aliases": [],
+      "tr": "2. Petrus",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 62,
+      "id": "1JN",
+      "mn": "1 Ёохан",
+      "mn_aliases": [
+        "1 Иохан"
+      ],
+      "ja": "ヨハネ第一",
+      "ja_aliases": [],
+      "tr": "1. Yuhanna",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 63,
+      "id": "2JN",
+      "mn": "2 Ёохан",
+      "mn_aliases": [
+        "2 Иохан"
+      ],
+      "ja": "ヨハネ第二",
+      "ja_aliases": [],
+      "tr": "2. Yuhanna",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 64,
+      "id": "3JN",
+      "mn": "3 Ёохан",
+      "mn_aliases": [
+        "3 Иохан"
+      ],
+      "ja": "ヨハネ第三",
+      "ja_aliases": [],
+      "tr": "3. Yuhanna",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 65,
+      "id": "JUD",
+      "mn": "Юуда",
+      "mn_aliases": [
+        "Иуда"
+      ],
+      "ja": "ユダ",
+      "ja_aliases": [],
+      "tr": "Yahuda",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    },
+    {
+      "order": 66,
+      "id": "REV",
+      "mn": "Илчлэл",
+      "mn_aliases": [
+        "Илчлэлт"
+      ],
+      "ja": "啓示",
+      "ja_aliases": [
+        "ヨハネの啓示"
+      ],
+      "tr": "Vahiy",
+      "tr_recognition_aliases": [],
+      "status": "source_checked_names",
+      "source_keys": [
+        "tr_bible_2025",
+        "tr_bible_list",
+        "mn_bible_list",
+        "ja_bible_index"
+      ]
+    }
+  ]
+}

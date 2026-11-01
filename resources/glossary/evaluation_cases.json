@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "notes": "Synthetic QA prompts. Expected results are human-readable conditions, not an automated demonstration of translator accuracy.",
+  "cases": [
+    {
+      "id": "divine_name",
+      "language": "mn",
+      "source_text": "Ехова биднийг хайрладаг.",
+      "evaluation_goal": "Yehova must appear as proper name, not replaced with generic God.",
+      "critical_risk": "name_substitution",
+      "forbidden_behavior": [
+        "Tanrı alone as replacement for Yehova"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "human_father",
+      "language": "mn",
+      "source_text": "Миний аав өнөөдөр илтгэл тавина.",
+      "evaluation_goal": "A human father: babam; not Tanrı or Yehova.",
+      "critical_risk": "identity_confusion",
+      "forbidden_behavior": [
+        "God/Heavenly Father inserted"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "god_not_jehovah",
+      "language": "mn",
+      "source_text": "Бурхны тухай хамтдаа ярилцъя.",
+      "evaluation_goal": "Tanrı is appropriate; do not automatically change unspecified God to Yehova.",
+      "critical_risk": "religious_content_invention",
+      "forbidden_behavior": [
+        "Explicit Yehova injected when not spoken"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "brother_family",
+      "language": "mn",
+      "source_text": "Миний төрсөн ах Галхүү үг хэлнэ.",
+      "evaluation_goal": "Native older brother, ağabey; do not force religious birader.",
+      "critical_risk": "address_confusion",
+      "forbidden_behavior": [
+        "birader forced when familial brother is explicit"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "brother_congregation",
+      "language": "mn",
+      "source_text": "Манай хурлын нэг ах өнөөдөр ирсэн.",
+      "evaluation_goal": "Contextual JW congregational brother may be birader.",
+      "critical_risk": "address_confusion",
+      "forbidden_behavior": [
+        "groom identity invented"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "sister_not_nurse",
+      "language": "mn",
+      "source_text": "Манай эгч өнөөдөр ирлээ.",
+      "evaluation_goal": "Sister/older woman; not nurse.",
+      "critical_risk": "term_ambiguity",
+      "forbidden_behavior": [
+        "hemşire meaning nurse by mistake"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "elder_office",
+      "language": "mn",
+      "source_text": "Хурлын ахлагч үг хэлнэ.",
+      "evaluation_goal": "JW congregational elder = ihtiyar when context fits.",
+      "critical_risk": "term_ambiguity",
+      "forbidden_behavior": [
+        "old person with no office implied"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "ephesians_alias",
+      "language": "mn",
+      "source_text": "Ефес тавдугаар бүлэг гучин гуравдугаар зүйл.",
+      "evaluation_goal": "Resolve EPH 5:33 -> Efesliler 5:33.",
+      "critical_risk": "bible_book",
+      "forbidden_behavior": [
+        "Efesoslular as default new output"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "ephesians_current",
+      "language": "mn",
+      "source_text": "Эфэс 5:33.",
+      "evaluation_goal": "Current Mongolian spelling to the same EPH book ID.",
+      "critical_risk": "bible_book",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "first_corinthians",
+      "language": "mn",
+      "source_text": "Нэгдүгээр Коринт 13:4.",
+      "evaluation_goal": "1. Korintliler 13:4.",
+      "critical_risk": "bible_book",
+      "forbidden_behavior": [
+        "1. Korintoslular as default new output"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "genesis",
+      "language": "mn",
+      "source_text": "Эхлэл хоёрдугаар бүлгийн хорин дөрөвдүгээр зүйл.",
+      "evaluation_goal": "Başlangıç 2:24; do not translate Genesis as a concept of beginning.",
+      "critical_risk": "bible_book",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "deuteronomy",
+      "language": "mn",
+      "source_text": "Дэд хууль зургаадугаар бүлэг дөрөвдүгээр зүйл.",
+      "evaluation_goal": "Kanun’un Tekrarı 6:4, not an ordinary law explanation.",
+      "critical_risk": "bible_book",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "revelation",
+      "language": "mn",
+      "source_text": "Илчлэл 21:4.",
+      "evaluation_goal": "Vahiy 21:4.",
+      "critical_risk": "bible_book",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "negation",
+      "language": "mn",
+      "source_text": "Бид энэ амлалтыг өгөөгүй.",
+      "evaluation_goal": "Preserve negation exactly: we did not make that promise.",
+      "critical_risk": "negation",
+      "forbidden_behavior": [
+        "we made the promise"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "obligation_negation",
+      "language": "mn",
+      "source_text": "Үүнийг одоо хийх ёсгүй.",
+      "evaluation_goal": "Preserve must not vs must.",
+      "critical_risk": "negation",
+      "forbidden_behavior": [
+        "must do it now"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "vow_not_inferred",
+      "language": "mn",
+      "source_text": "Бид хоёр нэг нэгэндээ хайртай.",
+      "evaluation_goal": "Normal affection, not a formal marriage vow.",
+      "critical_risk": "vow_fabrication",
+      "forbidden_behavior": [
+        "invented wedding vow"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "explicit_vow",
+      "language": "mn",
+      "source_text": "Бид гэрлэлтийн тангаргаа өгнө.",
+      "evaluation_goal": "Explicit evlilik yemini, not a generic promise.",
+      "critical_risk": "vow_context",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "bible_explanation",
+      "language": "mn",
+      "source_text": "Энэ бол Библийн эшлэл биш, тайлбар юм.",
+      "evaluation_goal": "Keep NOT a direct Bible verse; do not replace with scripture text.",
+      "critical_risk": "scripture_mode",
+      "forbidden_behavior": [
+        "direct quote invented"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "invalid_reference",
+      "language": "mn",
+      "source_text": "Эфэс тавдугаар бүлгийн гучин дөрөвдүгээр зүйл.",
+      "evaluation_goal": "Flag EPH 5:34 as invalid, never silently change to 5:33.",
+      "critical_risk": "bible_reference",
+      "forbidden_behavior": [
+        "silently corrected to 5:33"
+      ],
+      "mode": "main_speech",
+      "synthetic": true
+    },
+    {
+      "id": "book_no_verse",
+      "language": "mn",
+      "source_text": "Эфэс номыг нээгээрэй.",
+      "evaluation_goal": "No fabricated chapter or verse.",
+      "critical_risk": "bible_reference",
+      "forbidden_behavior": [
+        "5:33 inserted"
+      ],
+      "mode": "main_speech",
+      "synthetic": true
+    },
+    {
+      "id": "prayer",
+      "language": "mn",
+      "source_text": "Одоо хамт залбирцгаая.",
+      "evaluation_goal": "Use dua/dua etmek; do not invent prayer text.",
+      "critical_risk": "religious_content_invention",
+      "forbidden_behavior": [
+        "prayer text invented"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "title_reference",
+      "language": "mn",
+      "source_text": "Бид гэрлэлтийн тухай Библийн зарчим үзнэ.",
+      "evaluation_goal": "Kutsal Kitap ilkeleri; no specific scripture verse made up.",
+      "critical_risk": "religious_content_invention",
+      "forbidden_behavior": [
+        "Ephesians added without source"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "mc_welcome",
+      "language": "mn",
+      "source_text": "Эрхэм зочид оо, тавтай морилно уу.",
+      "evaluation_goal": "Natural Turkish welcome; no extra religious language.",
+      "critical_risk": "unscripted_coverage",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "groom_name",
+      "language": "mn",
+      "source_text": "Галхүүд баяр хүргэе.",
+      "evaluation_goal": "Preserve groom name Galkhuu (check approval), not a translated Turkish common noun.",
+      "critical_risk": "proper_name",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "akane_name",
+      "language": "ja",
+      "source_text": "あかねさん、おめでとうございます。",
+      "evaluation_goal": "Preserve Akane in Latin script; no guessed kanji.",
+      "critical_risk": "proper_name",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "japanese_independent",
+      "language": "ja",
+      "source_text": "皆さん、今日は来てくださってありがとうございます。",
+      "evaluation_goal": "Translate independent Japanese remark exactly once if not interpreted from a recent Mongolian event.",
+      "critical_risk": "duplicate_suppression",
+      "forbidden_behavior": [],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "japanese_repetition",
+      "language": "ja",
+      "source_text": "結婚生活では、お互いを愛し、尊敬することが大切です。",
+      "evaluation_goal": "If semantically linked to already-captioned Mongolian line, suppress duplicate.",
+      "critical_risk": "duplicate_suppression",
+      "forbidden_behavior": [],
+      "mode": "main_speech",
+      "synthetic": true
+    },
+    {
+      "id": "music_only",
+      "language": "none",
+      "source_text": "[background music; no speech]",
+      "evaluation_goal": "Do not emit a spoken caption. Music event labels are separate operator-controlled cues.",
+      "critical_risk": "hallucination",
+      "forbidden_behavior": [
+        "invented religious speech"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "applause_only",
+      "language": "none",
+      "source_text": "[applause; no speech]",
+      "evaluation_goal": "Do not emit spoken translation.",
+      "critical_risk": "hallucination",
+      "forbidden_behavior": [
+        "thank you words invented"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "plain_contract",
+      "language": "mn",
+      "source_text": "Бид түрээсийн гэрээ байгуулсан.",
+      "evaluation_goal": "Ordinary contract, not religious covenant ahit.",
+      "critical_risk": "false_religious_context",
+      "forbidden_behavior": [
+        "ahit"
+      ],
+      "mode": "general",
+      "synthetic": true
+    },
+    {
+      "id": "numerical_difference",
+      "language": "mn",
+      "source_text": "Гучин хүн биш, арван хүн ирнэ.",
+      "evaluation_goal": "Preserve denial of 30 and assertion of 10.",
+      "critical_risk": "numbers_and_negation",
+      "forbidden_behavior": [
+        "30 attendees affirmative"
+      ],
+      "mode": "general",
+      "synthetic": true
+    }
+  ]
+}

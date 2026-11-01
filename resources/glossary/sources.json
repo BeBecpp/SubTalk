@@ -1,0 +1,47 @@
+{
+  "tr_bible_2025": {
+    "title": "Kutsal Kitap Yeni Dunya Cevirisi Gozden Gecirilmis Baski (2025) - book index",
+    "url": "https://www.jw.org/tr/kutuphane/kutsal-kitap/nwt/kitaplar/",
+    "use": "Current Turkish Bible book names"
+  },
+  "tr_bible_list": {
+    "title": "Kutsal Yazilardaki Kitaplarin Listesi",
+    "url": "https://www.jw.org/tr/kutuphane/kutsal-kitap/nwt/kutsal-yazilardaki-kitaplarin-listesi/",
+    "use": "Expanded Turkish Bible book names"
+  },
+  "mn_bible_list": {
+    "title": "Bibliin zuiliig herhen oloh ve?",
+    "url": "https://www.jw.org/mn/номын-сан/цуврал/янз-бүрийн-сэдэв/зүйл-олох/",
+    "use": "Mongolian NWT book names; occasional older spelling variants added separately"
+  },
+  "ja_bible_index": {
+    "title": "Shinsekaiyaku Seisho (Study Edition), Japanese book index",
+    "url": "https://www.jw.org/ja/ライブラリー/聖書/スタディー版聖書/各書/",
+    "use": "Japanese Bible book names"
+  },
+  "tr_wedding": {
+    "title": "Yehova’nin Sahitlerinin Dugunleri Nasil Olur?",
+    "url": "https://www.jw.org/tr/yehovanin-sahitleri/sss/sahitlerin-dugunleri/",
+    "use": "Wedding ceremony terminology"
+  },
+  "tr_jw_terms": {
+    "title": "Yehova’nin Sahitlerinin Terminolojisi",
+    "url": "https://www.jw.org/tr/kuresel-iletisim/yehovanin-sahitlerinin-terminolojisi/",
+    "use": "Official Turkish JW organization terminology"
+  },
+  "tr_wedding_2025": {
+    "title": "Evleneceginiz Gunu Nasil Yehova yi Yuceltecek Sekilde Planlayabilirsiniz?",
+    "url": "https://www.jw.org/tr/kutuphane/dergiler/gozcu-kulesi-inceleme-aralik-2025/Evleneceğiniz-Günü-Nasıl-Yehovayı-Yüceltecek-Şekilde-Planlayabilirsiniz/",
+    "use": "Wedding phrases and headship language"
+  },
+  "ja_wedding": {
+    "title": "Japanese Jehovah Witnesses wedding principles",
+    "url": "https://www.jw.org/ja/ライブラリー/書籍/神に愛される/補足情報/",
+    "use": "Japanese wedding terminology"
+  },
+  "tr_bible_legacy": {
+    "title": "2008 Turkish NWT book index",
+    "url": "https://www.jw.org/tr/kutuphane/kutsal-kitap/bi12/kitaplar/",
+    "use": "Legacy book spellings accepted for recognition, not default output"
+  }
+}

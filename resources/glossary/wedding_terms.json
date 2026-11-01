@@ -1,0 +1,735 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id": "wedding",
+      "category": "ceremony",
+      "mn": [
+        "хурим"
+      ],
+      "ja": [
+        "結婚式"
+      ],
+      "tr": "düğün",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "wedding_ceremony",
+      "category": "ceremony",
+      "mn": [
+        "хуримын ёслол",
+        "гэрлэх ёслол"
+      ],
+      "ja": [
+        "結婚式"
+      ],
+      "tr": "nikâh töreni",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "Depending on jurisdiction, nikâh may imply a formal marriage ceremony; never invent legal status.",
+      "tags": []
+    },
+    {
+      "id": "wedding_talk",
+      "category": "ceremony",
+      "mn": [
+        "гэрлэлтийн илтгэл",
+        "хуримын илтгэл"
+      ],
+      "ja": [
+        "結婚の話"
+      ],
+      "tr": "düğün konuşması",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "marriage",
+      "category": "marriage",
+      "mn": [
+        "гэрлэлт",
+        "гэрлэх"
+      ],
+      "ja": [
+        "結婚"
+      ],
+      "tr": "evlilik",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "bride",
+      "category": "people",
+      "mn": [
+        "сүйт бүсгүй"
+      ],
+      "ja": [
+        "花嫁"
+      ],
+      "tr": "gelin",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "groom",
+      "category": "people",
+      "mn": [
+        "сүйт залуу"
+      ],
+      "ja": [
+        "花婿",
+        "新郎"
+      ],
+      "tr": "damat",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "couple",
+      "category": "people",
+      "mn": [
+        "сүйт хос",
+        "хосууд"
+      ],
+      "ja": [
+        "新郎新婦",
+        "二人"
+      ],
+      "tr": "gelin ve damat",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "For generic couple use çift where natural.",
+      "tags": []
+    },
+    {
+      "id": "husband",
+      "category": "people",
+      "mn": [
+        "нөхөр"
+      ],
+      "ja": [
+        "夫"
+      ],
+      "tr": "koca",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "Also eş, depending on grammatical context.",
+      "tags": []
+    },
+    {
+      "id": "wife",
+      "category": "people",
+      "mn": [
+        "эхнэр"
+      ],
+      "ja": [
+        "妻"
+      ],
+      "tr": "eş",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "Karı is contextually possible in karı koca, but prefer eş in neutral captions.",
+      "tags": []
+    },
+    {
+      "id": "spouse",
+      "category": "people",
+      "mn": [
+        "хань",
+        "гэр бүлийн хүн"
+      ],
+      "ja": [
+        "配偶者"
+      ],
+      "tr": "eş",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "marriage_vow",
+      "category": "ceremony",
+      "mn": [
+        "гэрлэлтийн тангараг",
+        "гэрлэлтийн амлалт"
+      ],
+      "ja": [
+        "結婚の誓い"
+      ],
+      "tr": "evlilik yemini",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "Do not replace spoken wedding vows with any unspoken official script.",
+      "tags": []
+    },
+    {
+      "id": "wedding_ring",
+      "category": "ceremony",
+      "mn": [
+        "хуримын бөгж",
+        "бөгж"
+      ],
+      "ja": [
+        "結婚指輪",
+        "指輪"
+      ],
+      "tr": "evlilik yüzüğü",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "exchange_rings",
+      "category": "ceremony",
+      "mn": [
+        "бөгж солилцох",
+        "бөгж зүүх"
+      ],
+      "ja": [
+        "指輪を交換する"
+      ],
+      "tr": "yüzük takmak",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "announcement_married",
+      "category": "ceremony",
+      "mn": [
+        "эхнэр нөхөр болсныг зарлах"
+      ],
+      "ja": [
+        "夫婦であると宣言する"
+      ],
+      "tr": "karı koca olarak takdim etmek",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "Only express marriage declaration if actually spoken.",
+      "tags": []
+    },
+    {
+      "id": "guest",
+      "category": "ceremony",
+      "mn": [
+        "зочид",
+        "уригдсан хүмүүс"
+      ],
+      "ja": [
+        "招待客"
+      ],
+      "tr": "davetliler",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "witness",
+      "category": "ceremony",
+      "mn": [
+        "гэрч"
+      ],
+      "ja": [
+        "証人"
+      ],
+      "tr": "tanık",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "Not the same as Yehova’nın Şahitleri in all sentences.",
+      "tags": []
+    },
+    {
+      "id": "master_of_ceremonies",
+      "category": "production",
+      "mn": [
+        "хөтлөгч",
+        "ёслолын хөтлөгч"
+      ],
+      "ja": [
+        "司会者"
+      ],
+      "tr": "sunucu",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "speaker",
+      "category": "production",
+      "mn": [
+        "илтгэгч",
+        "үг хэлэгч"
+      ],
+      "ja": [
+        "話し手",
+        "講演者"
+      ],
+      "tr": "konuşmacı",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "interpreter",
+      "category": "production",
+      "mn": [
+        "хэлмэрч",
+        "япон хэлний орчуулагч"
+      ],
+      "ja": [
+        "通訳者"
+      ],
+      "tr": "tercüman",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "translation",
+      "category": "production",
+      "mn": [
+        "орчуулга",
+        "орчуулах"
+      ],
+      "ja": [
+        "通訳",
+        "翻訳"
+      ],
+      "tr": "çeviri",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "speech",
+      "category": "production",
+      "mn": [
+        "үг хэлэх",
+        "илтгэл"
+      ],
+      "ja": [
+        "スピーチ",
+        "話"
+      ],
+      "tr": "konuşma",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "bible_reading",
+      "category": "ceremony",
+      "mn": [
+        "Библиэс унших",
+        "Библийн зүйл унших"
+      ],
+      "ja": [
+        "聖書を読む"
+      ],
+      "tr": "Kutsal Kitap’tan okumak",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "prayer_at_end",
+      "category": "ceremony",
+      "mn": [
+        "төгсгөлийн залбирал"
+      ],
+      "ja": [
+        "最後の祈り"
+      ],
+      "tr": "kapanış duası",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "congratulations",
+      "category": "ceremony",
+      "mn": [
+        "баяр хүргэе",
+        "баяр хүргэж байна"
+      ],
+      "ja": [
+        "おめでとうございます"
+      ],
+      "tr": "Tebrikler",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "thank_you",
+      "category": "ceremony",
+      "mn": [
+        "баярлалаа",
+        "талархал илэрхийлье"
+      ],
+      "ja": [
+        "ありがとうございます"
+      ],
+      "tr": "Teşekkür ederiz",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "welcome",
+      "category": "ceremony",
+      "mn": [
+        "тавтай морилно уу"
+      ],
+      "ja": [
+        "ようこそ"
+      ],
+      "tr": "Hoş geldiniz",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "music",
+      "category": "ceremony",
+      "mn": [
+        "хөгжим",
+        "ая"
+      ],
+      "ja": [
+        "音楽"
+      ],
+      "tr": "müzik",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "song",
+      "category": "ceremony",
+      "mn": [
+        "дуу",
+        "дуулах"
+      ],
+      "ja": [
+        "歌"
+      ],
+      "tr": "şarkı",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Use ilahi only for explicitly religious songs; not every song.",
+      "tags": []
+    },
+    {
+      "id": "kingdom_song",
+      "category": "ceremony",
+      "mn": [
+        "Хаанчлалын дуу",
+        "сүнслэг дуу"
+      ],
+      "ja": [
+        "王国の歌"
+      ],
+      "tr": "Krallık ilahisi",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Verify preferred Turkish JW phrase before event.",
+      "tags": []
+    },
+    {
+      "id": "applause",
+      "category": "ceremony",
+      "mn": [
+        "алга ташилт"
+      ],
+      "ja": [
+        "拍手"
+      ],
+      "tr": "alkış",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "quiet",
+      "category": "ceremony",
+      "mn": [
+        "нам гүм байдал",
+        "чимээгүй"
+      ],
+      "ja": [
+        "静か"
+      ],
+      "tr": "sessizlik",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "family",
+      "category": "marriage",
+      "mn": [
+        "гэр бүл"
+      ],
+      "ja": [
+        "家族"
+      ],
+      "tr": "aile",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "marriage_bond",
+      "category": "marriage",
+      "mn": [
+        "гэрлэлтийн холбоо"
+      ],
+      "ja": [
+        "結婚の絆"
+      ],
+      "tr": "evlilik bağı",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "mutual_respect",
+      "category": "marriage",
+      "mn": [
+        "харилцан хүндлэл"
+      ],
+      "ja": [
+        "互いへの敬意"
+      ],
+      "tr": "karşılıklı saygı",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "commitment",
+      "category": "marriage",
+      "mn": [
+        "амлалт",
+        "үүрэг хариуцлага"
+      ],
+      "ja": [
+        "約束",
+        "責任"
+      ],
+      "tr": "sorumluluk",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Do not conflate promise with responsibility; choose by context.",
+      "tags": []
+    },
+    {
+      "id": "marriage_anniversary",
+      "category": "marriage",
+      "mn": [
+        "гэрлэлтийн ой"
+      ],
+      "ja": [
+        "結婚記念日"
+      ],
+      "tr": "evlilik yıldönümü",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "celebration",
+      "category": "ceremony",
+      "mn": [
+        "баяр ёслол",
+        "тэмдэглэх"
+      ],
+      "ja": [
+        "お祝い"
+      ],
+      "tr": "kutlama",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "mother",
+      "category": "people",
+      "mn": [
+        "ээж",
+        "эх"
+      ],
+      "ja": [
+        "母"
+      ],
+      "tr": "anne",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "father",
+      "category": "people",
+      "mn": [
+        "аав",
+        "эцэг"
+      ],
+      "ja": [
+        "父"
+      ],
+      "tr": "baba",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "CRITICAL: a human father is not automatically God the Father.",
+      "tags": []
+    },
+    {
+      "id": "older_brother",
+      "category": "people",
+      "mn": [
+        "ах"
+      ],
+      "ja": [
+        "お兄さん",
+        "兄"
+      ],
+      "tr": "ağabey",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Do not force to birader when used as family/affectionate respectful address.",
+      "tags": []
+    },
+    {
+      "id": "older_sister",
+      "category": "people",
+      "mn": [
+        "эгч"
+      ],
+      "ja": [
+        "お姉さん",
+        "姉"
+      ],
+      "tr": "abla",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Do not force to hemşire when used as a family/respectful address.",
+      "tags": []
+    }
+  ]
+}

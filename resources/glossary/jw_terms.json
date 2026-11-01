@@ -1,0 +1,832 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id": "jehovah",
+      "category": "divine_name",
+      "mn": [
+        "Ехова",
+        "Ехова Бурхан"
+      ],
+      "ja": [
+        "エホバ",
+        "エホバ神"
+      ],
+      "tr": "Yehova",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms",
+        "mn_bible_list"
+      ],
+      "priority": "always",
+      "notes": "Proper divine name: do not replace with Tanrı, Rab or Allah.",
+      "tags": []
+    },
+    {
+      "id": "jehovahs_witnesses",
+      "category": "organization",
+      "mn": [
+        "Еховагийн Гэрчүүд"
+      ],
+      "ja": [
+        "エホバの証人"
+      ],
+      "tr": "Yehova’nın Şahitleri",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "holy_bible",
+      "category": "scripture",
+      "mn": [
+        "Библи",
+        "Ариун Библи"
+      ],
+      "ja": [
+        "聖書"
+      ],
+      "tr": "Kutsal Kitap",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_bible_2025"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "nwt",
+      "category": "scripture",
+      "mn": [
+        "Шинэ ертөнцийн орчуулга",
+        "Шинэ ертөнц орчуулга"
+      ],
+      "ja": [
+        "新世界訳聖書",
+        "新世界訳"
+      ],
+      "tr": "Yeni Dünya Çevirisi",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_bible_2025",
+        "mn_bible_list"
+      ],
+      "priority": "triggered",
+      "notes": "Long title when required: Kutsal Kitap Yeni Dünya Çevirisi.",
+      "tags": []
+    },
+    {
+      "id": "scriptures",
+      "category": "scripture",
+      "mn": [
+        "Судар",
+        "Ариун Судар"
+      ],
+      "ja": [
+        "聖書",
+        "聖句"
+      ],
+      "tr": "Kutsal Yazılar",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "Do not force every occurrence of Судар to plural Turkish; translate sentence naturally.",
+      "tags": []
+    },
+    {
+      "id": "god",
+      "category": "theology",
+      "mn": [
+        "Бурхан",
+        "Бурхны"
+      ],
+      "ja": [
+        "神",
+        "神様"
+      ],
+      "tr": "Tanrı",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding",
+        "tr_jw_terms"
+      ],
+      "priority": "context",
+      "notes": "God is not always an explicit reference to the divine name Yehova.",
+      "tags": []
+    },
+    {
+      "id": "jesus_christ",
+      "category": "theology",
+      "mn": [
+        "Есүс Христ"
+      ],
+      "ja": [
+        "イエス･キリスト",
+        "イエス・キリスト"
+      ],
+      "tr": "İsa Mesih",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding_2025"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "jesus",
+      "category": "theology",
+      "mn": [
+        "Есүс"
+      ],
+      "ja": [
+        "イエス"
+      ],
+      "tr": "İsa",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "christ",
+      "category": "theology",
+      "mn": [
+        "Христ",
+        "Мессиа"
+      ],
+      "ja": [
+        "キリスト",
+        "メシア"
+      ],
+      "tr": "Mesih",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding_2025"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "kingdom_of_god",
+      "category": "theology",
+      "mn": [
+        "Бурхны Хаанчлал",
+        "Бурханы Хаанчлал"
+      ],
+      "ja": [
+        "神の王国"
+      ],
+      "tr": "Tanrı’nın Krallığı",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "congregation",
+      "category": "jw_organization",
+      "mn": [
+        "хурал",
+        "чуулган",
+        "итгэгчдийн хурал"
+      ],
+      "ja": [
+        "会衆"
+      ],
+      "tr": "cemaat",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "context",
+      "notes": "хурал may also mean meeting; do not force cemaat outside religious context.",
+      "tags": []
+    },
+    {
+      "id": "worship_hall",
+      "category": "jw_organization",
+      "mn": [
+        "Хаанчлалын танхим",
+        "Цуглааны танхим"
+      ],
+      "ja": [
+        "王国会館"
+      ],
+      "tr": "İbadet Salonu",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding",
+        "tr_jw_terms"
+      ],
+      "priority": "triggered",
+      "notes": "Turkish JW also acknowledges regional Krallık Salonu; prefer local Turkish wording İbadet Salonu.",
+      "tags": []
+    },
+    {
+      "id": "kingdom_hall_alias",
+      "category": "jw_organization",
+      "mn": [
+        "Хаанчлалын танхим"
+      ],
+      "ja": [
+        "王国会館"
+      ],
+      "tr": "Krallık Salonu",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding",
+        "tr_jw_terms"
+      ],
+      "priority": "context",
+      "notes": "Recognition alternative; use İbadet Salonu as default for Turkish JW context.",
+      "tags": []
+    },
+    {
+      "id": "elder",
+      "category": "jw_organization",
+      "mn": [
+        "ахлагч"
+      ],
+      "ja": [
+        "長老"
+      ],
+      "tr": "ihtiyar",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "triggered",
+      "notes": "Only in JW congregational office context; not any older man.",
+      "tags": []
+    },
+    {
+      "id": "ministerial_servant",
+      "category": "jw_organization",
+      "mn": [
+        "туслах үйлчлэгч"
+      ],
+      "ja": [
+        "援助奉仕者"
+      ],
+      "tr": "hizmet görevlisi",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "brother_jw",
+      "category": "jw_organization",
+      "mn": [
+        "ах",
+        "итгэл нэгт ах"
+      ],
+      "ja": [
+        "兄弟"
+      ],
+      "tr": "birader",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "context",
+      "notes": "IMPORTANT: ах as family member/older acquaintance is ağabey, not necessarily birader.",
+      "tags": []
+    },
+    {
+      "id": "sister_jw",
+      "category": "jw_organization",
+      "mn": [
+        "эгч",
+        "итгэл нэгт эгч"
+      ],
+      "ja": [
+        "姉妹"
+      ],
+      "tr": "hemşire",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "context",
+      "notes": "IMPORTANT: эгч in everyday speech usually abla / older sister. Hemşire normally means nurse in everyday Turkish.",
+      "tags": []
+    },
+    {
+      "id": "watchtower_magazine",
+      "category": "jw_organization",
+      "mn": [
+        "Харуулын цамхаг"
+      ],
+      "ja": [
+        "ものみの塔"
+      ],
+      "tr": "Gözcü Kulesi",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "bible_principles",
+      "category": "scripture",
+      "mn": [
+        "Библийн зарчим",
+        "Судрын зарчим"
+      ],
+      "ja": [
+        "聖書の原則"
+      ],
+      "tr": "Kutsal Kitap ilkeleri",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding_2025"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "scripture_reference",
+      "category": "scripture",
+      "mn": [
+        "Библийн эшлэл",
+        "Библийн ишлэл"
+      ],
+      "ja": [
+        "聖句"
+      ],
+      "tr": "ayet",
+      "status": "review_required",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "Translate book/chapter/verse only after deterministic reference parsing.",
+      "tags": []
+    },
+    {
+      "id": "bible_chapter",
+      "category": "scripture",
+      "mn": [
+        "бүлэг",
+        "дугаар бүлэг"
+      ],
+      "ja": [
+        "章"
+      ],
+      "tr": "bölüm",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Never translate everyday бүлэг as Bible chapter without book/reference context.",
+      "tags": []
+    },
+    {
+      "id": "bible_verse",
+      "category": "scripture",
+      "mn": [
+        "зүйл",
+        "дугаар зүйл"
+      ],
+      "ja": [
+        "節"
+      ],
+      "tr": "ayet",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Do not force legal article or ordinary item to ayet.",
+      "tags": []
+    },
+    {
+      "id": "prayer",
+      "category": "religious_action",
+      "mn": [
+        "залбирал",
+        "залбирах"
+      ],
+      "ja": [
+        "祈り",
+        "祈る"
+      ],
+      "tr": "dua",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "Use dua etmek for the verb.",
+      "tags": []
+    },
+    {
+      "id": "amen",
+      "category": "religious_action",
+      "mn": [
+        "амен",
+        "Амен"
+      ],
+      "ja": [
+        "アーメン"
+      ],
+      "tr": "Âmin",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Confirm preferred Turkish written form with a Turkish JW reviewer.",
+      "tags": []
+    },
+    {
+      "id": "faith",
+      "category": "virtue",
+      "mn": [
+        "итгэл",
+        "итгэх"
+      ],
+      "ja": [
+        "信仰"
+      ],
+      "tr": "iman",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "hope",
+      "category": "virtue",
+      "mn": [
+        "найдвар"
+      ],
+      "ja": [
+        "希望"
+      ],
+      "tr": "ümit",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "umut is also acceptable; choose by sentence context.",
+      "tags": []
+    },
+    {
+      "id": "blessing",
+      "category": "religious_action",
+      "mn": [
+        "ивээл",
+        "ивээх",
+        "ерөөл"
+      ],
+      "ja": [
+        "祝福"
+      ],
+      "tr": "bereket",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Translate verb as blessing/protection appropriate to source; avoid inventing a blessing.",
+      "tags": []
+    },
+    {
+      "id": "resurrection",
+      "category": "theology",
+      "mn": [
+        "амилалт"
+      ],
+      "ja": [
+        "復活"
+      ],
+      "tr": "dirilme",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "holy_spirit",
+      "category": "theology",
+      "mn": [
+        "ариун сүнс"
+      ],
+      "ja": [
+        "聖なる力",
+        "聖霊"
+      ],
+      "tr": "kutsal ruh",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding_2025"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "good_news",
+      "category": "theology",
+      "mn": [
+        "сайн мэдээ"
+      ],
+      "ja": [
+        "良い知らせ"
+      ],
+      "tr": "iyi haber",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_jw_terms"
+      ],
+      "priority": "context",
+      "notes": "Not every good news item is religious preaching.",
+      "tags": []
+    },
+    {
+      "id": "covenant",
+      "category": "theology",
+      "mn": [
+        "гэрээ",
+        "тангарагт гэрээ"
+      ],
+      "ja": [
+        "契約"
+      ],
+      "tr": "ahit",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Do not translate ordinary commercial гэрээ as ahit.",
+      "tags": []
+    },
+    {
+      "id": "husband_headship",
+      "category": "marriage_principle",
+      "mn": [
+        "тэргүүн байх зарчим",
+        "тэргүүн"
+      ],
+      "ja": [
+        "頭の権"
+      ],
+      "tr": "reislik ilkesi",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding_2025"
+      ],
+      "priority": "triggered",
+      "notes": "Context-dependent theological term. Do not inject if not spoken.",
+      "tags": []
+    },
+    {
+      "id": "godly_arrangement",
+      "category": "marriage_principle",
+      "mn": [
+        "Бурхны зохицуулалт",
+        "Бурхнаас тогтоосон зохицуулалт"
+      ],
+      "ja": [
+        "神の取り決め"
+      ],
+      "tr": "Tanrı’nın düzenlemesi",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "marriage_arrangement",
+      "category": "marriage_principle",
+      "mn": [
+        "гэрлэлтийн зохицуулалт"
+      ],
+      "ja": [
+        "結婚の取り決め"
+      ],
+      "tr": "evlilik düzenlemesi",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "obedience",
+      "category": "virtue",
+      "mn": [
+        "дуулгавартай байдал",
+        "дуулгавартай байх"
+      ],
+      "ja": [
+        "従順"
+      ],
+      "tr": "itaat",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "loyalty",
+      "category": "virtue",
+      "mn": [
+        "үнэнч байх",
+        "үнэнч байдал"
+      ],
+      "ja": [
+        "忠実",
+        "忠誠"
+      ],
+      "tr": "sadakat",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding_2025"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "deep_respect",
+      "category": "virtue",
+      "mn": [
+        "гүн хүндлэл",
+        "ихэд хүндэтгэх"
+      ],
+      "ja": [
+        "深い敬意"
+      ],
+      "tr": "derin saygı",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "triggered",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "love",
+      "category": "virtue",
+      "mn": [
+        "хайр",
+        "хайрлах"
+      ],
+      "ja": [
+        "愛",
+        "愛する"
+      ],
+      "tr": "sevgi",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "Use sevmek for the verb; subject/object and negation matter.",
+      "tags": []
+    },
+    {
+      "id": "respect",
+      "category": "virtue",
+      "mn": [
+        "хүндлэл",
+        "хүндлэх"
+      ],
+      "ja": [
+        "敬意",
+        "尊敬"
+      ],
+      "tr": "saygı",
+      "status": "tr_attested",
+      "source_keys": [
+        "tr_wedding"
+      ],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "forgiveness",
+      "category": "virtue",
+      "mn": [
+        "уучлах",
+        "уучлал"
+      ],
+      "ja": [
+        "許す",
+        "許し"
+      ],
+      "tr": "bağışlamak",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Use context-dependent verb/noun forms.",
+      "tags": []
+    },
+    {
+      "id": "patience",
+      "category": "virtue",
+      "mn": [
+        "тэвчээр",
+        "тэвчих"
+      ],
+      "ja": [
+        "忍耐"
+      ],
+      "tr": "sabır",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "peace",
+      "category": "virtue",
+      "mn": [
+        "амар тайван",
+        "энх тайван"
+      ],
+      "ja": [
+        "平和"
+      ],
+      "tr": "barış",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "Huzur is more suitable for personal peace/comfort.",
+      "tags": []
+    },
+    {
+      "id": "unity",
+      "category": "virtue",
+      "mn": [
+        "эв нэгдэл"
+      ],
+      "ja": [
+        "一致"
+      ],
+      "tr": "birlik",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "creator",
+      "category": "theology",
+      "mn": [
+        "Бүтээгч"
+      ],
+      "ja": [
+        "創造者"
+      ],
+      "tr": "Yaratıcı",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "",
+      "tags": []
+    },
+    {
+      "id": "divine_name",
+      "category": "theology",
+      "mn": [
+        "Бурхны нэр"
+      ],
+      "ja": [
+        "神の名前"
+      ],
+      "tr": "Tanrı’nın ismi",
+      "status": "review_required",
+      "source_keys": [],
+      "priority": "context",
+      "notes": "When the source explicitly names Yehova, preserve Yehova.",
+      "tags": []
+    }
+  ]
+}
