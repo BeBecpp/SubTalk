@@ -67,7 +67,14 @@ fewer than ~100 rated captions, report the counts; do not claim an error rate.
 | Japanese repetitions captioned twice | ≤ 5 % (else set Japanese to Off/All per segment, or disable Auto matching) |
 | Coverage (share of meaningful speech captioned) | reported honestly |
 
-## Live Claude smoke test
+## Live Claude checks
 
-With a key in the environment: `.venv\Scripts\python.exe -m pytest -m live -q -s` (one request, about $0.01).
-`subtalk doctor` also makes one request and prints model, latency and cost.
+Put `ANTHROPIC_API_KEY=...` in `.env` (gitignored), then:
+
+1. Smoke test, one request (about $0.01): `.venv\Scripts\python.exe -m pytest -m live -q -s`
+2. `subtalk doctor` with `translate: {engine: claude}` also makes one request and prints model, latency, cost.
+3. Glossary evaluation, 29 requests: `.venv\Scripts\subtalk.exe eval-claude --yes`
+   (`--model claude-sonnet-5-5` to compare; `--cases divine_name,negation` for a subset). Each case
+   gets an automatic check (pass / FAIL / withheld); the report goes to `bench_out\claude_eval_*.md`.
+   The checks are heuristics: a Turkish speaker must still read every line. 29 synthetic sentences
+   show behaviour on known traps; they are not a measured error rate.
