@@ -23,11 +23,14 @@ log = logging.getLogger("subtalk.server")
 WEB = Path(__file__).resolve().parent.parent / "web"
 
 
-def _origin_ok(headers) -> bool:
+def _origin_ok(headers, allowed: list[str] | tuple = ()) -> bool:
+    """Same-origin check for state-changing requests (CSRF / cross-site WebSocket)."""
     origin = headers.get("origin")
     if not origin:
         return True
-    return urlsplit(origin).netloc == headers.get("host")
+    netloc = urlsplit(origin).netloc
+    hosts = {headers.get("host"), headers.get("x-forwarded-host")}
+    return netloc in hosts or netloc in allowed or urlsplit(origin).hostname in allowed
 
 
 def _is_https(request_or_ws) -> bool:
@@ -73,7 +76,7 @@ def create_app(cfg: Config, engine: Engine | None = None, *, start_engine: bool 
 
     @app.middleware("http")
     async def security_headers(request: Request, call_next):
-        if request.method == "POST" and not _origin_ok(request.headers):
+        if request.method == "POST" and not _origin_ok(request.headers, cfg.server.allowed_origins):
             return JSONResponse({"error": "bad origin"}, status_code=403)
         resp = await call_next(request)
         resp.headers["X-Frame-Options"] = "DENY"
@@ -159,7 +162,7 @@ def create_app(cfg: Config, engine: Engine | None = None, *, start_engine: bool 
 
     @app.websocket("/ws/ui")
     async def ws_ui(ws: WebSocket):
-        if not _origin_ok(ws.headers):
+        if not _origin_ok(ws.headers, cfg.server.allowed_origins):
             await ws.close(code=4403)
             return
         s = session_of(ws)

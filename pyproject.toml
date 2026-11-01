@@ -32,6 +32,10 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/subtalk"]
 
+[tool.uv]
+# Reliability: only resolve package versions that have been public for a while.
+exclude-newer = "2026-10-24T00:00:00Z"
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"

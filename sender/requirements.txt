@@ -1,0 +1,4 @@
+# Minimal, pinned dependencies for the audio sender on Computer A (versions match uv.lock).
+numpy==2.4.6
+sounddevice==0.5.6
+websockets==17.3

@@ -20,6 +20,8 @@ class ServerCfg(BaseModel):
     port: int = 8000
     session_hours: float = 16.0
     lease_grace_s: float = 15.0
+    # Extra origins allowed to send commands, e.g. "b-name.tailnet.ts.net" when a proxy rewrites Host.
+    allowed_origins: list[str] = Field(default_factory=list)
 
 
 class ZoomCfg(BaseModel):

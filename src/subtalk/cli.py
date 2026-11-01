@@ -109,6 +109,8 @@ def cmd_doctor(args) -> int:
     def passcodes():
         from subtalk.server.auth import PasscodeStore
         ps = PasscodeStore(cfg.path(cfg.paths.secrets_dir) / "auth.json", allow_dev_defaults=False)
+        if cfg.mode == "mock" and not ps.configured("operator"):
+            return True, "mock mode: dev passcodes (dev-operator / dev-speaker)"
         return ps.configured("operator"), f"operator: {ps.configured('operator')}, speaker: {ps.configured('speaker')}"
 
     def claude_key():

@@ -186,6 +186,38 @@ def test_audio_token_checked(tmp_path, monkeypatch):
         assert engine.ingest.bad_frames == 1
 
 
+def test_real_audio_path_through_asr_worker(tmp_path):
+    """WebSocket audio frames -> VAD segmenter -> ASR worker process (scripted) -> pipeline -> Zoom."""
+    import numpy as np
+
+    from subtalk.audio.protocol import pack_frame
+
+    script = [{"lang": "mn", "text": "Сайн байна уу.", "tr": "Merhaba."}]
+    cfg = make_cfg(tmp_path, session=script)
+    cfg.asr.engine = "scripted"
+    c, engine = make_client(cfg)
+    with c:
+        login(c)
+        assert engine.asr is not None and engine.asr.state == "ready"
+        assert cmd(c, "connect_zoom", {"url": "mock", "target": "TEST"})["accepted"]
+        assert cmd(c, "start_live")["accepted"]
+        sr = 16000
+        t = np.arange(int(1.5 * sr)) / sr
+        speech = 0.3 * np.sin(2 * np.pi * 220 * t)
+        rng = np.random.default_rng(0)
+        audio = np.concatenate([rng.standard_normal(sr) * 0.002, speech, rng.standard_normal(sr) * 0.002])
+        pcm = (audio * 32767).astype("<i2")
+        with c.websocket_connect("/ws/audio") as ws:
+            for k, i in enumerate(range(0, len(pcm) - 319, 320)):
+                ws.send_bytes(pack_frame(k, pcm[i:i + 320].tobytes()))
+            deadline = time.monotonic() + 10
+            while time.monotonic() < deadline and not engine.mock_zoom.meeting().captions:
+                time.sleep(0.1)
+        assert [x.text for x in engine.mock_zoom.meeting().captions] == ["Merhaba."]
+        ev = engine.pipeline.events.all()[-1]
+        assert ev.kind == "MN" and ev.asr_ms is not None
+
+
 SESSION = [
     {"gap": 1.0, "dur": 3.0, "lang": "mn", "text": "Эрхэм зочид оо, тавтай морилно уу.", "tr": "Değerli misafirler, hoş geldiniz."},
     {"gap": 0.1, "dur": 3.0, "lang": "ja", "text": "皆さん、ようこそ。", "relation": "covered"},
