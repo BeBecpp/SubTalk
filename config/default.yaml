@@ -35,13 +35,13 @@ asr:
 
 translate:
   engine: mock                # mock | claude
-  model: claude-opus-5-5
+  model: claude-sonnet-5-5    # middle tier (owner's choice); compare with: subtalk eval-claude --model ...
   effort: low
-  fallback_model: claude-sonnet-5-5
+  fallback_model: claude-haiku-5-5   # used only when the primary times out / is overloaded
   server_fallbacks: true
   timeout_s: 5.0
-  budget_soft_usd: 25
-  budget_hard_usd: 75
+  budget_soft_usd: 15         # alert
+  budget_hard_usd: 20         # stop sending requests (per engine process)
 
 interp:
   ja_policy: AUTO             # AUTO | CAPTION_ALL | SUPPRESS

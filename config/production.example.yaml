@@ -23,6 +23,8 @@ asr:
 
 translate:
   engine: claude
-  model: claude-opus-5-5
+  model: claude-sonnet-5-5
   effort: low
-  fallback_model: claude-sonnet-5-5
+  fallback_model: claude-haiku-5-5
+  budget_soft_usd: 15
+  budget_hard_usd: 20

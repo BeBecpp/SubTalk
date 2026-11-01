@@ -54,6 +54,8 @@ BAD = {
     "vow_not_inferred": "Birbirimize yemin ediyoruz.",
     "plain_contract": "Bir ahit yaptık.",
     "numerical_difference": "30 kişi gelecek.",
+    "groom_name": "Galkhuu ve eşine tebrikler.",  # real Sonnet 5.5 output pattern: added spouse
+    "akane_name": "Akane ve damada tebrikler.",
 }
 
 

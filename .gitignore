@@ -10,6 +10,9 @@ dist/
 
 # Secrets and private event data - NEVER commit
 .env
+.env.*
+!.env.example
+*.env.txt
 secrets/
 event/
 config/local.yaml

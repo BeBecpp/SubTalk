@@ -3,8 +3,8 @@
 * stateless requests: cached system prompt + one JSON user message;
 * ``output_config.format`` constrains the JSON shape (not the truth - the
   deterministic guards run afterwards);
-* Opus 5.5 always thinks adaptively; ``output_config.effort`` (default low)
-  bounds latency;
+* default model Sonnet 5.5 (owner's choice: middle tier) with adaptive
+  thinking; ``output_config.effort`` (default low) bounds latency;
 * server-side refusal fallback (``fallbacks: "default"``) when enabled;
 * own timeout, then one attempt on ``fallback_model``; SDK retries disabled so
   latency stays bounded;

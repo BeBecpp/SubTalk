@@ -29,6 +29,55 @@ SENSITIVE = {
 DIVINE_TERM_CATEGORIES = ("divine_name", "theology")
 _RAB = re.compile(r"rab+(?:[’']\w*|im|in|imiz|iniz|ı|i)?")
 
+# Spouse/partner words: never added unless the source mentions a spouse or the couple.
+# Whole-word forms only ("eşit", "eşya", "teşekkür" must not match).
+_SPOUSE_TR = re.compile(
+    r"(eş|eşi|eşin|eşine|eşini|eşinde|eşinden|eşiyle|eşim|eşime|eşimi|eşimiz|eşimize|eşler|eşleri|eşlerine"
+    r"|karı|karısı|karısına|karısını|karısıyla|karım|koca|kocası|kocasına|kocasını|kocasıyla|kocam)([’'].*)?"
+)
+_SPOUSE_SRC = {
+    "mn": ("эхнэр", "нөхөр", "нөхр", "хань", "гэргий", "хос", "сүйт"),
+    "ja": ("妻", "夫", "奥さん", "旦那", "配偶", "夫婦", "新婦", "新郎", "花嫁", "花婿", "嫁"),
+}
+_GROOM_TR = re.compile(r"dama[dt]\w*([’'].*)?")
+_GROOM_SRC = {"mn": ("сүйт залуу", "залуу", "хүргэн", "сүйт"), "ja": ("新郎", "花婿", "婿")}
+_WORD = re.compile(r"[\wâîûçğıöşüÇĞİÖŞÜ]+(?:[’'][\wâîûçğıöşü]+)?")
+
+
+def _edit_distance(a: str, b: str) -> int:
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i] + [0] * len(b)
+        for j, cb in enumerate(b, 1):
+            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb))
+        prev = cur
+    return prev[-1]
+
+
+def fix_name_spelling(text: str, name: str) -> tuple[str, bool]:
+    """Replace near-miss spellings of ``name`` (edit distance <= 2, same first letter,
+    names of 5+ letters) with the approved spelling, keeping a Turkish suffix after an
+    apostrophe: Galhuu'ya -> Galkhuu'ya. Only called when the source names the person."""
+    target = turkish_lower(name)
+    if len(target) < 5:
+        return text, False
+    changed = False
+
+    def repl(m: re.Match) -> str:
+        nonlocal changed
+        word = m.group(0)
+        parts = re.match(r"^(.*?)([’'])(.*)$", word)
+        core, sep, suffix = parts.groups() if parts else (word, "", "")
+        low = turkish_lower(core)
+        if low == target or not low or low[0] != target[0] or abs(len(low) - len(target)) > 2:
+            return word
+        if _edit_distance(low, target) <= 2:
+            changed = True
+            return name + (sep + suffix if sep else "")
+        return word
+
+    return _WORD.sub(repl, text), changed
+
 
 def _is_divine_word(w: str) -> bool:
     return w.startswith(("yehova", "tanrı", "allah")) or bool(_RAB.fullmatch(w))
@@ -115,6 +164,14 @@ class Guards:
             if c.status == "invalid":
                 flags.append(f"invalid_reference_in_source:{c.book_id} {c.chapter}:{c.verse}")
 
+        # Names spoken in the source: correct near-miss spellings (Galhuu -> Galkhuu).
+        for name in self.g.names:
+            forms = name.ja if lang == "ja" else name.mn
+            if forms and contains_form(forms, source, lang):
+                text, changed = fix_name_spelling(text, name.tr)
+                if changed:
+                    flags.append(f"name_spelling_corrected:{name.id}")
+
         words = _tr_words(text)
         # 2. Divine name: preserved when spoken, never invented.
         src_jehovah = any(contains_form(t.ja if lang == "ja" else t.mn, source, lang) for t in self._jehovah)
@@ -133,6 +190,16 @@ class Guards:
         for concept, spec in SENSITIVE.items():
             if _has_tr_stem(words, spec["tr"]) and not _source_has_stem(source, lang, spec[lang if lang in spec else "mn"]):
                 blocked.append(f"{concept}_invented")
+
+        # 3b. No added spouse / partner (e.g. "Galkhuu ve eşine" for "Галхүүд").
+        if any(_SPOUSE_TR.fullmatch(w) for w in words) and not _source_has_stem(
+                source, lang, _SPOUSE_SRC.get(lang, _SPOUSE_SRC["mn"])):
+            blocked.append("spouse_invented")
+        # "damat" (groom; damadı, damada...) is unambiguous. "gelin" is not checked: it is also
+        # the everyday imperative "come".
+        if any(_GROOM_TR.fullmatch(w) for w in words) and not _source_has_stem(
+                source, lang, _GROOM_SRC.get(lang, _GROOM_SRC["mn"])):
+            blocked.append("groom_invented")
 
         # 4. No invented digits.
         src_numbers = set(digit_numbers(source))

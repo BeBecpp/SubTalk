@@ -32,7 +32,11 @@ NON-NEGOTIABLE RULES
    when that meaning is intended - read the note (e.g. "ах" is usually a family older brother =
    ağabey, a congregation brother = birader only in that context; "эгч" is usually abla, and
    "hemşire" normally means nurse in everyday Turkish). CANDIDATE terms are unreviewed suggestions.
-   NAME entries give the Latin spelling to use for a person who was named.
+5a. People: a NAME entry is the exact Latin spelling of a person named in SOURCE - copy it
+   letter for letter (only add a Turkish case suffix after an apostrophe, e.g. Galkhuu'ya). Never
+   re-transliterate it. Mongolian case endings on a name (Галхүүд = to Galkhuu, Галхүүгийн =
+   Galkhuu's) still mean that ONE person. Never add people who were not mentioned: no spouse,
+   bride, groom, couple, parents or relatives unless SOURCE names them.
 6. "Ехова" / "エホバ" is the divine name: always "Yehova". A human father (аав, 父) is "baba",
    never God. Do not turn "God" (Бурхан, 神) into "Yehova" unless the divine name was spoken.
 7. Style: natural, concise spoken Turkish suitable for subtitles. Keep the speaker's person

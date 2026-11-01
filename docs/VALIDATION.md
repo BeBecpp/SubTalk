@@ -67,6 +67,24 @@ fewer than ~100 rated captions, report the counts; do not claim an error rate.
 | Japanese repetitions captioned twice | ≤ 5 % (else set Japanese to Off/All per segment, or disable Auto matching) |
 | Coverage (share of meaningful speech captioned) | reported honestly |
 
+## Measured so far (live Claude, 1 Nov 2026, development laptop)
+
+Model `claude-sonnet-5-5`, effort low, fallback `claude-haiku-5-5`, budget $20.
+
+| Check | Result |
+|---|---|
+| Smoke test + `subtalk doctor` | PASS - "Sayın davetliler, hoş geldiniz." / "Merhaba." |
+| Glossary eval, first run (29 text cases) | 27 pass, **1 FAIL**, 1 withheld. FAIL: "Галхүүд баяр хүргэе." -> "Galhuu ve eşine tebrikler." (name re-spelled **and a spouse added**) |
+| Fix | Prompt rule for names/people; name hint no longer says "unapproved"; guards correct near-miss name spellings and block added spouse / groom words |
+| Glossary eval, after the fix | 28 pass, 0 fail, 1 withheld (invalid reference Ephesians 5:34 - safely withheld) |
+| Stability: 5 riskiest cases x 5 runs | 25 / 25 pass, identical outputs |
+| Mock ceremony through the full pipeline (13 segments) | Interpreter repeats suppressed (2/2), music and uncertain speech not captioned, garbled Mongolian held, 8 captions in order, 0 sequence violations |
+| Claude latency | p50 ~1.3-1.4 s, p95 1.7-2.0 s (first request of a session up to ~3 s) |
+| Cost of all the above | about $0.19 |
+
+29 synthetic sentences show behaviour on known traps; they are not an error rate for real
+ceremony speech, which still needs the M0-B recordings and a Turkish reviewer.
+
 ## Live Claude checks
 
 Put `ANTHROPIC_API_KEY=...` in `.env` (gitignored), then:

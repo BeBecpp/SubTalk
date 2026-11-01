@@ -57,7 +57,10 @@ class GlossaryService:
         for n in self.g.names:
             forms = n.ja if lang == "ja" else n.mn
             if forms and contains_form(forms, text, lang):
-                note = "" if n.approved else "Latin spelling not yet approved by the family"
+                # Approval status is for the operator (guard flag), not for Claude: an
+                # "unapproved" note invited the model to re-spell the name. The role (groom/bride)
+                # is not sent either - it could invite "damat"/"gelin" that were not spoken.
+                note = f"use exactly '{n.tr}'"
                 hits.append(TermHint(n.id, n.tr, "approved" if n.approved else "unapproved", "always", note, "name"))
         hits.sort(key=lambda h: (h.kind != "name", _PRIORITY_ORDER.get(h.priority, 3), h.status == "review_required"))
         return hits[:MAX_HINTS]

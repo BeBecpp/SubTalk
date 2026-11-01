@@ -51,8 +51,8 @@ CHECKS: dict[str, dict] = {
     "prayer": {"must": ["dua"]},
     "title_reference": {"must": ["kutsal kitap"], "no_digits": True},
     "mc_welcome": {"must_not": ["yehova", "tanrı", "dua"]},
-    "groom_name": {"must": ["galkhuu"]},
-    "akane_name": {"must": ["akane"]},
+    "groom_name": {"must": ["galkhuu"], "must_not_re": [r"\beş\w*", r"\bkarı\w*", r"\bgelin\b", r"\bçift\w*"]},
+    "akane_name": {"must": ["akane"], "must_not_re": [r"\beş\w*", r"\bkoca\w*", r"\bdama[dt]\w*", r"\bçift\w*"]},
     "japanese_independent": {"display": True},
     "japanese_repetition": {"relation": "covered"},
     "plain_contract": {"must_not": ["ahit", "ahd"]},
@@ -115,6 +115,10 @@ def check_case(case_id: str, res: CaseResult) -> tuple[str, list[str]]:
     for s in spec.get("must_not", []):
         if s in t:
             probs.append(f"contains '{s.strip()}'")
+    for pattern in spec.get("must_not_re", []):
+        m = re.search(pattern, t)
+        if m:
+            probs.append(f"added '{m.group(0)}' (not in source)")
     if spec.get("negation") and not NEG.search(t):
         probs.append("no negation found (heuristic)")
     if spec.get("no_digits") and DIGITS.search(t):

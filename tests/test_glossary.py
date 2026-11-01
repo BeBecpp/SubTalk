@@ -312,5 +312,59 @@ def test_guard_bible_explanation_not_quote(guards, svc, glossary):
     assert check(guards, svc, src, "Bu bir ayet değil, bir açıklamadır.").ok
 
 
+def test_guard_real_claude_failure_name_and_added_spouse(guards, svc):
+    """Seen live (Sonnet 5.5): 'Галхүүд баяр хүргэе.' -> 'Galhuu ve eşine tebrikler.'"""
+    r = check(guards, svc, "Галхүүд баяр хүргэе.", "Galhuu ve eşine tebrikler.")
+    assert not r.ok and "spouse_invented" in r.blocked
+    assert r.text == "Galkhuu ve eşine tebrikler."
+    assert "name_spelling_corrected:groom_galkhuu" in r.flags
+
+
+@pytest.mark.parametrize("bad,good", [
+    ("Galhuu'ya tebrikler.", "Galkhuu'ya tebrikler."),
+    ("Galkuu'yu tebrik edelim.", "Galkhuu'yu tebrik edelim."),
+    ("GALHUU tebrikler.", "Galkhuu tebrikler."),
+])
+def test_guard_corrects_near_miss_name(guards, svc, bad, good):
+    r = check(guards, svc, "Галхүүд баяр хүргэе.", bad)
+    assert r.ok and r.text == good
+
+
+def test_guard_name_fix_leaves_other_words(guards, svc):
+    r = check(guards, svc, "Галхүү Галатад очсон.", "Galkhuu Galata'ya gitti.")
+    assert r.text == "Galkhuu Galata'ya gitti." and "name_spelling_corrected:groom_galkhuu" not in r.flags
+    # Name not spoken -> never "corrected", and an invented name is still blocked.
+    r2 = check(guards, svc, "Сайн байна уу.", "Galhuu merhaba.")
+    assert r2.text == "Galhuu merhaba."
+
+
+@pytest.mark.parametrize("src,out,ok", [
+    ("Баярлалаа.", "Teşekkür ederiz.", True),                      # 'eş' inside a word
+    ("Бүгд тэгш эрхтэй.", "Herkes eşit haklara sahip.", True),       # eşit = equal
+    ("Нөхөр эхнэрээ хайрлах ёстой.", "Koca karısını sevmeli.", True),
+    ("Сүйт хосод баяр хүргэе.", "Çifti ve eşlerini tebrik edelim.", True),
+    ("Галхүүд баяр хүргэе.", "Galkhuu ve karısını tebrik edelim.", False),
+    ("あかねさん、おめでとうございます。", "Akane ve kocasına tebrikler.", False),
+    ("あかねさんと夫に、おめでとう。", "Akane ve kocasına tebrikler.", True),
+])
+def test_guard_spouse_not_invented(guards, svc, src, out, ok):
+    lang = "ja" if any("぀" <= ch <= "ヿ" for ch in src) else "mn"
+    r = check(guards, svc, src, out, lang)
+    assert ("spouse_invented" not in r.blocked) == ok, r.blocked
+
+
+def test_guard_groom_not_invented_but_gelin_allowed(guards, svc):
+    src = "Эрхэм зочид оо, тавтай морилно уу."
+    assert "groom_invented" in check(guards, svc, src, "Değerli misafirler ve damadımız, hoş geldiniz.").blocked
+    assert check(guards, svc, src, "Değerli misafirler, hoş gelin.").ok  # 'gelin' = come (imperative)
+    assert check(guards, svc, "Сүйт залуу үг хэлнэ.", "Damat konuşacak.").ok
+
+
+def test_name_hint_does_not_invite_respelling_or_roles(svc):
+    h = {x.id: x for x in svc.select_terms("Галхүүд баяр хүргэе.", "mn")}["groom_galkhuu"]
+    assert h.notes == "use exactly 'Galkhuu'"
+    assert "approved" not in h.notes and "groom" not in h.notes
+
+
 def test_guard_empty(guards, svc):
     assert check(guards, svc, "Сайн уу", "").blocked == ["empty_output"]

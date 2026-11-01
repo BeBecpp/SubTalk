@@ -27,7 +27,7 @@ def glossary():
     return load_glossary(ROOT / "resources/glossary", ROOT / "resources/bible")
 
 
-def response(payload, model="claude-opus-5-5", stop="end_turn"):
+def response(payload, model="claude-sonnet-5-5", stop="end_turn"):
     return SimpleNamespace(
         model=model, stop_reason=stop,
         content=[SimpleNamespace(type="thinking", thinking=""), SimpleNamespace(type="text", text=json.dumps(payload))],
@@ -77,7 +77,7 @@ async def test_request_shape(glossary):
     assert r.display and r.turkish == "Merhaba."
     call = fake.calls[0]
     assert call["beta"] is True and call["betas"] == [FALLBACK_BETA] and call["fallbacks"] == "default"
-    assert call["model"] == "claude-opus-5-5"
+    assert call["model"] == "claude-sonnet-5-5"
     assert call["system"][0]["cache_control"] == {"type": "ephemeral"}
     assert call["output_config"]["effort"] == "low"
     assert call["output_config"]["format"]["type"] == "json_schema"
@@ -95,12 +95,27 @@ async def test_system_prompt_is_stable(glossary):
 
 async def test_timeout_falls_back_once(glossary):
     timeout = anthropic.APITimeoutError(request=httpx.Request("POST", "https://api.anthropic.com"))
-    fake = FakeClient([timeout, response(OK, model="claude-sonnet-5-5")])
+    fake = FakeClient([timeout, response(OK, model="claude-haiku-5-5")])
     t = ClaudeTranslator(TranslateCfg(), glossary, "k", client=fake)
     r = await t.translate(req(glossary))
     assert r.turkish == "Merhaba."
-    assert [c["model"] for c in fake.calls] == ["claude-opus-5-5", "claude-sonnet-5-5"]
+    assert [c["model"] for c in fake.calls] == ["claude-sonnet-5-5", "claude-haiku-5-5"]
+    assert fake.calls[1]["beta"] is False and "fallbacks" not in fake.calls[1]  # Haiku: no server fallback
     assert fake.options[1]["timeout"] == 4.0 and t.fallback_used == 1
+
+
+def test_default_budget_is_twenty_dollars():
+    cfg = TranslateCfg()
+    assert (cfg.model, cfg.fallback_model, cfg.budget_hard_usd) == ("claude-sonnet-5-5", "claude-haiku-5-5", 20.0)
+
+
+async def test_budget_stops_requests_once_spent(glossary):
+    fake = FakeClient([response(OK, model="claude-sonnet-5-5")] * 3)
+    t = ClaudeTranslator(TranslateCfg(budget_hard_usd=0.0005), glossary, "k", client=fake)
+    await t.translate(req(glossary))  # costs $0.001 (100 in + 50 out + 1500 cache-read tokens at Sonnet prices)
+    with pytest.raises(BudgetExceeded):
+        await t.translate(req(glossary))
+    assert len(fake.calls) == 1
 
 
 async def test_both_fail_raises(glossary):
@@ -149,11 +164,25 @@ def test_interpret_message_lists_candidates(glossary):
     assert msg["TASK"] == "interpret" and msg["CANDIDATES"][0]["id"] == 3
 
 
+def _live_key() -> str | None:
+    """Key from the environment or the repo's .env - read here only, never exported,
+    so other tests are not affected by local secrets."""
+    key = anthropic_api_key()
+    env = ROOT / ".env"
+    if key or not env.exists():
+        return key
+    for line in env.read_text(encoding="utf-8").splitlines():
+        name, _, value = line.partition("=")
+        if name.strip() in ("ANTHROPIC_API_KEY", "CLAUDE_KEY") and value.strip():
+            return value.strip().strip('"').strip("'")
+    return None
+
+
 @pytest.mark.live
-@pytest.mark.skipif(not anthropic_api_key(), reason="no ANTHROPIC_API_KEY / CLAUDE_KEY in environment")
+@pytest.mark.skipif(not _live_key(), reason="no ANTHROPIC_API_KEY / CLAUDE_KEY in environment or .env")
 async def test_live_claude_smoke(glossary):
-    """One real request (~$0.01): checks the request shape is accepted by the API."""
-    t = ClaudeTranslator(TranslateCfg(), glossary, anthropic_api_key())
+    """One real request (~$0.003): checks the API accepts the exact production request shape."""
+    t = ClaudeTranslator(TranslateCfg(), glossary, _live_key())
     r = await t.translate(req(glossary, "Эрхэм зочид оо, тавтай морилно уу."))
     assert r.display and r.turkish
     print("LIVE:", r.model, round(r.latency_ms), "ms", r.turkish, t.status()["spent_usd"])

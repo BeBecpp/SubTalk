@@ -98,17 +98,19 @@ class PriceCfg(BaseModel):
 
 class TranslateCfg(BaseModel):
     engine: Literal["mock", "claude"] = "mock"
-    model: str = "claude-opus-5-5"
+    # Owner's choice: the middle tier (Sonnet) as primary, Haiku as the fast timeout fallback.
+    model: str = "claude-sonnet-5-5"
     effort: Literal["low", "medium", "high", "xhigh", "max"] = "low"
-    fallback_model: str | None = "claude-sonnet-5-5"
+    fallback_model: str | None = "claude-haiku-5-5"
     server_fallbacks: bool = True
     timeout_s: float = 5.0
     fallback_timeout_s: float = 4.0
     max_tokens: int = 2000
     concurrency: int = 3
     recent_context: int = 6
-    budget_soft_usd: float = 25.0
-    budget_hard_usd: float = 75.0
+    # Per engine process (in memory). Set the same limit in the Anthropic Console as the real cap.
+    budget_soft_usd: float = 15.0
+    budget_hard_usd: float = 20.0
     prices: dict[str, PriceCfg] = Field(default_factory=lambda: {
         "claude-opus-5-5": PriceCfg(input=4.0, output=20.0, cache_read=0.20, cache_write=5.0),
         "claude-sonnet-5-5": PriceCfg(input=2.0, output=10.0, cache_read=0.20, cache_write=2.5),
