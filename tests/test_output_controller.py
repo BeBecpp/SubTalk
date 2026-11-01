@@ -175,7 +175,9 @@ async def test_long_caption_chunked_and_ordered(ctl, mock_zoom):
     text = ("Sevgili kardeşler, bugün burada Galkhuu ile Akane'nin evliliğine tanıklık etmek için "
             "toplandık. Evlilik Yehova'nın bir düzenlemesidir ve sevgi, saygı ve sadakat ister.")
     ctl.submit(text, speech_end=time.monotonic())
-    assert await wait_for(lambda: ctl.queue_len == 0 and len(mock_zoom.meeting().captions) >= 2)
+    expected = len(chunk_caption(text, 84))
+    assert expected >= 2
+    assert await wait_for(lambda: len(mock_zoom.meeting().captions) == expected)
     sent = [c.text for c in mock_zoom.meeting().captions]
     assert all(len(s) <= 84 for s in sent)
     assert " ".join(sent) == " ".join(text.split())

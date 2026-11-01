@@ -20,6 +20,9 @@ models/
 recordings/
 bench_out/
 
+# Local tooling
+.claude/
+
 # OS / editor
 .DS_Store
 Thumbs.db

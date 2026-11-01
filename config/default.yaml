@@ -1,0 +1,49 @@
+# SubTalk default configuration (development-safe).
+# Put machine-specific overrides in config/local.yaml (gitignored).
+# Secrets go in .env (gitignored): ANTHROPIC_API_KEY (or CLAUDE_KEY), SUBTALK_AUDIO_TOKEN.
+
+mode: mock                    # mock | production
+event_name: "Galkhuu & Akane"
+
+server:
+  host: 127.0.0.1             # production: 0.0.0.0 (LAN) - see docs/NETWORK.md
+  port: 8000
+
+zoom:
+  allow_real_zoom: false      # must be true to post to *.zoom.us at all
+  allow_event_target: false   # must be true to connect the wedding meeting (EVENT)
+  attempt_timeout_s: 1.5
+  retry_budget_s: 5.0         # Zoom guidance: retry ~5 s, then move on
+  caption_ttl_s: 12           # never send a caption later than this after speech ended
+  max_chars: 84
+  line_breaks: false          # enable after the M0-A probe confirms "\n" renders
+  min_interval_s: 1.0
+  auto_pause_after_failures: 3
+
+vad:
+  engine: energy              # production: silero
+
+asr:
+  engine: mock                # mock | scripted | whisper
+  model: large-v3
+  fallback_model: medium
+  device: cuda
+  compute_type: float16
+  beam_size: 5
+  initial_prompt_mn: ""       # e.g. "Галхүү, Акане, Ехова" - names + a few core terms only
+  initial_prompt_ja: ""
+
+translate:
+  engine: mock                # mock | claude
+  model: claude-opus-5-5
+  effort: low
+  fallback_model: claude-sonnet-5-5
+  server_fallbacks: true
+  timeout_s: 5.0
+  budget_soft_usd: 25
+  budget_hard_usd: 75
+
+interp:
+  ja_policy: AUTO             # AUTO | CAPTION_ALL | SUPPRESS
+  auto_matching_enabled: true
+  hold_timeout_s: 20

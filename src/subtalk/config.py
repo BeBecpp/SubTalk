@@ -59,7 +59,10 @@ class VadCfg(BaseModel):
 
 
 class AsrCfg(BaseModel):
-    engine: Literal["mock", "whisper"] = "mock"
+    # mock: no audio needed, the mock session timeline drives the pipeline
+    # scripted: real audio + VAD, scripted transcripts (dev audio path test)
+    # whisper: faster-whisper in a worker process (production)
+    engine: Literal["mock", "scripted", "whisper"] = "mock"
     model: str = "large-v3"
     model_dir: str = "models"
     device: str = "cuda"

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SubTalk · Илтгэгч</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+  body { overflow: auto; }
+  .sp { max-width: 460px; margin: 0 auto; padding: 22px 16px 40px; display: flex; flex-direction: column; gap: 14px; min-height: 100vh; }
+  .sp .brand { justify-content: center; margin-bottom: 4px; }
+  .status { text-align: center; padding: 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+  .status .big { font: 600 18px/1.3 var(--display); }
+  .status .small { color: var(--text-3); font-size: 13px; margin-top: 4px; }
+  .msbtn { height: 120px; font-size: 22px; letter-spacing: .5px; border-radius: 16px; }
+  .msbtn.on { background: linear-gradient(180deg, #b8955a, #94743f); border-color: var(--gold-2); color: #1a1508; }
+  .note { color: var(--text-3); font-size: 13px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="sp hidden" id="app">
+  <div class="brand"><span class="mark">SubTalk</span><span class="sub">Илтгэгч</span></div>
+  <div class="status"><div class="big" id="verdict">—</div><div class="small" id="detail"></div></div>
+  <div class="status"><div class="small">Үндсэн илтгэлийн горим</div><div class="big" id="msState">—</div></div>
+  <button class="btn msbtn" id="msBtn">—</button>
+  <p class="note" id="msNote">Товчийг 1 секунд дарж байна уу. Энэ горим нь орчуулгыг зогсоохгүй — зөвхөн япон орчуулагчтай ажиллах тохиргоог асаана.</p>
+</div>
+
+<div id="login" class="overlay hidden">
+  <form class="card" id="loginForm" autocomplete="off">
+    <h1><span class="gold">SubTalk</span> · Илтгэгч</h1>
+    <p>Нэвтрэх код оруулна уу.</p>
+    <div class="field"><label for="pass">Код</label><input type="password" id="pass" required></div>
+    <div class="err" id="err"></div>
+    <button class="btn gold" type="submit">Нэвтрэх</button>
+    <p class="hint" id="dev"></p>
+  </form>
+</div>
+
+<div id="stale" class="overlay stale hidden"><div class="card"><div class="stale-msg" id="staleMsg">Холболт тасарлаа — дахин холбогдож байна…</div></div></div>
+
+<script src="/static/common.js"></script>
+<script src="/static/speaker.js"></script>
+</body>
+</html>

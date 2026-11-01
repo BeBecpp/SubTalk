@@ -1,0 +1,23 @@
+# Mock ceremony timeline for development (no audio, no paid API calls).
+# Synthetic content only. Each segment: gap (s before), dur (s), lang, text,
+# and the mock translator's answer (tr / relation / quality).
+segments:
+  - {gap: 2, dur: 3.5, lang: mn, text: "Эрхэм зочид оо, тавтай морилно уу.", tr: "Değerli misafirler, hoş geldiniz."}
+  - {gap: 2, dur: 4.0, lang: mn, text: "Өнөөдөр бид Галхүү, Акане хоёрын хуримд цугларлаа.",
+     tr: "Bugün Galkhuu ve Akane'nin düğünü için toplandık."}
+  - {gap: 1.5, dur: 4.0, lang: ja, text: "今日はガルフーさんとあかねさんの結婚式に集まりました。", relation: covered}
+  - {gap: 3, dur: 6.0, lang: music, text: ""}
+  - {gap: 2, dur: 5.0, lang: mn, text: "Эфэс тавдугаар бүлэг гучин гуравдугаар зүйлийг уншъя.",
+     tr: "Efesliler 5:33'ü okuyalım."}
+  - {gap: 1.5, dur: 4.0, lang: ja, text: "エフェソス5章33節を読みましょう。", relation: covered}
+  - {gap: 2, dur: 5.5, lang: mn, text: "Нөхөр эхнэрээ хайрлаж, эхнэр нөхрөө гүн хүндлэх ёстой.",
+     tr: "Koca karısını sevmeli, kadın da kocasına derin saygı göstermelidir."}
+  - {gap: 2, dur: 4.5, lang: mn, quality: garbled, text: "ммм ... тэр ... үү", tr: null}
+  - {gap: 1.5, dur: 4.5, lang: ja, text: "お互いに忍耐強く、許し合ってください。", relation: resolves_held,
+     tr: "Birbirinize karşı sabırlı olun ve birbirinizi bağışlayın."}
+  - {gap: 2, dur: 2.0, lang: uncertain, text: "тийм"}
+  - {gap: 2, dur: 4.0, lang: mn, text: "Ехова гэрлэлтийг бүтээсэн.", tr: "Evliliği Yehova kurdu."}
+  - {gap: 2, dur: 4.0, lang: ja, text: "皆さん、今日は来てくださってありがとうございます。", relation: independent,
+     tr: "Herkese bugün geldiğiniz için teşekkür ederim."}
+  - {gap: 2, dur: 3.0, lang: mn, text: "Бид гэрлэлтийн тухай Библийн зарчим үзнэ.",
+     tr: "Evlilikle ilgili Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz."}

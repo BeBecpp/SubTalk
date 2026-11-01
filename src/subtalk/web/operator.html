@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SubTalk Control</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div id="app" class="app hidden">
+  <div id="devBanner" class="dev-banner hidden">MOCK MODE · development passcodes active · no real Zoom output</div>
+  <header class="header">
+    <div class="brand"><span class="mark">SubTalk</span><span class="sub">Control</span></div>
+    <div class="event-name" id="eventName"></div>
+    <div id="verdict" class="verdict v-grey"><span class="dot"></span><span id="verdictLabel">—</span></div>
+    <span id="targetBadge" class="target-badge hidden"></span>
+    <div class="health">
+      <div class="chip" id="hAudio"><span class="led"></span><span class="k">Audio</span><span class="v"></span></div>
+      <div class="chip" id="hAsr"><span class="led"></span><span class="k">Whisper</span><span class="v"></span></div>
+      <div class="chip" id="hClaude"><span class="led"></span><span class="k">Claude</span><span class="v"></span></div>
+      <div class="chip" id="hZoom"><span class="led"></span><span class="k">Zoom</span><span class="v"></span></div>
+      <div class="chip" title="Speech end → Zoom accepted (p50 / p95)"><span class="k">Delay</span><span class="latency" id="latency">—</span></div>
+    </div>
+    <div class="conn" id="leaseInfo"></div>
+  </header>
+
+  <main class="main">
+    <!-- LEFT: output + context -->
+    <section class="col">
+      <div class="panel">
+        <h2>Caption output</h2>
+        <div class="state-big" id="outState">—</div>
+        <div class="state-sub" id="outSub"></div>
+        <div class="stack">
+          <button class="btn gold" id="btnConnect">Connect Zoom captions…</button>
+          <button class="btn primary" id="btnLive" title="Hold to go live">Hold to go LIVE</button>
+          <div class="row">
+            <button class="btn" id="btnPause">Pause</button>
+            <button class="btn" id="btnStop">Stop</button>
+          </div>
+          <button class="btn estop" id="btnEstop">E-STOP</button>
+          <button class="btn hidden" id="btnResetEstop" title="Hold 3 s">Hold to reset E-STOP</button>
+          <div class="hint" id="controlHint"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Context</h2>
+        <div class="stack">
+          <div class="toggle main" id="tMain" role="switch" tabindex="0">
+            <div><div class="lbl">Main Speech</div><div class="desc">Interpreter-aware · never stops translation</div></div>
+            <span class="switch"></span>
+          </div>
+          <div class="toggle music" id="tMusic" role="switch" tabindex="0">
+            <div><div class="lbl">Music / ceremony mode</div><div class="desc">No speech captions</div></div>
+            <span class="switch"></span>
+          </div>
+          <div>
+            <div class="hint" style="margin:0 0 5px">Japanese speech</div>
+            <div class="seg" id="jaPolicy">
+              <button data-v="AUTO" title="Match the interpreter; caption only new content">Auto</button>
+              <button data-v="CAPTION_ALL" title="Translate every Japanese segment">All</button>
+              <button data-v="SUPPRESS" title="Never caption Japanese">Off</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER: on air + live feed -->
+    <section class="col">
+      <div class="onair" id="onair">
+        <span class="tag" id="onairTag">ON AIR</span>
+        <div class="text empty" id="onairText">Nothing sent yet</div>
+        <div class="meta"><span id="onairSeq"></span><span id="onairAgo"></span><span id="onairLat"></span></div>
+      </div>
+      <div class="panel grow">
+        <h2><span>Live translation</span><span class="muted" id="feedCounts"></span></h2>
+        <div class="scroll"><div class="feed" id="feed"></div></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: phrases, alerts, history -->
+    <section class="col">
+      <div class="panel phr">
+        <h2>Manual captions</h2>
+        <div class="scroll"><div class="phrases" id="phrases"></div></div>
+      </div>
+      <div class="panel grow">
+        <h2><span>Alerts</span><span class="muted" id="alertCount"></span></h2>
+        <div class="scroll"><div class="stack" id="alerts"></div></div>
+      </div>
+      <div class="panel" style="max-height:30vh;display:flex;flex-direction:column">
+        <h2>Caption delivery</h2>
+        <div class="scroll"><div class="hist" id="history"></div></div>
+      </div>
+    </section>
+  </main>
+
+  <details class="diag" id="diag">
+    <summary>Advanced diagnostics &amp; engine</summary>
+    <div class="diag-grid">
+      <div>
+        <div class="kv" id="dAudio"></div>
+        <div class="meter"><i id="meter"></i></div>
+      </div>
+      <div class="kv" id="dAsr"></div>
+      <div class="kv" id="dClaude"></div>
+      <div class="kv" id="dZoom"></div>
+      <div>
+        <div class="kv" id="dEngine"></div>
+        <div class="stack" style="margin-top:8px">
+          <div class="row">
+            <button class="btn" id="btnEngineStart">Start engine</button>
+            <button class="btn" id="btnEngineStop">Stop engine</button>
+          </div>
+          <div class="row">
+            <button class="btn" id="btnResync">Re-read seq</button>
+            <button class="btn" id="btnWarm">Warm Claude</button>
+          </div>
+          <div class="row">
+            <button class="btn" id="btnAutoMatch">Auto matching</button>
+            <button class="btn" id="btnSpeakerCtl">Speaker control</button>
+          </div>
+          <button class="btn" id="btnTake">Take control</button>
+          <button class="btn" id="btnLogout">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </details>
+</div>
+
+<!-- Login -->
+<div id="login" class="overlay hidden">
+  <form class="card" id="loginForm" autocomplete="off">
+    <h1><span class="gold">SubTalk</span> Control</h1>
+    <p>Operator sign-in. Signing in again is required after every engine restart.</p>
+    <div class="field"><label for="loginName">Your name</label><input type="text" id="loginName" maxlength="40" placeholder="e.g. Bayar"></div>
+    <div class="field"><label for="loginPass">Operator passcode</label><input type="password" id="loginPass" required></div>
+    <div class="err" id="loginErr"></div>
+    <button class="btn gold" type="submit">Sign in</button>
+    <p class="hint" id="loginDev"></p>
+  </form>
+</div>
+
+<!-- Connect Zoom -->
+<div id="connect" class="overlay hidden">
+  <form class="card" id="connectForm" autocomplete="off">
+    <h1>Connect Zoom captions</h1>
+    <p>In Zoom: <b>Captions ▸ Set up manual captioner ▸ Copy the API token</b>, then paste it here. The URL is kept in memory only and never logged.</p>
+    <div class="field">
+      <label>Target</label>
+      <div class="radio-row">
+        <label><input type="radio" name="target" value="TEST" checked> Test meeting</label>
+        <label><input type="radio" name="target" value="EVENT"> Wedding (EVENT)</label>
+      </div>
+    </div>
+    <div class="warnbox hidden" id="eventWarn">You are connecting the <b>real wedding meeting</b>. Nothing is sent until you hold “go LIVE”.
+      <label style="display:flex;gap:8px;margin-top:8px"><input type="checkbox" id="eventConfirm"> I confirm this is the wedding meeting</label>
+    </div>
+    <div class="field"><label for="zoomUrl">Caption URL (API token)</label><input type="password" id="zoomUrl" placeholder="https://wmcc.zoom.us/closedcaption?id=…"></div>
+    <div class="hint hidden" id="mockHint">Mock mode: type <b>mock</b> to use the built-in test endpoint.</div>
+    <div class="err" id="connectErr"></div>
+    <div class="row"><button class="btn" type="button" id="connectCancel">Cancel</button><button class="btn gold" type="submit">Connect</button></div>
+  </form>
+</div>
+
+<!-- Stale / restarted -->
+<div id="stale" class="overlay stale hidden"><div class="card"><div class="stale-msg" id="staleMsg">Connection lost — reconnecting…</div><p class="hint" style="text-align:center;margin-top:10px">Controls are disabled. The engine keeps running on its own; this screen is out of date.</p></div></div>
+
+<script src="/static/common.js"></script>
+<script src="/static/operator.js"></script>
+</body>
+</html>

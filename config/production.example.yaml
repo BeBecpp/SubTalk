@@ -1,0 +1,28 @@
+# Copy to config/local.yaml on Computer B and adjust.
+mode: production
+
+server:
+  host: 0.0.0.0               # reachable from Computer A on the LAN (firewall: LAN subnet only)
+  port: 8000
+
+zoom:
+  allow_real_zoom: true       # needed for the Zoom TEST meeting
+  allow_event_target: false   # flip to true only on the wedding day, after the dress rehearsal
+
+vad:
+  engine: silero
+
+asr:
+  engine: whisper
+  model: large-v3             # decided by the benchmark (docs/BENCHMARK.md)
+  fallback_model: medium
+  device: cuda
+  compute_type: float16
+  initial_prompt_mn: "Галхүү, Акане, Ехова"
+  initial_prompt_ja: "ガルフー、あかね、エホバ"
+
+translate:
+  engine: claude
+  model: claude-opus-5-5
+  effort: low
+  fallback_model: claude-sonnet-5-5

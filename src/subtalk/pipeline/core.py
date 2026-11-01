@@ -255,17 +255,19 @@ class Pipeline:
         cands = [
             e for e in self.events.recent(None, window, self._clock())
             if e.kind in ("MN", "UNCERTAIN") and e.id != ev.id
-            and e.status in ("translated", "published", "held", "dropped", "blocked")
+            and e.status in ("translated", "published", "not_sent", "held", "recovered", "dropped", "blocked")
         ]
         if not cands:
             if self.ctx.main_speech:
                 ev.reasons.append("no_recent_mongolian")
             await self._translate_ja_independent(ev, slot)
             return
+        # "published" = a Turkish caption for it was produced (translated); whether output
+        # was live is irrelevant for deciding if the Japanese repeats it.
+        produced = ("translated", "published", "not_sent")
         candidates = [
-            MnCandidate(e.id, e.text, e.turkish if e.status in ("translated", "published") else None,
-                        "published" if e.status in ("translated", "published") else
-                        ("held" if e.status == "held" else "dropped"))
+            MnCandidate(e.id, e.text, e.turkish if e.status in produced else None,
+                        "published" if e.status in produced else ("held" if e.status == "held" else "dropped"))
             for e in cands[-8:]
         ]
         req, analysis = self._request(ev, "ja", InterpretRequest, candidates=candidates)
@@ -287,7 +289,7 @@ class Pipeline:
             ev.status = "covered"
             for i in links:
                 mn = self.events.get(i)
-                if mn and mn.status in ("translated", "published"):
+                if mn and mn.status in ("translated", "published", "not_sent"):
                     mn.flags.append("confirmed_by_ja")
             self.stats.inc("ja_covered")
             self.emitter.skip(slot)
