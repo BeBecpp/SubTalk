@@ -144,6 +144,16 @@ class PathsCfg(BaseModel):
     secrets_dir: str = "secrets"
 
 
+class ViewerCfg(BaseModel):
+    """Guest caption viewer (each guest picks Turkish or English)."""
+    enabled: bool = False          # publish captions to viewers (local page + relay)
+    local_page: bool = True        # serve /viewer + /ws/viewer on this engine (LAN / Tailscale)
+    relay_url: str = ""            # public relay (Cloudflare Worker); token: SUBTALK_RELAY_TOKEN
+    relay_timeout_s: float = 3.0
+    relay_max_age_s: float = 20.0  # never deliver a caption to the relay later than this
+    recent_max: int = 30
+
+
 class MockCfg(BaseModel):
     session_file: str = "resources/mock/session.yaml"
     loop: bool = True
@@ -164,6 +174,7 @@ class Config(BaseModel):
     ordering: OrderingCfg = OrderingCfg()
     paths: PathsCfg = PathsCfg()
     mock: MockCfg = MockCfg()
+    viewer: ViewerCfg = ViewerCfg()
 
     # resolved at load time, not from YAML
     root: Path = Path(".")
@@ -211,6 +222,10 @@ def anthropic_api_key() -> str | None:
     """ANTHROPIC_API_KEY, or CLAUDE_KEY (Windows env names are case-insensitive,
     so a variable saved as ``Claude_key`` is found too)."""
     return os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("CLAUDE_KEY") or None
+
+
+def relay_token() -> str | None:
+    return os.environ.get("SUBTALK_RELAY_TOKEN") or None
 
 
 def audio_token() -> str | None:

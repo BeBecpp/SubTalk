@@ -21,11 +21,12 @@ from subtalk.asr.worker import AsrUnavailable, AsrWorkerClient
 from subtalk.audio.ingest import AudioIngest
 from subtalk.audio.segmenter import AudioSegment, Segmenter
 from subtalk.audio.vad import make_detector
-from subtalk.config import Config, anthropic_api_key, audio_token
+from subtalk.config import Config, anthropic_api_key, audio_token, relay_token
 from subtalk.glossary.guards import Guards
 from subtalk.glossary.service import GlossaryService
 from subtalk.glossary.store import load_glossary
 from subtalk.output.controller import CommandError, OutputConfig, OutputController
+from subtalk.output.viewer import ViewerFeed
 from subtalk.pipeline.core import ContextState, Pipeline
 from subtalk.state import EngineState, JaPolicy, OutputState, Role, Target
 from subtalk.translate.base import TranslatorError
@@ -132,6 +133,10 @@ class Engine:
             self.http, SeqStore(cfg.path(cfg.paths.state_dir) / "caption_seq.json"),
             attempt_timeout=z.attempt_timeout_s, retry_budget=z.retry_budget_s, backoff_base=z.backoff_base_s,
         )
+        v = cfg.viewer
+        self.viewer = ViewerFeed(enabled=v.enabled, relay_url=v.relay_url or None, relay_token=relay_token(),
+                                 http=self.http, recent_max=v.recent_max, max_age_s=v.relay_max_age_s,
+                                 timeout_s=v.relay_timeout_s)
         self.output = OutputController(
             self.sender,
             OutputConfig(
@@ -141,7 +146,7 @@ class Engine:
                 allow_real_zoom=z.allow_real_zoom, allow_mock=self._mock_zoom_enabled,
                 allow_event_target=z.allow_event_target,
             ),
-            on_change=self.mark_dirty, on_alert=self.alert,
+            on_change=self.mark_dirty, on_alert=self.alert, viewer=self.viewer,
         )
         self.context = ContextState(ja_policy=cfg.interp.ja_policy, auto_matching_enabled=cfg.interp.auto_matching_enabled,
                                     output_mode=cfg.zoom.output_mode)
@@ -173,6 +178,11 @@ class Engine:
                                  self.output, self.context, on_change=self.mark_dirty, on_alert=self.alert)
         self._tasks.append(asyncio.create_task(self.output.run(), name="output"))
         self._tasks.append(asyncio.create_task(self._ticker(), name="ticker"))
+        if self.viewer.enabled and self.viewer.relay.configured:
+            self._tasks.append(asyncio.create_task(self.viewer.run_relay(), name="viewer_relay"))
+        elif self.viewer.enabled and self.cfg.viewer.relay_url:
+            self.alert("warn", "relay_no_token", "Viewer relay URL is set but SUBTALK_RELAY_TOKEN is missing: "
+                                                  "guests outside the venue network get no captions.")
         if c.asr.engine in ("scripted", "whisper"):
             self._set_state(EngineState.INITIALIZING, f"loading ASR ({c.asr.engine} {c.asr.model})")
             script = self._load_mock_script() if c.asr.engine == "scripted" else None
@@ -257,7 +267,8 @@ class Engine:
         for p in (self.cfg.path(self.cfg.paths.event_dir) / "phrases.yaml", self.cfg.path("resources/phrases.yaml")):
             if p.exists():
                 doc = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
-                return [{"label": str(x.get("label", "")), "text": str(x["text"])} for x in doc.get("phrases", []) if x.get("text")]
+                return [{"label": str(x.get("label", "")), "text": str(x["text"]), "en": str(x.get("en") or "")}
+                        for x in doc.get("phrases", []) if x.get("text")]
         return []
 
     # ------------------------------------------------------------------ mock session
@@ -379,6 +390,8 @@ class Engine:
         o = self.output.state
         if not z.attached:
             zl, zlabel = "grey", "Not connected"
+        elif self.output.zoom_suspended:
+            zl, zlabel = "red", "Suspended after failures (viewer continues)"
         elif z.seq_state != "known":
             zl, zlabel = "red", f"Caption number {z.seq_state}"
         elif z.consecutive_failures:
@@ -386,6 +399,18 @@ class Engine:
         else:
             zl, zlabel = "green", f"{z.host} · seq {z.last_confirmed}"
         h["zoom"] = {"level": zl, "label": zlabel, **z.__dict__, "target": self.output.target.value if self.output.target else None}
+        if self.viewer.enabled:
+            r = self.viewer.relay
+            if not r.configured:
+                vl = "amber" if self.cfg.viewer.relay_url else "green"
+                vlabel = f"Local only · {self.viewer.local_viewers} viewer(s)"
+            elif r.consecutive_failures >= 2:
+                vl, vlabel = "red", f"Relay failing ({r.last_error})"
+            elif r.consecutive_failures:
+                vl, vlabel = "amber", f"Relay retry ({r.last_error})"
+            else:
+                vl, vlabel = "green", f"Relay OK · {r.viewers if r.viewers is not None else '?'} guest(s)"
+            h["viewer"] = {"level": vl, "label": vlabel}
         return h
 
     def verdict(self, health: dict) -> dict:
@@ -395,13 +420,18 @@ class Engine:
         if self.state is EngineState.FAULT:
             return {"code": "FAULT", "label": "ENGINE FAULT", "level": "red"}
         if o.state is OutputState.LIVE:
-            if health["zoom"]["level"] == "red" or (self.cfg.translate.engine == "claude" and health["claude"]["level"] == "red"):
+            zoom_bad = health["zoom"]["level"] == "red"
+            if o.viewer_on:  # either path reaching guests is enough to keep going
+                out_bad = health["viewer"]["level"] == "red" and (zoom_bad or not o.zoom_ready)
+            else:
+                out_bad = zoom_bad
+            if out_bad or (self.cfg.translate.engine == "claude" and health["claude"]["level"] == "red"):
                 return {"code": "NOT_SENDING", "label": "NOT SENDING", "level": "red"}
             if health["audio"]["level"] == "red" or health.get("asr", {}).get("level") == "red":
                 return {"code": "NOT_SENDING", "label": "NO INPUT", "level": "red"}
-            if any(v["level"] == "amber" for v in health.values()):
+            if any(v["level"] == "amber" for v in health.values()) or zoom_bad:
                 return {"code": "DEGRADED", "label": "DEGRADED", "level": "amber"}
-            last = o.on_air.at if o.on_air else 0
+            last = max(o.on_air.at if o.on_air else 0, self.viewer.last_published_at or 0)
             if time.time() - last < 15:
                 return {"code": "CAPTIONING", "label": "CAPTIONING", "level": "green"}
             return {"code": "LISTENING", "label": "LISTENING", "level": "green"}
@@ -409,6 +439,8 @@ class Engine:
             return {"code": "PAUSED", "label": "PAUSED", "level": "amber"}
         if o.state is OutputState.CONNECTED:
             return {"code": "READY", "label": "READY · NOT LIVE", "level": "grey"}
+        if o.viewer_on:
+            return {"code": "READY", "label": "READY · VIEWER ONLY", "level": "grey"}
         return {"code": "OFFLINE", "label": "ZOOM NOT CONNECTED", "level": "grey"}
 
     # ------------------------------------------------------------------ snapshot
@@ -517,6 +549,7 @@ class Engine:
                 raise CommandError("No caption URL")
             if not await self.sender.resync():
                 raise CommandError(f"Zoom did not return the caption number ({self.sender.last_error})")
+            o.zoom_suspended = False
         elif ctype == "force_seq":
             if o.state is OutputState.LIVE:
                 raise CommandError("Pause output before overriding the caption number")
@@ -557,7 +590,9 @@ class Engine:
             self.context.speaker_control_enabled = bool(a["enabled"])
             self._ctx_version += 1
         elif ctype == "send_phrase":
-            o.send_manual(str(a["text"])[:200])
+            text = str(a["text"])[:200]
+            en = next((p["en"] for p in self.phrases if p["text"] == text), "")
+            o.send_manual(text, en=en)
         elif ctype == "send_test_caption":
             stamp = time.strftime("%H:%M:%S")
             mode = self.context.output_mode

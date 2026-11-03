@@ -16,6 +16,8 @@
 | `engine.py` | Wires everything, authoritative state, health, verdict, alerts, command execution. |
 | `server/` | FastAPI: login, command API, state WebSocket, audio WebSocket; sessions and control lease. |
 | `web/` | Operator dashboard and Speaker page (plain HTML/CSS/JS, no build step). |
+| `output/viewer.py` + `web/viewer.html` | Guest caption viewer (TR/EN per guest): publishes each caption that passed the output gate to local viewers and, once, to the public relay. |
+| `relay/` | Cloudflare Worker + one Durable Object: read-only WebSocket fan-out to guests, token-protected `/publish`. See `docs/VIEWER.md`. |
 
 ## State (three independent dimensions)
 
@@ -114,4 +116,7 @@ Substitution of prepared wording would need its own deterministic matching gate.
   are dropped, which reduces coverage.
 * Claude's self-reported quality is a hint; guards catch structural errors, not every meaning error.
 * A caption shown in Zoom cannot be retracted; conflicts are only alerted.
+* Guest viewer: relay history is memory-only (lost if the Durable Object is evicted while idle);
+  relay capacity beyond the local 1,000-socket test and real mobile networks are unverified until
+  the deployed relay is load-tested; guests need internet access of their own.
 * Real Zoom, real audio, real GPU and live Claude behaviour are unverified until M0-A/M0-B.

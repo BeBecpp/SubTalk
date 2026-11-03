@@ -3,9 +3,9 @@
 Update this file at every milestone. It must make sense with no chat history.
 
 ## CURRENT OBJECTIVE
-Production hardening for 7 Nov 2026: Turkish + English output from one recognition event,
-bounded live Claude QA ($5 cap), real Zoom TEST-meeting integration, browser e2e tests,
-failure injection / soak, final readiness report (see `CLAUDE.md`).
+Production hardening for 7 Nov 2026 (see `CLAUDE.md`). Latest owner request (3 Nov): guests
+choose Turkish or English independently via a SubTalk caption viewer behind a Cloudflare
+Worker relay; Zoom manual captions stay as the fallback (D-013, `docs/VIEWER.md`).
 
 ## SCHEDULE (owner-confirmed)
 - Tue 3 - Wed 4 Nov: finish everything that does not need the meeting/equipment (budget ≤ $5).
@@ -14,39 +14,56 @@ failure injection / soak, final readiness report (see `CLAUDE.md`).
 - Sat 7 Nov: wedding with the frozen release. Never claim Thu/Fri tests passed before they run.
 
 ## CURRENT GIT COMMIT
-`bbb8756` (main, in sync with origin) at session start 2026-11-03. Update on each commit.
+`1d14d5f` + guest viewer work (commit "Guest caption viewer with Cloudflare relay" follows; see `git log`).
 
 ## WORKING TREE STATUS
-Uncommitted: CLAUDE.md, docs/SESSION_HANDOFF.md, resources/glossary_en/en_glossary.json,
-src/subtalk/glossary/store.py (English glossary merge). In progress.
+Guest viewer milestone: `output/viewer.py`, controller/pipeline/engine/server integration,
+`web/viewer.html`, `relay/` (Worker + Durable Object, wrangler 4.151.2), tests, docs.
+`relay/.dev.vars` holds a LOCAL dev token only (gitignored).
 
 ## LAST COMPLETED TASK
-Baseline verified 2026-11-03: 231/231 tests on Python 3.12 and 3.13; glossary validator PASS
-(66 books, 45 JW terms, 41 wedding terms, 31 QA cases). English book names checked against
-https://www.jw.org/en/library/bible/nwt/books/ (NWT 2013).
+Guest viewer built and tested locally (3 Nov):
+- Captions reach guests only through the output gate; E-STOP clears guest screens; viewer-only
+  LIVE allowed; Zoom failures suspend only Zoom while the viewer is on.
+- Relay under `wrangler dev`: 2 browser guests (TR mobile + EN desktop) saw the same events in their
+  own language; reconnect after relay restart works; bad token 401; admin paths 404.
+- Local load: 1,000 sockets, 30,000/30,000 captions, p50 309 ms, p95 1.09 s (LOCAL ONLY).
 
 ## VERIFIED TEST RESULTS
-- `pytest -m "not live"`: 231 passed (3.12 and 3.13), 2026-11-03.
-- Earlier live Claude results (before this $5 budget): see docs/TEST_REPORT.md.
+See `docs/TEST_REPORT.md` (single source of truth for numbers).
 
 ## ACTIVE BUGS / BLOCKERS
-- Real Zoom TEST meeting: needs the owner to start a test meeting and paste its caption URL into
-  the dashboard (never in chat). Not yet done.
+- Relay not deployed: needs the owner's Cloudflare login (`relay/README.md`). Until deployed and
+  load-tested from outside, the public viewer and 1,000-viewer capacity are UNVERIFIED.
+- Real Zoom TEST meeting (Thu): owner starts it and pastes the caption URL into the dashboard.
 - No CUDA GPU on the dev laptop: Whisper/GPU benchmarks pending on Computer B.
-- Tailscale not installed on the dev laptop.
+- Turkish viewer UI strings and phrase-deck `en:` lines need a native-speaker review.
+- Failure-injection / soak harness (Claude timeout, 429, bad JSON, audio gaps, memory) not built yet.
 
 ## CURRENT API TEST SPEND
-$0.00 of the new $5.00 budget (ledger `state/api_test_budget.json` not created yet).
-Prior spend before this budget: about $0.19 (1 Nov 2026).
+$0.2595 of the $5.00 budget (ledger `state/api_test_budget.json`, 110 requests). Nothing spent on 3 Nov
+evening (viewer work is mock-only). Spend before this budget: about $0.19 (1 Nov).
 
 ## REMAINING TEST BUDGET
-$5.00 (automatic stop at $4.50).
+$4.2405 before the automatic stop at $4.50.
 
 ## EXACT NEXT ACTION
-Implement dual-language (TR+EN) translation: per-language status, English guards, output modes.
+1. Failure-injection + soak harness (mock): Claude timeout / 429 / invalid JSON / missing language,
+   Zoom 400/403/5xx/timeouts, audio gaps, relay outage; record memory + queue metrics.
+2. Owner: deploy relay (relay/README.md steps 1-4), then run `relay/loadtest.py` against the
+   deployed URL from another network (step 5).
+3. Thursday: `docs/ZOOM_TEST_THURSDAY.md` (add viewer rows: guests on phones with TR/EN).
 
 ## COMMAND TO REPRODUCE
-`.venv\Scripts\python.exe -m pytest -q -m "not live"`
+```
+.venv\Scripts\python.exe -m pytest -q -m "not live and not e2e"
+.venv312\Scripts\python.exe -m pytest -q -m "not live and not e2e"
+.venv\Scripts\python.exe -m pytest -q -m e2e          # needs Edge + relay/node_modules
+.venv\Scripts\python.exe relay\loadtest.py --clients 1000   # with `npx wrangler dev` running in relay/
+```
 
 ## REQUIRED HUMAN INPUT, IF ANY
-Later: start a separate Zoom TEST meeting, copy the caption API token URL, paste it in the dashboard.
+- Cloudflare account login + `wrangler deploy` + `wrangler secret put PUBLISH_TOKEN` (owner).
+- Choose Workers Free vs Paid ($5/month) for the event (owner; check current Cloudflare limits).
+- Thursday: Zoom TEST meeting caption URL pasted in the dashboard (never in chat).
+- Turkish/English reviewers for translations, glossary terms and viewer UI text.

@@ -365,3 +365,21 @@ async def test_translation_failure_is_reported_not_guessed(rig):
     await settle(p, mz)
     assert ev.status == "failed" and sent(mz) == []
     assert any(a[1] == "claude_error" for a in p.alerts)
+
+
+async def test_guest_viewer_gets_every_passed_language_whatever_the_zoom_mode(rig):
+    from subtalk.output.viewer import ViewerFeed
+    p, tr, mz = rig
+    p.output.viewer = ViewerFeed(enabled=True)
+    q = p.output.viewer.subscribe()
+    tr.translations = {SRC_REF: {"tr": "Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz.",
+                                 "en": "We will look at Bible principles about marriage."}}
+    p.ctx.output_mode = "TR"
+    ev = p.submit_decision(mn(SRC_REF), now() - 2, now())
+    await settle(p, mz)
+    assert sent(mz) == []  # Turkish withheld: Zoom (TR mode) gets nothing, never English instead
+    msgs = [q.get_nowait() for _ in range(q.qsize())]
+    caps = [m for m in msgs if m["type"] == "caption"]
+    assert len(caps) == 1 and caps[0]["tr"] is None
+    assert caps[0]["en"] == "We will look at Bible principles about marriage."
+    assert caps[0]["event_id"] == ev.id and ev.status == "published" and ev.sent_mode == "VIEWER"

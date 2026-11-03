@@ -1,0 +1,26 @@
+# SubTalk public caption relay. Deploy: see relay/README.md.
+# The publish secret is NOT here: set it with `npx wrangler secret put PUBLISH_TOKEN`
+# (and for local dev in relay/.dev.vars, which is gitignored).
+name = "subtalk-captions"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = false
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "CaptionRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["CaptionRoom"]
+
+[vars]
+MAX_VIEWERS = "3000"
+
+[observability]
+enabled = true

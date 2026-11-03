@@ -210,6 +210,7 @@ function render(s) {
 
   const h = s.health || {};
   setChip("hAudio", h.audio); setChip("hAsr", h.asr); setChip("hClaude", h.claude); setChip("hZoom", h.zoom);
+  $("hViewer").classList.toggle("hidden", !h.viewer); setChip("hViewer", h.viewer);
   const e2e = o.e2e_ms || {};
   $("latency").textContent = e2e.n ? `${ST.ms(e2e.p50)} / ${ST.ms(e2e.p95)}` : "—";
   $("leaseInfo").textContent = s.you.has_control ? `● ${s.you.name} · in control`
@@ -348,14 +349,18 @@ function renderControls(s) {
   const canControl = !stale && (s.you.has_control || !s.lease.holder);
   const set = (id, enabled) => { $(id).disabled = !enabled; };
   set("btnConnect", canControl && ["DISCONNECTED", "CONNECTED", "PAUSED"].includes(st));
-  set("btnLive", canControl && st === "CONNECTED" && ["RUNNING", "DEGRADED"].includes(s.engine.state) && s.health && s.health.zoom.seq_state === "known");
+  const viewerOn = !!(s.output.viewer && s.output.viewer.enabled);
+  const zoomReady = st === "CONNECTED" && s.health && s.health.zoom.seq_state === "known";
+  const viewerOnly = st === "DISCONNECTED" && viewerOn;  // guests' viewer without Zoom captions
+  set("btnLive", canControl && (zoomReady || viewerOnly) && ["RUNNING", "DEGRADED"].includes(s.engine.state));
   set("btnPause", canControl && (st === "LIVE" || st === "PAUSED"));
   $("btnPause").textContent = st === "PAUSED" ? "Resume" : "Pause";
   set("btnStop", canControl && (st === "LIVE" || st === "PAUSED"));
   set("btnEstop", !stale && st !== "E_STOPPED");  // any operator, no lease needed
   $("btnResetEstop").classList.toggle("hidden", st !== "E_STOPPED");
   set("btnResetEstop", canControl && st === "E_STOPPED");
-  $("btnLive").textContent = s.output.target === "EVENT" ? "Hold to go LIVE · WEDDING" : "Hold to go LIVE";
+  $("btnLive").textContent = s.output.target === "EVENT" ? "Hold to go LIVE · WEDDING"
+    : viewerOnly ? "Hold to go LIVE · VIEWER ONLY" : "Hold to go LIVE";
   if (!$("btnLive").querySelector(".fill")) { const f = ST.el("span", "fill"); $("btnLive").appendChild(f); }
   const c = s.context;
   $("tMain").classList.toggle("on", c.main_speech);
@@ -374,7 +379,8 @@ function renderControls(s) {
   let hint = "";
   if (!canControl && !stale) hint = `Read-only: ${s.lease.holder} has control.`;
   else if (st === "CONNECTED" && s.health && s.health.zoom.seq_state !== "known") hint = "Caption number unknown - use “Re-read seq” in diagnostics.";
-  else if (st === "LIVE") hint = "E-STOP halts output instantly. Zoom itself is never affected.";
+  else if (st === "LIVE" && s.output.zoom_suspended) hint = "Zoom captions SUSPENDED after failures - guest viewer continues. Fix the meeting, then Re-read seq.";
+  else if (st === "LIVE") hint = "E-STOP halts output instantly (and clears guest screens). Zoom itself is never affected.";
   $("controlHint").textContent = hint;
 }
 
@@ -397,6 +403,14 @@ function renderDiag(s) {
   kv("dZoom", [["target", z.target], ["seq", z.last_confirmed], ["seq state", z.seq_state], ["source", z.seq_source],
     ["sent", z.sent_total], ["abandoned", z.abandoned_total], ["last error", z.last_error],
     ["zoom p50", ST.ms(s.output.zoom_ms && s.output.zoom_ms.p50)]]);
+  const v = s.output.viewer;
+  $("dViewer").classList.toggle("hidden", !(v && v.enabled));
+  if (v && v.enabled) {
+    kv("dViewer", [["guest viewer", v.status], ["published", v.published], ["local viewers", v.local_viewers],
+      ["relay", v.relay.configured ? "on" : "off"], ["relay guests", v.relay.viewers], ["relay sent", v.relay.sent],
+      ["relay failed", v.relay.failed], ["dropped stale", v.relay.dropped_stale], ["queue", v.relay.queue],
+      ["relay p50", ST.ms(v.relay.latency_p50_ms)], ["last error", v.relay.last_error]]);
+  }
   kv("dEngine", [["engine", s.engine.state], ["detail", s.engine.detail], ["queue", s.output.queue],
     ["pending", s.pipeline && s.pipeline.pending], ["glossary", s.glossary ? `${s.glossary.terms} terms` : "—"],
     ["names", s.glossary && s.glossary.names ? s.glossary.names.map((n) => n.tr + (n.approved ? " ✓" : " ?")).join(", ") : "—"]]);

@@ -293,3 +293,43 @@ def test_full_mock_run_reaches_zoom(tmp_path):
         assert snap["verdict"]["code"] in ("CAPTIONING", "LISTENING")
         assert cmd(c, "estop")["accepted"]
         assert snap["output"]["zoom"]["last_confirmed"] == 2
+
+
+def test_local_guest_viewer_read_only_and_live(tmp_path):
+    cfg = make_cfg(tmp_path, session=[])
+    cfg.viewer.enabled = True
+    c, engine = make_client(cfg)
+    with c:
+        page = c.get("/viewer")
+        assert page.status_code == 200 and "/ws/viewer" in page.text
+        assert "sk-ant" not in page.text and "closedcaption" not in page.text
+        guest = TestClient(c.app, base_url="http://127.0.0.1:8000")  # no login at all
+        with guest.websocket_connect("/ws/viewer") as ws:
+            hello = ws.receive_json()
+            assert hello["type"] == "hello" and hello["status"]["state"] == "stopped"
+            ws.send_text("ping")
+            assert ws.receive_text() == "pong"
+            ws.send_text('{"type":"caption","tr":"hack"}')  # viewers cannot publish
+            login(c)
+            assert cmd(c, "start_live")["accepted"]  # viewer only: no Zoom URL needed
+            m = ws.receive_json()
+            assert (m["type"], m["state"]) == ("status", "live")
+            while time.monotonic() <= engine.output.live_since:  # coarse clock on 3.12 (see conftest.clock_tick)
+                time.sleep(0.005)
+            assert engine.output.submit("", speech_end=time.monotonic(), texts={"tr": "Merhaba", "en": "Hello"})
+            m = ws.receive_json()
+            assert m["type"] == "caption" and (m["tr"], m["en"]) == ("Merhaba", "Hello")
+            assert all(x.get("tr") != "hack" for x in engine.viewer.recent)
+            assert cmd(c, "estop")["accepted"]
+            assert ws.receive_json()["state"] == "stopped"
+            assert ws.receive_json()["type"] == "clear"
+        assert guest.get("/api/state").status_code == 401  # the viewer grants nothing else
+
+
+def test_viewer_disabled_by_default(client):
+    c, _ = client
+    from starlette.websockets import WebSocketDisconnect
+    with pytest.raises(WebSocketDisconnect) as e:
+        with c.websocket_connect("/ws/viewer") as ws:
+            ws.receive_text()
+    assert e.value.code == 4404

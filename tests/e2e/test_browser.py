@@ -48,8 +48,9 @@ def _wait_health(timeout=40):
 
 
 class Server:
-    def __init__(self, tmp: Path):
+    def __init__(self, tmp: Path, extra: dict | None = None, env: dict | None = None):
         self.tmp = tmp
+        self.env = env or {}
         (tmp / "session.yaml").write_text(json.dumps({"segments": SESSION}, ensure_ascii=False), encoding="utf-8")
         cfg = {
             "mode": "mock",
@@ -58,6 +59,7 @@ class Server:
                       "event_dir": str(tmp / "event"), "log_dir": str(tmp / "logs")},
             "mock": {"session_file": str(tmp / "session.yaml"), "loop": True},
             "zoom": {"min_interval_s": 0.2},
+            **(extra or {}),
         }
         (tmp / "e2e.yaml").write_text(json.dumps(cfg, ensure_ascii=False), encoding="utf-8")
         self.proc = None
@@ -65,6 +67,8 @@ class Server:
     def start(self):
         env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
         env.pop("SUBTALK_AUDIO_TOKEN", None)
+        env.pop("SUBTALK_RELAY_TOKEN", None)
+        env.update(self.env)
         self.proc = subprocess.Popen(
             [sys.executable, "-m", "subtalk.cli", "--home", str(ROOT), "--config", str(self.tmp / "e2e.yaml"), "start"],
             cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -148,6 +152,8 @@ def connect_mock(page):
     page.fill("#zoomUrl", "mock")
     page.click("#connectForm button[type=submit]")
     page.wait_for_selector("#connect", state="hidden")
+    # A hold on a still-disabled button is ignored (as for a human): wait until the UI enables it.
+    page.wait_for_function("!document.getElementById('btnLive').disabled", timeout=10000)
 
 
 # ------------------------------------------------------------------------------- tests

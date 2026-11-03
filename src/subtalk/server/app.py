@@ -97,6 +97,43 @@ def create_app(cfg: Config, engine: Engine | None = None, *, start_engine: bool 
     async def speaker_page():
         return FileResponse(WEB / "speaker.html")
 
+    if cfg.viewer.local_page:
+        # Guest caption viewer: read-only, no login, no admin data. Serves the
+        # venue network / Tailscale; guests outside use the public relay.
+        @app.get("/viewer")
+        async def viewer_page():
+            return FileResponse(WEB / "viewer.html", headers={"Cache-Control": "no-cache"})
+
+        @app.websocket("/ws/viewer")
+        async def ws_viewer(ws: WebSocket):
+            feed = engine.viewer
+            if not feed.enabled:
+                await ws.close(code=4404)
+                return
+            await ws.accept()
+            q = feed.subscribe()
+
+            async def reader():
+                while True:
+                    if await ws.receive_text() == "ping":
+                        await ws.send_text("pong")
+
+            rtask = asyncio.create_task(reader())
+            try:
+                await ws.send_text(json.dumps(feed.hello(), ensure_ascii=False))
+                while not rtask.done():
+                    try:
+                        msg = await asyncio.wait_for(q.get(), timeout=feed.heartbeat_s)
+                    except asyncio.TimeoutError:
+                        msg = feed.heartbeat()
+                    await ws.send_text(json.dumps(msg, ensure_ascii=False))
+            except (WebSocketDisconnect, RuntimeError):
+                pass
+            finally:
+                rtask.cancel()
+                feed.unsubscribe(q)
+                engine.mark_dirty()
+
     @app.get("/healthz")
     async def healthz():
         return {"ok": engine.state.value in ("READY", "RUNNING", "DEGRADED"), "engine": engine.state.value,

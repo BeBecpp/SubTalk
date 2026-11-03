@@ -31,6 +31,12 @@ Never claim a Thursday/Friday test passed before it was actually executed. Never
 - Translation model: `claude-sonnet-5-5` (owner's choice), fallback `claude-haiku-5-5`, effort low.
 - Remote access: private LAN or Tailscale Serve only. Never Funnel / port forwarding.
 - Turkish + English from one recognition event; see `docs/DECISIONS.md`.
+- **Guest language choice (owner decision 3 Nov):** Zoom's Manual Caption API is one stream and
+  Zoom translated captions cannot run with manual captioning. Primary guest path = SubTalk caption
+  viewer (TR/EN chosen per guest) served through a Cloudflare Worker + Durable Object relay;
+  Computer B publishes each caption ONCE (outbound HTTPS). Zoom manual captions stay as fallback.
+  The viewer is read-only: no keys, tokens or admin actions. If the viewer fails rehearsal,
+  disable it and use the Zoom fallback. Never claim 1,000-viewer capacity without a load test.
 
 ## Architecture map (`src/subtalk/`)
 
@@ -43,7 +49,10 @@ Never claim a Thursday/Friday test passed before it was actually executed. Never
 | `glossary/` | Glossary loader/validation, term selection, Bible citation parser, output guards |
 | `translate/` | Claude translator (structured outputs), prompts, mock |
 | `pipeline/` | Speech events, ordered emitter, Japanese interpreter matching, Main Speech |
-| `output/controller.py` | Output state machine + safety gate (epochs, TTL, E-STOP) |
+| `output/controller.py` | Output state machine + safety gate (epochs, TTL, E-STOP); publishes to the viewer feed |
+| `output/viewer.py` | Guest viewer feed: local `/ws/viewer` + relay publisher (bounded, stale-drop, heartbeat) |
+| `web/viewer.html` | Guest page (TR/EN choice), self-contained; served by engine and relay |
+| `relay/` (repo root) | Cloudflare Worker + Durable Object relay, `loadtest.py`; deploy steps in `relay/README.md` |
 | `zoom/` | Caption URL validation, sender (official seq rules), strict mock endpoint |
 | `web/` | Operator dashboard + Speaker page (plain HTML/CSS/JS, no build step) |
 | `evalrun.py`, `budget.py` | Live Claude evaluation and persistent test-spend ledger |
@@ -62,6 +71,8 @@ scripts\start.ps1                                                  # mock mode -
 .venv\Scripts\subtalk.exe zoom-probe --i-confirm-test-meeting      # TEST meeting only; URL read without echo
 .venv\Scripts\subtalk.exe doctor | glossary-check                  # diagnostics
 .venv\Scripts\python.exe -I resources\glossary\validate.py         # the glossary pack's own validator
+cd relay; npm install; npx wrangler dev --local --ip 127.0.0.1 --port 8787   # local relay (token in relay\.dev.vars)
+.venv\Scripts\python.exe relay\loadtest.py --clients 1000          # relay load test (label local vs deployed!)
 ```
 Production (Computer B): `docs/SETUP.md`. Use `127.0.0.1`, not `localhost` (IPv6 on this machine).
 
@@ -71,6 +82,10 @@ Production (Computer B): `docs/SETUP.md`. Use `127.0.0.1`, not `localhost` (IPv6
 - Before every commit: `git diff --cached` review + check no `sk-ant-` / caption URL / `.env` staged.
 - Tests never post to the wedding meeting. Real Zoom only in a separate TEST meeting.
 - Output never auto-resumes LIVE after a restart; never switch TEST -> EVENT automatically.
+- Only the read-only relay is public. Never expose the dashboard, speaker page, audio ingest or
+  engine port publicly. Relay publish token: `SUBTALK_RELAY_TOKEN` (.env) = Worker secret
+  `PUBLISH_TOKEN`; never commit it; `relay/.dev.vars` is gitignored. Captions to guests only via
+  the output gate; operator TEST captions never go to guests.
 
 ## Testing and budget rules
 

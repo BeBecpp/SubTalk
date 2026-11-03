@@ -391,16 +391,18 @@ class Pipeline:
         parts = compose_parts(texts, mode, self.cfg.zoom.max_chars, self.cfg.zoom.bilingual_labels)
         sent_langs = [t for t in MODE_LANGS[mode] if texts.get(t)]
         accepted = False
-        if parts:
+        # The guest viewer takes every language, whatever the Zoom mode is.
+        viewer = self.output.viewer_on and any(texts.get(t) for t in ("tr", "en"))
+        if parts or viewer:
             accepted = self.output.submit("\n".join(parts), speech_end=speech_end, source_event_ids=source_ids,
-                                          origin_epoch=origin_epoch, parts=parts)
-        reject = self.output.last_reject if parts else f"no_{mode.lower()}_text"
+                                          origin_epoch=origin_epoch, parts=parts, texts=texts)
+        reject = self.output.last_reject if (parts or viewer) else f"no_{mode.lower()}_text"
         for i in source_ids:
             ev = self.events.get(i)
             if not ev:
                 continue
             ev.status = "published" if accepted else "not_sent"
-            ev.sent_mode = mode if accepted else None
+            ev.sent_mode = (mode if parts else "VIEWER") if accepted else None
             if not accepted:
                 ev.reasons.append(reject or "not_sent")
                 if reject == "dropped_stale":

@@ -50,6 +50,18 @@ screenshot in `test-artifacts/`, gitignored) < **human-read** (a person read and
 | 16 | Expired / wrong URL: alert + auto-pause, no loop | | | | | |
 | 17 | Guests without captions enabled see nothing different | | | | | |
 
+### Guest viewer (only if the relay is deployed by Thursday; otherwise move to Friday)
+
+| # | Check | Result | Notes |
+|---|---|---|---|
+| V1 | Phone on mobile data opens the public link, picks Türkçe; laptop on another network picks English | | |
+| V2 | Same caption event appears on both, each in its own language; delay vs Zoom | | |
+| V3 | Pause → "paused" on guests; E-STOP → guest screens cleared | | |
+| V4 | Phone switches Wi-Fi → mobile data: reconnects by itself, no old captions appear late | | |
+| V5 | Computer B internet unplugged 30 s: guests show "source unreachable", recover after | | |
+| V6 | Dashboard "Guests" chip shows guest count; Zoom keeps captioning during V5 if internet stays on A | | |
+| V7 | `relay/loadtest.py --url <deployed> --clients 1000` from a different network | | the 1,000-viewer claim depends on this |
+
 ## Decision after Thursday
 
 - GO for Zoom output if rows 2, 4/5 (chosen mode), 8, 10, 11, 12, 13, 14 pass at the *observed* level.

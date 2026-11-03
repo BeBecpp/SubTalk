@@ -2,6 +2,32 @@
 
 Newest first. Each entry: decision, evidence, consequences.
 
+## D-013 (2026-11-03) Guest caption viewer with per-guest TR/EN choice (owner decision)
+
+- Supersedes the last bullet of D-011. Zoom's manual caption API stays the fallback, unchanged.
+- Viewer page (`src/subtalk/web/viewer.html`, one self-contained file) is served in two places:
+  locally by the engine (`/viewer`, LAN/Tailscale, `viewer.local_page`) and publicly by a
+  Cloudflare Worker + one Durable Object (`relay/`). Same page, same protocol.
+- Publish point = the output gate (`OutputController.submit`): a caption reaches guests only if
+  it passed LIVE / epoch / before-LIVE / TTL checks, with every language that passed its guards,
+  independently of the Zoom mode. Status changes are published; **E-STOP clears guest screens**.
+  Operator test captions never reach the viewer. Phrase deck: `en:` field optional.
+- Output may go LIVE with the viewer alone (no Zoom URL): "Hold to go LIVE · VIEWER ONLY".
+- If the viewer is on and Zoom fails 3x, only the Zoom path is suspended (`zoom_suspended`),
+  the viewer stays LIVE; without the viewer the old auto-pause applies.
+- Relay publisher: one outbound HTTPS POST per message batch, bearer token from
+  `SUBTALK_RELAY_TOKEN`, bounded queue (100), captions older than 20 s are dropped instead of
+  delivered late (original queue time kept across retries; bug found by test and fixed), heartbeat
+  every 15 s so guests can tell "quiet" from "source offline".
+- Relay: token compared in constant time (SHA-256 digests + `timingSafeEqual`); fields
+  whitelisted and length-capped; guest sockets are read-only; `ping` auto-answered by the runtime
+  (no wake-up); max 3,000 sockets; no storage (memory only; history lost if the object is evicted).
+- Zoom native translated captions: they translate Zoom's own automated captions, which cannot run
+  while manual captions are on, so they can never translate SubTalk's feed; they also need a paid
+  plan or add-on and are not known to support Mongolian. At best they are an alternative for
+  Japanese-only remarks, used *instead of* SubTalk captions. Not planned for 7 Nov. Details in
+  `docs/VIEWER.md`. Source guides conflict, so verify in the Thursday TEST meeting if wanted.
+
 ## D-012 (2026-11-03) Turkish + English from ONE Claude request ("single_request")
 
 - Options: A = one request returns both languages; B = one request per language, concurrently.
@@ -27,8 +53,7 @@ Newest first. Each entry: decision, evidence, consequences.
   TR only, EN only, or BILINGUAL ("TR: ...\nEN: ..." in the same POST).
 - Never two separate POSTs per event (both would appear sequentially for everyone).
 - Bilingual readability on desktop/mobile must be judged in the Thursday TEST meeting.
-- Independent per-guest language choice would need a separate private SubTalk caption viewer;
-  not built (would add risk to the core pipeline this week).
+- Independent per-guest language choice: see D-013 (guest viewer, built 3 Nov).
 
 ## D-010 (2026-11-03) English terminology as a separate file
 

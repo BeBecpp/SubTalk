@@ -11,6 +11,11 @@ Safety rules enforced here (independently of the UI):
 * Captions past their deadline (speech end + TTL) are dropped, never sent.
 * E-STOP is synchronous: it latches E_STOPPED, clears the queue and cancels
   the request in flight. A caption Zoom already accepted cannot be undone.
+* The guest viewer feed (optional) receives a caption exactly when it passes
+  this gate, with every language, independently of the Zoom output mode.
+  Output can go LIVE with the viewer alone (no Zoom URL). E-STOP clears the
+  guest screens. If Zoom keeps failing while the viewer is on, only the Zoom
+  path is suspended; the viewer keeps running.
 """
 from __future__ import annotations
 
@@ -23,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from subtalk.output.chunker import chunk_caption, two_line
+from subtalk.output.viewer import ViewerFeed
 from subtalk.state import OutputState, Target
 from subtalk.util.stats import Rolling
 from subtalk.zoom.sender import ZoomCaptionSender
@@ -88,8 +94,10 @@ class OutputController:
         clock: Callable[[], float] = time.monotonic,
         on_change: Callable[[], None] | None = None,
         on_alert: Callable[[str, str, str], None] | None = None,
+        viewer: ViewerFeed | None = None,
     ):
         self.sender = sender
+        self.viewer = viewer
         self.cfg = config
         self._clock = clock
         self._on_change = on_change or (lambda: None)
@@ -110,6 +118,7 @@ class OutputController:
         self.e2e = Rolling()
         self.zoom_latency = Rolling()
         self.counts: dict[str, int] = {}
+        self.zoom_suspended = False  # viewer on + Zoom failing: Zoom path paused, viewer continues
 
     # ----------------------------------------------------------- helpers
     def _set_state(self, state: OutputState, reason: str | None = None) -> None:
@@ -118,6 +127,8 @@ class OutputController:
         self.epoch += 1
         self.live_since = self._clock() if state is OutputState.LIVE else None
         log.info("output.state", extra={"state": state.value, "reason": reason})
+        if self.viewer:
+            self.viewer.publish_status(state.value)
         self._on_change()
 
     def _record(self, cap: Caption, status: str, **kw) -> CaptionRecord:
@@ -135,6 +146,17 @@ class OutputController:
     def _drop_queue(self, status: str) -> None:
         while self._queue:
             self._record(self._queue.popleft(), status)
+
+    @property
+    def viewer_on(self) -> bool:
+        return bool(self.viewer and self.viewer.enabled)
+
+    @property
+    def zoom_ready(self) -> bool:
+        return self.sender.url is not None and not self.zoom_suspended
+
+    def _wall(self, mono: float) -> float:
+        return round(time.time() - (self._clock() - mono), 3)
 
     def _require(self, *states: OutputState) -> None:
         if self.state not in states:
@@ -160,6 +182,7 @@ class OutputController:
         ok = await self.sender.attach(url)
         self.target = target
         self._consecutive_failures = 0
+        self.zoom_suspended = False
         new_state = OutputState.PAUSED if prev is OutputState.PAUSED else OutputState.CONNECTED
         self._set_state(new_state, None if ok else "seq_unknown")
         if not ok:
@@ -178,10 +201,12 @@ class OutputController:
             self._set_state(OutputState.DISCONNECTED)
 
     def start_live(self) -> None:
-        self._require(OutputState.CONNECTED)
+        if not (self.state is OutputState.DISCONNECTED and self.viewer_on):  # viewer-only LIVE needs no Zoom URL
+            self._require(OutputState.CONNECTED)
         if self.target is Target.EVENT and not self.cfg.allow_event_target:
             raise CommandError("EVENT output is disabled in config")
         self._consecutive_failures = 0
+        self.zoom_suspended = False
         self._set_state(OutputState.LIVE)
 
     def pause(self, reason: str = "operator") -> None:
@@ -192,12 +217,13 @@ class OutputController:
     def resume(self) -> None:
         self._require(OutputState.PAUSED)
         self._consecutive_failures = 0
+        self.zoom_suspended = False
         self._set_state(OutputState.LIVE)
 
     def stop(self) -> None:
         self._require(OutputState.LIVE, OutputState.PAUSED)
         self._drop_queue("dropped_stopped")
-        self._set_state(OutputState.CONNECTED, "stopped")
+        self._set_state(OutputState.CONNECTED if self.sender.url else OutputState.DISCONNECTED, "stopped")
 
     def estop(self) -> None:
         """Immediate. Valid from every state; idempotent."""
@@ -206,6 +232,8 @@ class OutputController:
             self._inflight.cancel()
         if self.state is not OutputState.E_STOPPED:
             self._set_state(OutputState.E_STOPPED, "emergency_stop")
+        if self.viewer_on:
+            self.viewer.clear()  # take the last captions off guest screens too
         self._on_alert("critical", "estop", "Emergency stop: caption output halted.")
 
     def reset_estop(self) -> None:
@@ -214,7 +242,8 @@ class OutputController:
 
     # ----------------------------------------------------------- submission
     def submit(self, text: str, *, speech_end: float, source_event_ids: tuple = (),
-               origin_epoch: int | None = None, parts: list[str] | None = None) -> bool:
+               origin_epoch: int | None = None, parts: list[str] | None = None,
+               texts: dict[str, str] | None = None) -> bool:
         """Queue an automatic caption. Returns False if rejected at the gate
         (the reason is kept in ``last_reject``).
 
@@ -224,7 +253,8 @@ class OutputController:
         on clock resolution (time.monotonic() ticks every ~15.6 ms on some
         Windows/Python versions), unlike the speech_end comparison below.
         ``parts`` are pre-composed payloads (e.g. bilingual); otherwise ``text``
-        is chunked here.
+        is chunked here. Empty ``text``/``parts`` means nothing for Zoom in the
+        current mode. ``texts`` (per language) go to the guest viewer.
         """
         now = self._clock()
         probe = Caption(text=text, speech_end=speech_end, source_event_ids=source_event_ids)
@@ -238,11 +268,18 @@ class OutputController:
             reason = "dropped_before_live"
         elif now > speech_end + self.cfg.caption_ttl_s:
             reason = "dropped_stale"
+        if not reason and not self.viewer_on and not (text or parts):
+            reason = "dropped_empty"
         self.last_reject = reason
         if reason:
             self._record(probe, reason)
             return False
-        self._enqueue(text, "auto", speech_end, speech_end + self.cfg.caption_ttl_s, source_event_ids, parts=parts)
+        if self.viewer_on and texts:
+            self.viewer.publish_caption(texts, event_ids=source_event_ids, speech_end_wall=self._wall(speech_end))
+        if (text or parts) and self.zoom_ready:
+            self._enqueue(text, "auto", speech_end, speech_end + self.cfg.caption_ttl_s, source_event_ids, parts=parts)
+        else:
+            self._on_change()
         return True
 
     def send_test(self, text: str) -> None:
@@ -257,14 +294,22 @@ class OutputController:
         self._enqueue(text, "test", now, now + self.cfg.manual_ttl_s, (), front=True,
                       parts=[p for p in text.split("\f") if p.strip()])
 
-    def send_manual(self, text: str) -> None:
-        """Operator phrase deck / emergency manual caption."""
+    def send_manual(self, text: str, *, en: str | None = None) -> None:
+        """Operator phrase deck / emergency manual caption (Turkish ``text``;
+        optional English ``en`` for the guest viewer)."""
         self._require(OutputState.LIVE, OutputState.PAUSED)
         text = (text or "").strip()
         if not text:
             raise CommandError("Empty caption")
-        now = self._clock()
-        self._enqueue(text, "manual", now, now + self.cfg.manual_ttl_s, (), front=True)
+        if not self.zoom_ready and not self.viewer_on:
+            raise CommandError("No caption output attached")
+        if self.viewer_on:
+            self.viewer.publish_caption({"tr": text, "en": (en or "").strip()}, kind="manual")
+        if self.zoom_ready:
+            now = self._clock()
+            self._enqueue(text, "manual", now, now + self.cfg.manual_ttl_s, (), front=True)
+        else:
+            self._on_change()
 
     def _enqueue(self, text, kind, speech_end, deadline, source_ids, front=False, parts=None) -> None:
         if parts:
@@ -365,6 +410,21 @@ class OutputController:
         if (
             self._consecutive_failures >= self.cfg.auto_pause_after_failures
             and self.state is OutputState.LIVE
+            and self.viewer_on
+        ):
+            # Guests are served by the viewer: stop hammering Zoom, keep the viewer live.
+            self._drop_queue("dropped_zoom_suspended")
+            self.zoom_suspended = True
+            self._on_alert(
+                "critical", "zoom_suspended",
+                f"Zoom rejected {self._consecutive_failures} captions in a row ({result.error}). "
+                "Zoom captions suspended; the guest viewer continues. Check the meeting / caption URL, "
+                "then Resync Zoom.",
+            )
+            self._on_change()
+        elif (
+            self._consecutive_failures >= self.cfg.auto_pause_after_failures
+            and self.state is OutputState.LIVE
         ):
             self._drop_queue("dropped_paused")
             self._set_state(OutputState.PAUSED, "zoom_failures")
@@ -389,4 +449,6 @@ class OutputController:
             "e2e_ms": self.e2e.summary(),
             "zoom_ms": self.zoom_latency.summary(),
             "zoom": st.__dict__,
+            "zoom_suspended": self.zoom_suspended,
+            "viewer": self.viewer.snapshot() if self.viewer else None,
         }
