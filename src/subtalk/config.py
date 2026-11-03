@@ -35,6 +35,8 @@ class ZoomCfg(BaseModel):
     max_chars: int = 84
     line_breaks: bool = False
     line_chars: int = 42
+    bilingual_labels: bool = True  # "TR: ... / EN: ..." prefixes in BILINGUAL mode
+    output_mode: Literal["TR", "EN", "BILINGUAL"] = "TR"  # initial mode; the operator can switch
     min_interval_s: float = 1.0
     queue_max: int = 8
     auto_pause_after_failures: int = 3
@@ -102,6 +104,8 @@ class TranslateCfg(BaseModel):
     model: str = "claude-sonnet-5-5"
     effort: Literal["low", "medium", "high", "xhigh", "max"] = "low"
     fallback_model: str | None = "claude-haiku-5-5"
+    # Turkish + English: one request returning both (default) or one request per language.
+    dual_mode: Literal["single_request", "parallel"] = "single_request"
     server_fallbacks: bool = True
     timeout_s: float = 5.0
     fallback_timeout_s: float = 4.0

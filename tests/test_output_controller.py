@@ -162,6 +162,30 @@ async def test_work_from_an_older_epoch_is_rejected(ctl, mock_zoom):
     assert await wait_for(lambda: [c.text for c in mock_zoom.meeting().captions] == ["yeni iş"])
 
 
+async def test_test_caption_only_for_test_target(ctl, mock_zoom):
+    await ctl.connect(URL, Target.TEST)
+    ctl.send_test("SubTalk TEST — ç ğ ı İ ö ş ü")  # allowed while CONNECTED (not live) for TEST
+    assert await wait_for(lambda: len(mock_zoom.meeting().captions) == 1)
+    ctl.target = Target.EVENT  # simulate the wedding target
+    with pytest.raises(CommandError, match="TEST target"):
+        ctl.send_test("must never reach the wedding")
+    ctl.target = Target.TEST
+    ctl.estop()
+    with pytest.raises(CommandError):
+        ctl.send_test("not while E-STOPPED")
+
+
+async def test_queued_test_caption_dropped_if_target_changes(ctl, mock_zoom):
+    await ctl.connect(URL, Target.TEST)
+    ctl.cfg.min_interval_s = 0.5
+    ctl.send_test("one")
+    assert await wait_for(lambda: len(mock_zoom.meeting().captions) == 1)
+    ctl.send_test("two")  # waits for min_interval in the queue
+    ctl.target = Target.EVENT  # e.g. operator reconnects to the wedding while a test is queued
+    await asyncio.sleep(0.8)
+    assert [c.text for c in mock_zoom.meeting().captions] == ["one"]
+
+
 async def test_event_target_requires_config_and_confirmation(ctl):
     with pytest.raises(CommandError, match="disabled"):
         await ctl.connect(REAL, Target.EVENT, confirm_event=True)

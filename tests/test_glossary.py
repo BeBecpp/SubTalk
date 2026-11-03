@@ -172,6 +172,20 @@ def test_ordinary_words_are_not_books(svc):
     assert cite(svc, "Бид гэрлэлтийн тухай Библийн зарчим үзнэ.") == []  # title_reference case
 
 
+@pytest.mark.parametrize("text,lang,expected,tr,en", [
+    ("Ефэс 5:33", "mn", ("EPH", 5, 33, None), "Efesliler 5:33", "Ephesians 5:33"),       # е/э swap from ASR
+    ("1 Коринт 13:4–8", "mn", ("1CO", 13, 4, 8), "1. Korintliler 13:4-8", "1 Corinthians 13:4-8"),  # en dash
+    ("Эхлэл 2:24", "mn", ("GEN", 2, 24, None), "Başlangıç 2:24", "Genesis 2:24"),
+    ("Матай 19:6", "mn", ("MAT", 19, 6, None), "Matta 19:6", "Matthew 19:6"),
+    ("エフェソス 5:33", "ja", ("EPH", 5, 33, None), "Efesliler 5:33", "Ephesians 5:33"),
+])
+def test_owner_reference_examples_both_languages(glossary, svc, text, lang, expected, tr, en):
+    from subtalk.glossary.citations import format_ref
+    c = cite(svc, text, lang)
+    assert len(c) == 1 and (c[0].book_id, c[0].chapter, c[0].verse, c[0].verse_end) == expected
+    assert format_ref(glossary, c[0], "tr") == tr and format_ref(glossary, c[0], "en") == en
+
+
 def test_unverified_when_verse_count_unknown(svc):
     c = cite(svc, "Матай 5:9")[0]
     assert c.status == "unverified"
@@ -364,6 +378,75 @@ def test_name_hint_does_not_invite_respelling_or_roles(svc):
     h = {x.id: x for x in svc.select_terms("Галхүүд баяр хүргэе.", "mn")}["groom_galkhuu"]
     assert h.notes == "use exactly 'Galkhuu'"
     assert "approved" not in h.notes and "groom" not in h.notes
+
+
+# --------------------------------------------------------------- English guards
+def en(guards, svc, src, out, lang="mn"):
+    return guards.check(src, lang, svc.citations.detect(src, lang), out, target="en")
+
+
+@pytest.mark.parametrize("src,out,ok,code", [
+    ("Ехова биднийг хайрладаг.", "Jehovah loves us.", True, None),
+    ("Ехова биднийг хайрладаг.", "God loves us.", False, "divine_name_missing"),
+    ("Бурхны тухай хамтдаа ярилцъя.", "Let's talk together about God.", True, None),
+    ("Бурхны тухай хамтдаа ярилцъя.", "Let's talk about Jehovah.", False, "divine_name_invented"),
+    ("Миний аав өнөөдөр илтгэл тавина.", "My father will give a talk today.", True, None),
+    ("Миний аав өнөөдөр илтгэл тавина.", "Our Heavenly Father will speak today.", False, "divine_reference_invented"),
+    ("Миний аав өнөөдөр илтгэл тавина.", "The Lord will speak today.", False, "divine_reference_invented"),
+    ("Галхүүд баяр хүргэе.", "Congratulations to Galkhuu.", True, None),
+    ("Галхүүд баяр хүргэе.", "Congratulations to Galkhuu and his wife.", False, "spouse_invented"),
+    ("Эрхэм зочид оо, тавтай морилно уу.", "Dear guests and our groom, welcome.", False, "groom_invented"),
+    ("Эрхэм зочид оо, тавтай морилно уу.", "Dear guests and the bride, welcome.", False, "bride_invented"),
+    ("Бид хоёр нэг нэгэндээ хайртай.", "We love each other.", True, None),
+    ("Бид хоёр нэг нэгэндээ хайртай.", "We vow to love each other.", False, "vow_invented"),
+    ("Одоо хамт залбирцгаая.", "Let us pray together now.", True, None),
+    ("Эрхэм зочид оо, тавтай морилно уу.", "Welcome, let us pray.", False, "prayer_invented"),
+    ("Бид түрээсийн гэрээ байгуулсан.", "We signed a rental agreement.", True, None),
+    ("Гучин хүн биш, арван хүн ирнэ.", "Not 30 people, 10 people will come.", True, None),
+    ("Гучин хүн биш, арван хүн ирнэ.", "20 people will come.", False, "number_invented:20"),
+])
+def test_english_guards(guards, svc, src, out, ok, code):
+    r = en(guards, svc, src, out)
+    assert r.ok == ok, r.blocked
+    if code:
+        assert code in r.blocked
+
+
+def test_english_references(guards, svc):
+    assert en(guards, svc, "Эфэс 5:33.", "Ephesians 5:33.").ok
+    r = en(guards, svc, "Эфэс тавдугаар бүлгийн гучин дөрөвдүгээр зүйл.", "Ephesians 5:33.")
+    assert not r.ok and any(b.startswith("unsupported_citation") for b in r.blocked)  # never "corrected"
+    assert not en(guards, svc, "Эфэс номыг нээгээрэй.", "Open Ephesians 5:33.").ok
+    r = en(guards, svc, "Матай 19:6", "Matthew 19:6")
+    assert r.ok
+    # Ordinary capitalised-less words with numbers are not books (English book names are case-sensitive).
+    assert en(guards, svc, "Гучин хүн биш, арван хүн ирнэ.", "Not 30 people; numbers 10 will come.").ok
+
+
+def test_english_alias_rewrite_and_psalm(guards, svc):
+    r = en(guards, svc, "Сургаалт үгс 3:5", "Proverbs 3:5")
+    assert r.ok
+    r2 = en(guards, svc, "Дуучны дуу 2:1 библи", "Song of Songs 2:1")
+    assert "legacy_book_name_rewritten" in r2.flags and r2.text.startswith("Song of Solomon 2:1")
+    r3 = en(guards, svc, "Дуулал 23:1", "Psalm 23:1")
+    assert r3.ok and r3.text == "Psalm 23:1"  # singular "Psalm" is correct English, not rewritten
+
+
+def test_english_name_spelling_corrected(guards, svc):
+    r = en(guards, svc, "Галхүүд баяр хүргэе.", "Congratulations to Galhuu.")
+    assert r.ok and r.text == "Congratulations to Galkhuu."
+    assert "name_spelling_corrected:groom_galkhuu" in r.flags
+
+
+def test_english_does_not_block_ordinary_words(guards, svc):
+    for out in ("Thank you for coming.", "Everyone is equal.", "My older brother Galkhuu will speak.",
+                "A godless world", "We are mates from school"):
+        src = "Миний төрсөн ах Галхүү үг хэлнэ." if "Galkhuu" in out else "Баярлалаа."
+        r = en(guards, svc, src, out)
+        if out == "We are mates from school":
+            assert "spouse_invented" in r.blocked  # 'mate' = spouse in JW English; conservative by design
+        else:
+            assert r.ok, (out, r.blocked)
 
 
 def test_guard_empty(guards, svc):

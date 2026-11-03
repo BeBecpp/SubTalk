@@ -8,7 +8,7 @@ Review status ladder:
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 VALID_TERM_STATUS = ("tr_attested", "review_required")
@@ -30,6 +30,8 @@ class Book:
     tr: str
     tr_recognition_aliases: tuple[str, ...]
     status: str
+    en: str = ""
+    en_aliases: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -43,10 +45,24 @@ class Term:
     priority: str
     notes: str
     source: str  # jw_terms | wedding_terms
+    en: str = ""
+    en_status: str = ""  # en_source_checked | en_core | en_review_required | human_approved
+    en_notes: str = ""
 
     @property
     def reviewed(self) -> bool:
         return self.status in ("tr_attested", "human_approved")
+
+    def target(self, lang: str) -> tuple[str, str, str]:
+        """(wording, status, notes) for target language 'tr' or 'en'."""
+        if lang == "en":
+            return self.en, self.en_status, self.en_notes
+        return self.tr, self.status, self.notes
+
+    def reviewed_for(self, lang: str) -> bool:
+        if lang == "en":
+            return self.en_status in ("en_source_checked", "en_core", "human_approved")
+        return self.reviewed
 
 
 @dataclass(frozen=True)
@@ -57,6 +73,10 @@ class EventName:
     tr: str
     role: str
     approved: bool
+    en: str = ""
+
+    def target(self, lang: str) -> str:
+        return (self.en or self.tr) if lang == "en" else self.tr
 
 
 @dataclass
@@ -71,6 +91,7 @@ class Glossary:
     verse_counts: dict[str, int]
     approvals: dict = field(default_factory=dict)
     names_source: str = "example"
+    en_loaded: bool = False
 
     def book(self, book_id: str) -> Book:
         return self._books_by_id[book_id]
@@ -80,12 +101,16 @@ class Glossary:
 
     def summary(self) -> dict:
         by_status: dict[str, int] = {}
+        en_status: dict[str, int] = {}
         for t in self.terms:
             by_status[t.status] = by_status.get(t.status, 0) + 1
+            en_status[t.en_status or "missing"] = en_status.get(t.en_status or "missing", 0) + 1
         return {
             "books": len(self.books),
             "terms": len(self.terms),
             "terms_by_status": by_status,
+            "en_loaded": self.en_loaded,
+            "en_terms_by_status": en_status,
             "names": [{"id": n.id, "tr": n.tr, "approved": n.approved} for n in self.names],
             "names_source": self.names_source,
             "approvals_reviewer": self.approvals.get("reviewer"),
@@ -108,6 +133,7 @@ def load_glossary(
     *,
     event_names_path: Path | None = None,
     approvals_path: Path | None = None,
+    en_path: Path | None = None,
 ) -> Glossary:
     gdir, bdir = Path(glossary_dir), Path(bible_dir)
     errors: list[str] = []
@@ -186,13 +212,62 @@ def load_glossary(
         names_raw = _load(gdir / "event_names.example.json")["entries"]
     names = [
         EventName(id=n["id"], mn=tuple(n.get("mn", [])), ja=tuple(n.get("ja", [])), tr=n["tr"],
-                  role=n.get("role", ""), approved=bool(n.get("approved")) and names_source == "event")
+                  role=n.get("role", ""), approved=bool(n.get("approved")) and names_source == "event",
+                  en=n.get("en", ""))
         for n in names_raw
     ]
 
+    en_file = Path(en_path) if en_path else gdir.parent / "glossary_en" / "en_glossary.json"
+    en_loaded = en_file.exists()
+    if en_loaded:
+        books, terms, names = _merge_english(_load(en_file), books, terms, names,
+                                             set(approvals.get("approved_en_term_ids", [])), errors)
+
     if errors:
         raise GlossaryError("Glossary validation failed:\n  - " + "\n  - ".join(errors))
-    return Glossary(
+    g = Glossary(
         books=books, terms=terms, names=names, policy=policy, sources=sources, eval_cases=eval_cases,
         chapter_counts=chapters, verse_counts=verses, approvals=approvals, names_source=names_source,
     )
+    g.en_loaded = en_loaded
+    return g
+
+
+VALID_EN_STATUS = ("en_source_checked", "en_core", "en_review_required")
+
+
+def _merge_english(en: dict, books, terms, names, approved_en: set, errors: list[str]):
+    """Attach English wording from resources/glossary_en (original pack untouched)."""
+    bnames = en.get("books", {}).get("names", {})
+    baliases = en.get("books", {}).get("recognition_aliases", {})
+    missing = [b.id for b in books if not bnames.get(b.id)]
+    if missing:
+        errors.append(f"English book names missing: {missing}")
+    unknown = sorted(set(bnames) - {b.id for b in books})
+    if unknown:
+        errors.append(f"English book names for unknown IDs: {unknown}")
+    if len(set(bnames.values())) != len(bnames):
+        errors.append("duplicate English book name")
+    books = [replace(b, en=bnames.get(b.id, ""), en_aliases=tuple(baliases.get(b.id, []))) for b in books]
+
+    eterms = en.get("terms", {})
+    term_ids = {t.id for t in terms}
+    for tid in sorted(set(eterms) - term_ids):
+        errors.append(f"English term for unknown ID: {tid}")
+    for tid in sorted((term_ids - set(eterms))):
+        errors.append(f"English wording missing for term: {tid}")
+    for tid in sorted(approved_en - term_ids):
+        errors.append(f"approved_en_term_ids references unknown term: {tid}")
+    merged = []
+    for t in terms:
+        e = eterms.get(t.id, {})
+        status = e.get("status", "")
+        if e and status not in VALID_EN_STATUS:
+            errors.append(f"{t.id}: invalid English status {status!r}")
+        if e and not str(e.get("en", "")).strip():
+            errors.append(f"{t.id}: empty English wording")
+        merged.append(replace(t, en=e.get("en", ""), en_notes=e.get("notes", ""),
+                              en_status="human_approved" if t.id in approved_en else status))
+    enames = en.get("names", {})
+    names = [replace(n, en=n.en or enames.get(n.id, {}).get("en", "") or n.tr) for n in names]
+    return books, merged, names

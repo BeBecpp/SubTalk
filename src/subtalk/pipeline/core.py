@@ -1,5 +1,10 @@
 """Translation pipeline: recognised segments -> events -> Claude -> guards -> ordered captions.
 
+One recognition event produces Turkish and English. Each language gets its own
+status (PASS / WITHHELD / FAILED / TIMED_OUT / STALE) and its own guard check;
+a problem in one language never removes the other. The operator's output mode
+(TR / EN / BILINGUAL) decides what is sent to Zoom when the caption is released.
+
 Main Speech Mode only changes interpreter-aware behaviour:
 * low-quality / uncertain Mongolian is HELD (up to hold_timeout_s) so the
   interpreter's Japanese can recover its meaning;
@@ -19,21 +24,32 @@ from subtalk.asr.langid import Decision
 from subtalk.config import Config
 from subtalk.glossary.guards import Guards
 from subtalk.glossary.service import GlossaryService
+from subtalk.output.compose import compose_parts
 from subtalk.output.controller import OutputController
 from subtalk.pipeline.emitter import OrderedEmitter
 from subtalk.pipeline.events import EventStore, SpeechEvent
 from subtalk.pipeline.script_context import NullScriptContext, ScriptContextProvider
 from subtalk.state import JaPolicy
 from subtalk.translate.base import (
+    FAILED,
+    PASS,
+    STALE,
+    TARGETS,
+    TIMED_OUT,
+    WITHHELD,
     BudgetExceeded,
     ContextPair,
     InterpretRequest,
+    LangOutput,
     MnCandidate,
     TranslateRequest,
+    TranslationResult,
     TranslatorError,
+    TranslatorTimeout,
 )
 
 log = logging.getLogger("subtalk.pipeline")
+MODE_LANGS = {"TR": ("tr",), "EN": ("en",), "BILINGUAL": ("tr", "en")}
 
 
 @dataclass
@@ -44,12 +60,14 @@ class ContextState:
     auto_matching_enabled: bool = True
     music_mode: bool = False
     speaker_control_enabled: bool = True
+    output_mode: str = "TR"  # TR | EN | BILINGUAL
 
     def to_dict(self) -> dict:
         return {
             "main_speech": self.main_speech, "main_speech_by": self.main_speech_by,
             "ja_policy": self.ja_policy.value, "auto_matching_enabled": self.auto_matching_enabled,
             "music_mode": self.music_mode, "speaker_control_enabled": self.speaker_control_enabled,
+            "output_mode": self.output_mode,
         }
 
 
@@ -59,6 +77,10 @@ class PipelineStats:
 
     def inc(self, key: str) -> None:
         self.counts[key] = self.counts.get(key, 0) + 1
+
+
+def _produced(o: LangOutput) -> bool:
+    return bool(o.display and o.text and o.source_quality != "garbled" and not o.error)
 
 
 class Pipeline:
@@ -134,7 +156,7 @@ class Pipeline:
     def _ja_matching_on(self) -> bool:
         return self.ctx.ja_policy is JaPolicy.AUTO and self.ctx.auto_matching_enabled
 
-    # ------------------------------------------------------------------ Mongolian
+    # ------------------------------------------------------------------ requests
     def _request(self, ev: SpeechEvent, lang: str, cls=TranslateRequest, **extra):
         analysis = self.gsvc.analyze(ev.text, lang)
         ev.citations = [r for r in analysis.citation_renderings.values() if r]
@@ -144,11 +166,13 @@ class Pipeline:
             recent=list(self.recent_pairs[-self.cfg.translate.recent_context:]),
             main_speech=self.ctx.main_speech,
             script_context=self.script.context_for(ev.text, lang) if self.script.is_active() else None,
+            renderings=analysis.renderings,
             **extra,
         )
         return req, analysis
 
-    async def _call(self, ev: SpeechEvent, fn, req):
+    async def _call(self, ev: SpeechEvent, fn, req) -> TranslationResult | None:
+        """Run a translation; on failure mark both languages and return None."""
         ev.status = "translating"
         self._on_change()
         try:
@@ -156,54 +180,98 @@ class Pipeline:
                 result = await fn(req)
         except BudgetExceeded as exc:
             self._on_alert("critical", "claude_budget", str(exc))
-            raise
+            self._mark_all(ev, FAILED, "budget")
+            return None
+        except TranslatorTimeout as exc:
+            ev.reasons.append(f"translate_timeout:{exc}")
+            self._on_alert("warn", "claude_timeout", f"Translation timed out: {exc}")
+            self._mark_all(ev, TIMED_OUT, "timeout")
+            return None
         except TranslatorError as exc:
             ev.reasons.append(f"translate_error:{exc}")
             self._on_alert("warn", "claude_error", f"Translation failed: {exc}")
-            raise
+            self._mark_all(ev, FAILED, str(exc)[:80])
+            return None
         ev.translate_ms = result.latency_ms
         ev.model = result.model
         ev.flags = list(result.flags)
         return result
 
+    @staticmethod
+    def _mark_all(ev: SpeechEvent, status: str, reason: str) -> None:
+        for t in TARGETS:
+            ev.out[t] = {"status": status, "reasons": [reason]}
+        ev.status = "failed"
+
+    @staticmethod
+    def _mark_unproduced(ev: SpeechEvent, result: TranslationResult) -> None:
+        for t in TARGETS:
+            o = result.lang(t)
+            if o.timed_out:
+                ev.out[t] = {"status": TIMED_OUT, "reasons": [o.error or "timeout"]}
+            elif o.error:
+                ev.out[t] = {"status": FAILED, "reasons": [o.error]}
+            elif not _produced(o):
+                ev.out[t] = {"status": WITHHELD, "reasons": [f"model:{o.source_quality}" if o.source_quality != "ok"
+                                                              else "model:display_false"]}
+
+    # ------------------------------------------------------------------ Mongolian
     async def _translate_mn(self, ev: SpeechEvent, slot: int) -> None:
         done = self._pending_mn[ev.id]
         try:
             req, analysis = self._request(ev, "mn")
-            try:
-                result = await self._call(ev, self.translator.translate, req)
-            except (TranslatorError, BudgetExceeded):
-                ev.status = "failed"
+            result = await self._call(ev, self.translator.translate, req)
+            if result is None:
                 self.emitter.skip(slot)
                 return
-            if not result.display or result.source_quality == "garbled" or not result.turkish:
+            self._mark_unproduced(ev, result)
+            if not any(_produced(result.lang(t)) for t in TARGETS):
                 self.emitter.skip(slot)
-                self._hold_or_drop(ev, f"translator:{result.source_quality}{':' + result.error if result.error else ''}")
+                if all(ev.out.get(t, {}).get("status") in (FAILED, TIMED_OUT) for t in TARGETS):
+                    ev.status = "failed"
+                    return
+                self._hold_or_drop(ev, f"translator:{result.source_quality}"
+                                       f"{':' + result.error if result.error else ''}")
                 return
             if result.source_quality == "degraded":
                 ev.flags.append("degraded_source")
-            self._finish(ev, slot, "mn", analysis, result.turkish)
+            self._finish(ev, slot, "mn", analysis, result)
         finally:
             done.set()
             self._pending_mn.pop(ev.id, None)
             self._on_change()
 
-    def _finish(self, ev: SpeechEvent, slot: int, lang: str, analysis, turkish: str, source_text: str | None = None) -> bool:
-        g = self.guards.check(source_text or ev.text, lang, analysis.citations, turkish)
-        ev.flags.extend(g.flags)
-        if not g.ok:
-            ev.status = "blocked"
-            ev.reasons.extend(g.blocked)
-            ev.turkish = g.text
-            self.stats.inc("blocked")
-            self._on_alert("info", "guard_blocked", f"Caption withheld ({', '.join(g.blocked)})")
+    def _finish(self, ev: SpeechEvent, slot: int, lang: str, analysis, result: TranslationResult) -> bool:
+        """Guard each produced language; release the PASS ones together, in speech order."""
+        texts: dict[str, str] = {}
+        any_blocked = False
+        for t in TARGETS:
+            o = result.lang(t)
+            if not _produced(o):
+                continue  # already marked by _mark_unproduced
+            g = self.guards.check(ev.text, lang, analysis.citations, o.text, target=t)
+            ev.flags.extend(f"{t}:{f}" for f in g.flags)
+            if g.ok:
+                texts[t] = g.text
+                ev.out[t] = {"status": PASS, "reasons": []}
+            else:
+                any_blocked = True
+                ev.out[t] = {"status": WITHHELD, "reasons": [f"guard:{b}" for b in g.blocked], "text": g.text}
+                self.stats.inc(f"blocked_{t}")
+                self._on_alert("info", "guard_blocked",
+                               f"{t.upper()} caption withheld ({', '.join(g.blocked)})")
+        ev.turkish, ev.english = texts.get("tr"), texts.get("en")
+        if not texts:
+            ev.status = "blocked" if any_blocked else "dropped"
+            if any_blocked:
+                self.stats.inc("blocked")
+                ev.reasons.extend(r for t in TARGETS for r in ev.out.get(t, {}).get("reasons", []))
             self.emitter.skip(slot)
             return False
-        ev.turkish = g.text
         ev.status = "translated"
-        self.recent_pairs.append(ContextPair(lang, ev.text, g.text))
+        self.recent_pairs.append(ContextPair(lang, ev.text, texts.get("tr", ""), texts.get("en", "")))
         self.recent_pairs = self.recent_pairs[-20:]
-        self.emitter.complete(slot, g.text, ev.t_end, (ev.id,), ev.output_epoch)
+        self.emitter.complete(slot, texts, ev.t_end, (ev.id,), ev.output_epoch)
         return True
 
     # ------------------------------------------------------------------ Japanese
@@ -230,18 +298,17 @@ class Pipeline:
 
     async def _translate_ja_independent(self, ev: SpeechEvent, slot: int) -> None:
         req, analysis = self._request(ev, "ja")
-        try:
-            result = await self._call(ev, self.translator.translate, req)
-        except (TranslatorError, BudgetExceeded):
-            ev.status = "failed"
+        result = await self._call(ev, self.translator.translate, req)
+        if result is None:
             self.emitter.skip(slot)
             return
         ev.relation = "independent"
-        if not result.display or not result.turkish or result.source_quality == "garbled":
+        self._mark_unproduced(ev, result)
+        if not any(_produced(result.lang(t)) for t in TARGETS):
             ev.status = "dropped"
             self.emitter.skip(slot)
             return
-        self._finish(ev, slot, "ja", analysis, result.turkish)
+        self._finish(ev, slot, "ja", analysis, result)
         self._on_change()
 
     async def _interpret_ja(self, ev: SpeechEvent, slot: int) -> None:
@@ -263,19 +330,18 @@ class Pipeline:
                 ev.reasons.append("no_recent_mongolian")
             await self._translate_ja_independent(ev, slot)
             return
-        # "published" = a Turkish caption for it was produced (translated); whether output
-        # was live is irrelevant for deciding if the Japanese repeats it.
+        # "published" = a caption for it was produced (translated); whether output was live
+        # is irrelevant for deciding if the Japanese repeats it.
         produced = ("translated", "published", "not_sent")
         candidates = [
             MnCandidate(e.id, e.text, e.turkish if e.status in produced else None,
-                        "published" if e.status in produced else ("held" if e.status == "held" else "dropped"))
+                        "published" if e.status in produced else ("held" if e.status == "held" else "dropped"),
+                        english=e.english if e.status in produced else None)
             for e in cands[-8:]
         ]
         req, analysis = self._request(ev, "ja", InterpretRequest, candidates=candidates)
-        try:
-            result = await self._call(ev, self.translator.interpret, req)
-        except (TranslatorError, BudgetExceeded):
-            ev.status = "failed"
+        result = await self._call(ev, self.translator.interpret, req)
+        if result is None:
             self.emitter.skip(slot)
             return
         valid_ids = {c.id for c in candidates}
@@ -288,6 +354,8 @@ class Pipeline:
         ev.relation, ev.links = relation, links
         if relation == "covered":
             ev.status = "covered"
+            for t in TARGETS:  # the duplicate is suppressed consistently in both languages
+                ev.out[t] = {"status": WITHHELD, "reasons": ["interpreter_repeat"]}
             for i in links:
                 mn = self.events.get(i)
                 if mn and mn.status in ("translated", "published", "not_sent"):
@@ -296,15 +364,18 @@ class Pipeline:
             self.emitter.skip(slot)
         elif relation == "conflict":
             ev.status = "conflict"
+            for t in TARGETS:
+                ev.out[t] = {"status": WITHHELD, "reasons": ["interpreter_conflict"]}
             self.stats.inc("ja_conflict")
             note = result.conflict_note or "Japanese interpretation differs from a shown caption"
             self._on_alert("warn", "ja_conflict", f"Possible caption error (cannot be undone): {note}")
             self.emitter.skip(slot)
-        elif not result.display or not result.turkish:
-            ev.status = "dropped"
-            self.emitter.skip(slot)
         else:
-            if self._finish(ev, slot, "ja", analysis, result.turkish) and relation == "resolves_held":
+            self._mark_unproduced(ev, result)
+            if not any(_produced(result.lang(t)) for t in TARGETS):
+                ev.status = "dropped"
+                self.emitter.skip(slot)
+            elif self._finish(ev, slot, "ja", analysis, result) and relation == "resolves_held":
                 for i in links:
                     mn = self.events.get(i)
                     if mn and mn.status == "held":
@@ -314,13 +385,27 @@ class Pipeline:
         self._on_change()
 
     # ------------------------------------------------------------------ output
-    def _emit(self, text: str, speech_end: float, source_ids: tuple, origin_epoch: int | None = None) -> None:
-        accepted = self.output.submit(text, speech_end=speech_end, source_event_ids=source_ids,
-                                      origin_epoch=origin_epoch)
+    def _emit(self, texts: dict[str, str], speech_end: float, source_ids: tuple,
+              origin_epoch: int | None = None) -> None:
+        mode = self.ctx.output_mode
+        parts = compose_parts(texts, mode, self.cfg.zoom.max_chars, self.cfg.zoom.bilingual_labels)
+        sent_langs = [t for t in MODE_LANGS[mode] if texts.get(t)]
+        accepted = False
+        if parts:
+            accepted = self.output.submit("\n".join(parts), speech_end=speech_end, source_event_ids=source_ids,
+                                          origin_epoch=origin_epoch, parts=parts)
+        reject = self.output.last_reject if parts else f"no_{mode.lower()}_text"
         for i in source_ids:
             ev = self.events.get(i)
-            if ev:
-                ev.status = "published" if accepted else "not_sent"
+            if not ev:
+                continue
+            ev.status = "published" if accepted else "not_sent"
+            ev.sent_mode = mode if accepted else None
+            if not accepted:
+                ev.reasons.append(reject or "not_sent")
+                if reject == "dropped_stale":
+                    for t in sent_langs:
+                        ev.out[t] = {"status": STALE, "reasons": ["older than caption_ttl"]}
         self._on_change()
 
     def tick(self) -> None:

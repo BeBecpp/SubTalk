@@ -28,6 +28,16 @@ ORDINAL_PREFIX = {"нэгдүгээр": 1, "хоёрдугаар": 2, "гура�
 _JA_ORDINAL = {"第一": 1, "第二": 2, "第三": 3}
 
 
+def _initial_e_variants(toks: list[str]) -> list[list[str]]:
+    """Mongolian speech recognition often swaps a word-initial е/э (Эфэс / Ефэс / Ефес).
+    For book-name recognition only, accept the swapped first letter of the first word.
+    A book still needs spoken numbers or a Bible cue before it counts as a reference."""
+    if not toks or toks[0][:1] not in ("е", "э"):
+        return [toks]
+    swapped = ("э" if toks[0][0] == "е" else "е") + toks[0][1:]
+    return [toks, [swapped, *toks[1:]]]
+
+
 @dataclass(frozen=True)
 class Citation:
     book_id: str
@@ -45,17 +55,23 @@ class Citation:
         return (self.book_id, self.chapter, self.verse, self.verse_end)
 
 
-def format_tr(glossary: Glossary, c: Citation) -> str | None:
-    """Canonical Turkish rendering, or None when numbers must not be shown."""
-    name = glossary.book(c.book_id).tr
+def format_ref(glossary: Glossary, c: Citation, lang: str = "tr") -> str | None:
+    """Canonical rendering in the target language ('tr' or 'en'), or None when
+    numbers must not be shown."""
+    book = glossary.book(c.book_id)
+    name = (book.en or book.tr) if lang == "en" else book.tr
     if c.status in ("invalid", "book_only") or c.chapter is None:
         return name if c.status == "book_only" else None
     if c.verse is None:
-        return f"{name} {c.chapter}. bölüm"
+        return f"{name} chapter {c.chapter}" if lang == "en" else f"{name} {c.chapter}. bölüm"
     ref = f"{name} {c.chapter}:{c.verse}"
     if c.verse_end:
         ref += f"-{c.verse_end}"
     return ref
+
+
+def format_tr(glossary: Glossary, c: Citation) -> str | None:
+    return format_ref(glossary, c, "tr")
 
 
 def validate(glossary: Glossary, book_id: str, chapter: int | None, verse: int | None,
@@ -84,9 +100,13 @@ class CitationDetector:
         self._mn_index: list[tuple[int | None, list[str], str]] = []
         self._ja_index: list[tuple[str, str]] = []
         for b in glossary.books:
+            seen = set()
             for form in (b.mn, *b.mn_aliases):
                 num, toks = self._split_number_prefix(mn_tokens(form))
-                self._mn_index.append((num, toks, b.id))
+                for variant in _initial_e_variants(toks):
+                    if (num, tuple(variant)) not in seen:
+                        seen.add((num, tuple(variant)))
+                        self._mn_index.append((num, variant, b.id))
             for form in (b.ja, *b.ja_aliases):
                 self._ja_index.append((norm_ja(form), b.id))
         # Longest names first so "1 Иохан" wins over "Иохан".

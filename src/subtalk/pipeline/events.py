@@ -22,6 +22,9 @@ class SpeechEvent:
     wall: float = field(default_factory=time.time)
     status: str = "heard"
     turkish: str | None = None
+    english: str | None = None
+    out: dict = field(default_factory=dict)  # target -> {"status": PASS|WITHHELD|FAILED|TIMED_OUT|STALE, "reasons": [...]}
+    sent_mode: str | None = None
     reasons: list[str] = field(default_factory=list)
     links: list[int] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
@@ -34,7 +37,8 @@ class SpeechEvent:
     def to_dict(self) -> dict:
         return {
             "id": self.id, "kind": self.kind, "text": self.text, "quality": self.quality,
-            "status": self.status, "turkish": self.turkish, "reasons": self.reasons[-4:],
+            "status": self.status, "turkish": self.turkish, "english": self.english,
+            "out": self.out, "sent_mode": self.sent_mode, "reasons": self.reasons[-4:],
             "links": self.links, "flags": self.flags, "citations": self.citations,
             "relation": self.relation, "wall": self.wall, "duration": round(self.t_end - self.t_start, 2),
             "asr_ms": self.asr_ms, "translate_ms": self.translate_ms, "main_speech": self.main_speech,

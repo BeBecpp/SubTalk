@@ -95,6 +95,8 @@ COMMANDS: dict[str, tuple[set[Role], bool]] = {
     "set_music_mode": ({Role.OPERATOR}, True),
     "set_speaker_control": ({Role.OPERATOR}, True),
     "send_phrase": ({Role.OPERATOR}, True),
+    "send_test_caption": ({Role.OPERATOR}, True),
+    "set_output_mode": ({Role.OPERATOR}, True),
     "take_control": ({Role.OPERATOR}, False),
     "ack_alert": ({Role.OPERATOR}, False),
     "warm_cache": ({Role.OPERATOR}, True),
@@ -141,7 +143,8 @@ class Engine:
             ),
             on_change=self.mark_dirty, on_alert=self.alert,
         )
-        self.context = ContextState(ja_policy=cfg.interp.ja_policy, auto_matching_enabled=cfg.interp.auto_matching_enabled)
+        self.context = ContextState(ja_policy=cfg.interp.ja_policy, auto_matching_enabled=cfg.interp.auto_matching_enabled,
+                                    output_mode=cfg.zoom.output_mode)
         self.asr_queue: asyncio.Queue[AudioSegment] = asyncio.Queue(maxsize=cfg.asr.queue_max)
         self.segmenter = Segmenter(make_detector(cfg.vad.engine, cfg.vad.silero_model_path, cfg.vad.energy_margin_db),
                                    cfg.vad, self._on_segment)
@@ -269,7 +272,8 @@ class Engine:
         out = {}
         for s in self._load_mock_doc().get("segments", []):
             if s.get("text"):
-                out[s["text"]] = {k: s[k] for k in ("tr", "relation", "quality", "note", "link_status") if k in s}
+                out[s["text"]] = {k: s[k] for k in ("tr", "en", "fail_en", "relation", "quality", "note", "link_status")
+                                  if k in s}
         return out
 
     async def _mock_session(self) -> None:
@@ -554,6 +558,21 @@ class Engine:
             self._ctx_version += 1
         elif ctype == "send_phrase":
             o.send_manual(str(a["text"])[:200])
+        elif ctype == "send_test_caption":
+            stamp = time.strftime("%H:%M:%S")
+            mode = self.context.output_mode
+            tr = f"SubTalk TEST {stamp} — Türkçe: ç ğ ı İ ö ş ü"
+            en = f"SubTalk TEST {stamp} — English: it's a test, “quotes”"
+            text = {"TR": tr, "EN": en}.get(mode, f"TR: {tr}\nEN: {en}")
+            o.send_test(text)
+            return {"text": text}
+        elif ctype == "set_output_mode":
+            mode = str(a["mode"]).upper()
+            if mode not in ("TR", "EN", "BILINGUAL"):
+                raise CommandError("Output mode must be TR, EN or BILINGUAL")
+            self.context.output_mode = mode
+            self._ctx_version += 1
+            self.alert("info", "output_mode", f"Caption language: {mode} ({session.name})")
         elif ctype == "take_control":
             lease.take(session)
         elif ctype == "ack_alert":

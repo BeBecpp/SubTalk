@@ -171,14 +171,106 @@ async def test_music_mode_drops_everything(rig):
     assert ev.kind == "MUSIC" and ev.status == "dropped" and tr.requests == 0
 
 
-async def test_guard_blocks_invented_reference(rig):
+SRC_REF = "Бид гэрлэлтийн тухай Библийн зарчим үзнэ."
+
+
+async def test_guard_blocks_invented_reference_in_both_languages(rig):
     p, tr, mz = rig
-    tr.translations = {"Бид гэрлэлтийн тухай Библийн зарчим үзнэ.":
-                       {"tr": "Evlilikle ilgili Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz."}}
-    ev = p.submit_decision(mn("Бид гэрлэлтийн тухай Библийн зарчим үзнэ."), now() - 2, now())
+    tr.translations = {SRC_REF: {"tr": "Evlilikle ilgili Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz.",
+                                 "en": "We will look at Bible principles on marriage, Ephesians 5:22."}}
+    p.ctx.output_mode = "BILINGUAL"
+    ev = p.submit_decision(mn(SRC_REF), now() - 2, now())
     await settle(p, mz)
     assert ev.status == "blocked" and sent(mz) == []
+    assert ev.out["tr"]["status"] == "WITHHELD" and ev.out["en"]["status"] == "WITHHELD"
+    assert any(r.startswith("guard:unsupported_citation") for r in ev.out["en"]["reasons"])
     assert any(a[1] == "guard_blocked" for a in p.alerts)
+
+
+async def test_one_language_blocked_other_still_sent(rig):
+    """A problem in Turkish must not remove the English caption (and vice versa)."""
+    p, tr, mz = rig
+    tr.translations = {SRC_REF: {"tr": "Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz.",
+                                 "en": "We will look at Bible principles about marriage."}}
+    p.ctx.output_mode = "BILINGUAL"
+    ev = p.submit_decision(mn(SRC_REF), now() - 2, now())
+    await settle(p, mz, 1)
+    assert ev.out["tr"]["status"] == "WITHHELD" and ev.out["en"]["status"] == "PASS"
+    assert sent(mz) == ["EN: We will look at Bible principles about marriage."]
+    # In Turkish-only mode the same event sends nothing (Turkish was withheld) - never English instead.
+    p.ctx.output_mode = "TR"
+    ev2 = p.submit_decision(mn(SRC_REF), now() - 2, now())
+    await settle(p, mz)
+    assert ev2.status == "not_sent" and len(sent(mz)) == 1
+
+
+@pytest.mark.parametrize("mode,expected", [
+    ("TR", ["Merhaba."]),
+    ("EN", ["Hello."]),
+    ("BILINGUAL", ["TR: Merhaba.\nEN: Hello."]),
+])
+async def test_output_modes(rig, mode, expected):
+    p, tr, mz = rig
+    tr.translations = {"Сайн байна уу.": {"tr": "Merhaba.", "en": "Hello."}}
+    p.ctx.output_mode = mode
+    ev = p.submit_decision(mn("Сайн байна уу."), now() - 1, now())
+    await settle(p, mz, 1)
+    assert sent(mz) == expected and ev.sent_mode == mode
+    assert ev.out == {"tr": {"status": "PASS", "reasons": []}, "en": {"status": "PASS", "reasons": []}}
+    assert len(mz.meeting().captions) == 1  # one POST per event, never two separate language posts
+
+
+async def test_english_missing_marks_failed_turkish_sent(rig):
+    p, tr, mz = rig
+    tr.translations = {"Сайн байна уу.": {"tr": "Merhaba.", "fail_en": True}}
+    p.ctx.output_mode = "BILINGUAL"
+    ev = p.submit_decision(mn("Сайн байна уу."), now() - 1, now())
+    await settle(p, mz, 1)
+    assert ev.out["en"]["status"] == "FAILED" and ev.out["tr"]["status"] == "PASS"
+    assert sent(mz) == ["TR: Merhaba."]
+
+
+async def test_timeout_marks_both_timed_out(rig):
+    from subtalk.translate.base import TranslatorTimeout
+    p, tr, mz = rig
+
+    async def boom(req):
+        raise TranslatorTimeout("sonnet: APITimeoutError")
+
+    tr.translate = boom
+    ev = p.submit_decision(mn("Сайн байна уу."), now() - 1, now())
+    await settle(p, mz)
+    assert ev.status == "failed" and {o["status"] for o in ev.out.values()} == {"TIMED_OUT"}
+    assert sent(mz) == [] and any(a[1] == "claude_timeout" for a in p.alerts)
+
+
+async def test_stale_marks_language_stale(rig):
+    p, tr, mz = rig
+    p.output.cfg.caption_ttl_s = 0.05
+
+    async def slow(req):
+        await asyncio.sleep(0.2)
+        return TranslationResult(True, "Geç.", english="Late.", display_en=True)
+
+    tr.translate = slow
+    p.ctx.output_mode = "BILINGUAL"
+    ev = p.submit_decision(mn("Удаан"), now() - 1, now())
+    await settle(p, mz)
+    assert sent(mz) == [] and ev.out["tr"]["status"] == "STALE" and ev.out["en"]["status"] == "STALE"
+
+
+async def test_interpreter_repeat_suppressed_in_both_languages(rig):
+    p, tr, mz = rig
+    tr.translations = {"Гэрлэлтэд хайр хүндлэл чухал.": {"tr": "Evlilikte sevgi ve saygı önemlidir.",
+                                                         "en": "Love and respect matter in marriage."},
+                       "結婚生活では愛と尊敬が大切です。": {"relation": "covered"}}
+    p.ctx.main_speech, p.ctx.output_mode = True, "BILINGUAL"
+    p.submit_decision(mn("Гэрлэлтэд хайр хүндлэл чухал."), now() - 2, now())
+    await settle(p, mz, 1)
+    b = p.submit_decision(ja("結婚生活では愛と尊敬が大切です。"), now() - 2, now())
+    await settle(p, mz)
+    assert sent(mz) == ["TR: Evlilikte sevgi ve saygı önemlidir.\nEN: Love and respect matter in marriage."]
+    assert b.status == "covered" and {o["status"] for o in b.out.values()} == {"WITHHELD"}
 
 
 async def test_bible_reference_passes_with_locked_rendering(rig):

@@ -169,6 +169,27 @@ def test_restart_invalidates_sessions(tmp_path):
         assert c2.get("/healthz").json()["output"] == "DISCONNECTED"  # never resumes LIVE
 
 
+def test_test_caption_and_output_mode_commands(client):
+    c, engine = client
+    login(c)
+    assert not cmd(c, "send_test_caption")["accepted"]  # not connected
+    assert cmd(c, "connect_zoom", {"url": "mock", "target": "TEST"})["accepted"]
+    r = cmd(c, "send_test_caption")
+    assert r["accepted"] and "ç ğ ı İ ö ş ü" in r["data"]["text"]
+    assert not cmd(c, "set_output_mode", {"mode": "FR"})["accepted"]
+    assert cmd(c, "set_output_mode", {"mode": "BILINGUAL"})["accepted"]
+    assert c.get("/api/state").json()["context"]["output_mode"] == "BILINGUAL"
+    r = cmd(c, "send_test_caption")
+    assert r["data"]["text"].startswith("TR: ") and "\nEN: " in r["data"]["text"]
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline and len(engine.mock_zoom.meeting().captions) < 2:
+        time.sleep(0.05)
+    texts = [x.text for x in engine.mock_zoom.meeting().captions]
+    assert len(texts) == 2 and "\nEN: " in texts[1]
+    login(c, "speaker")
+    assert not cmd(c, "set_output_mode", {"mode": "TR"})["accepted"]  # operator only
+
+
 def test_real_zoom_and_event_disabled_in_dev(client):
     c, _ = client
     login(c)
@@ -242,7 +263,8 @@ SESSION = [
     {"gap": 0.1, "dur": 3.0, "lang": "music", "text": ""},
     {"gap": 0.1, "dur": 3.0, "lang": "mn", "text": "Ехова гэрлэлтийг бүтээсэн.", "tr": "Evliliği Yehova kurdu."},
     {"gap": 0.1, "dur": 3.0, "lang": "mn", "text": "Бид гэрлэлтийн тухай Библийн зарчим үзнэ.",
-     "tr": "Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz."},
+     "tr": "Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz.",
+     "en": "We will look at Bible principles, Ephesians 5:22."},
 ]
 
 

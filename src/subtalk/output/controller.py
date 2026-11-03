@@ -99,6 +99,7 @@ class OutputController:
         self.epoch = 0
         self.live_since: float | None = None
         self.state_reason: str | None = None
+        self.last_reject: str | None = None
         self._queue: deque[Caption] = deque()
         self._wakeup = asyncio.Event()
         self._inflight: asyncio.Task | None = None
@@ -213,33 +214,48 @@ class OutputController:
 
     # ----------------------------------------------------------- submission
     def submit(self, text: str, *, speech_end: float, source_event_ids: tuple = (),
-               origin_epoch: int | None = None) -> bool:
-        """Queue an automatic caption. Returns False if rejected at the gate.
+               origin_epoch: int | None = None, parts: list[str] | None = None) -> bool:
+        """Queue an automatic caption. Returns False if rejected at the gate
+        (the reason is kept in ``last_reject``).
 
         ``origin_epoch`` is the output epoch when the source speech entered the
         pipeline. Any state change since then (pause, stop, E-STOP, reset,
         reconnect, going live) makes the work stale. This check does not depend
         on clock resolution (time.monotonic() ticks every ~15.6 ms on some
         Windows/Python versions), unlike the speech_end comparison below.
+        ``parts`` are pre-composed payloads (e.g. bilingual); otherwise ``text``
+        is chunked here.
         """
         now = self._clock()
         probe = Caption(text=text, speech_end=speech_end, source_event_ids=source_event_ids)
+        reason = None
         if self.state is not OutputState.LIVE:
-            self._record(probe, "dropped_not_live")
-            return False
-        if origin_epoch is not None and origin_epoch != self.epoch:
-            self._record(probe, "dropped_epoch")
-            return False
+            reason = "dropped_not_live"
+        elif origin_epoch is not None and origin_epoch != self.epoch:
+            reason = "dropped_epoch"
         # "<=": speech ending in the same clock tick as going live counts as before it.
-        if self.live_since is not None and speech_end <= self.live_since:
-            self._record(probe, "dropped_before_live")
+        elif self.live_since is not None and speech_end <= self.live_since:
+            reason = "dropped_before_live"
+        elif now > speech_end + self.cfg.caption_ttl_s:
+            reason = "dropped_stale"
+        self.last_reject = reason
+        if reason:
+            self._record(probe, reason)
             return False
-        deadline = speech_end + self.cfg.caption_ttl_s
-        if now > deadline:
-            self._record(probe, "dropped_stale")
-            return False
-        self._enqueue(text, "auto", speech_end, deadline, source_event_ids)
+        self._enqueue(text, "auto", speech_end, speech_end + self.cfg.caption_ttl_s, source_event_ids, parts=parts)
         return True
+
+    def send_test(self, text: str) -> None:
+        """Explicitly labelled test caption: only to a TEST target, never to the wedding."""
+        if self.target is not Target.TEST:
+            raise CommandError("Test captions are only allowed for a TEST target")
+        self._require(OutputState.CONNECTED, OutputState.LIVE, OutputState.PAUSED)
+        text = (text or "").strip()
+        if not text:
+            raise CommandError("Empty caption")
+        now = self._clock()
+        self._enqueue(text, "test", now, now + self.cfg.manual_ttl_s, (), front=True,
+                      parts=[p for p in text.split("\f") if p.strip()])
 
     def send_manual(self, text: str) -> None:
         """Operator phrase deck / emergency manual caption."""
@@ -250,11 +266,14 @@ class OutputController:
         now = self._clock()
         self._enqueue(text, "manual", now, now + self.cfg.manual_ttl_s, (), front=True)
 
-    def _enqueue(self, text, kind, speech_end, deadline, source_ids, front=False) -> None:
-        chunks = chunk_caption(text, self.cfg.max_chars)
+    def _enqueue(self, text, kind, speech_end, deadline, source_ids, front=False, parts=None) -> None:
+        if parts:
+            chunks, shape = list(parts), False  # pre-composed (bilingual / test): send as given
+        else:
+            chunks, shape = chunk_caption(text, self.cfg.max_chars), self.cfg.line_breaks
         caps = [
             Caption(
-                text=two_line(c, self.cfg.line_chars) if self.cfg.line_breaks else c,
+                text=two_line(c, self.cfg.line_chars) if shape else c,
                 speech_end=speech_end, kind=kind, source_event_ids=source_ids,
                 epoch=self.epoch, deadline=deadline, part=i + 1, parts=len(chunks),
             )
@@ -283,7 +302,14 @@ class OutputController:
     def _gate(self, cap: Caption) -> str | None:
         if cap.epoch != self.epoch:
             return "dropped_epoch"
-        allowed = (OutputState.LIVE, OutputState.PAUSED) if cap.kind == "manual" else (OutputState.LIVE,)
+        if cap.kind == "test":
+            if self.target is not Target.TEST:
+                return "dropped_not_test_target"
+            allowed = (OutputState.CONNECTED, OutputState.LIVE, OutputState.PAUSED)
+        elif cap.kind == "manual":
+            allowed = (OutputState.LIVE, OutputState.PAUSED)
+        else:
+            allowed = (OutputState.LIVE,)
         if self.state not in allowed:
             return "dropped_not_live"
         if self._clock() > cap.deadline:

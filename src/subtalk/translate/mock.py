@@ -1,10 +1,14 @@
-"""Deterministic mock translator for development (no paid API calls)."""
+"""Deterministic mock translator for development (no paid API calls).
+
+Produces Turkish and English. ``translations`` maps a source text to a spec:
+{"tr": ..., "en": ..., "relation": ..., "quality": ..., "fail_en": bool}.
+"""
 from __future__ import annotations
 
 import asyncio
 import random
 
-from subtalk.translate.base import InterpretRequest, TranslateRequest, TranslationResult
+from subtalk.translate.base import InterpretRequest, TranslateRequest, TranslationResult, TranslatorError
 from subtalk.util.stats import Rolling
 
 
@@ -13,7 +17,6 @@ class MockTranslator:
 
     def __init__(self, translations: dict[str, dict] | None = None, latency_s: tuple[float, float] = (0.3, 0.9),
                  seed: int | None = None):
-        # translations: source text -> {"tr": ..., "relation": ..., "links": [...], "quality": ...}
         self.translations = translations or {}
         self.latency_s = latency_s
         self._rng = random.Random(seed)
@@ -26,20 +29,29 @@ class MockTranslator:
         await asyncio.sleep(d)
         return d * 1000
 
+    @staticmethod
+    def _english(spec: dict, text: str) -> tuple[bool | None, str, str | None]:
+        if spec.get("fail_en"):
+            return None, "", "missing_language"
+        return True, spec.get("en") or f"[mock EN] {text}", None
+
     async def translate(self, req: TranslateRequest) -> TranslationResult:
         self.requests += 1
         ms = await self._delay()
         if self.fail_next:
             self.fail_next -= 1
-            from subtalk.translate.base import TranslatorError
             raise TranslatorError("mock failure")
         spec = self.translations.get(req.text)
         self.latency.add(ms)
         if spec is None:
-            return TranslationResult(True, f"[mock TR] {req.text}", model="mock", latency_ms=ms)
+            return TranslationResult(True, f"[mock TR] {req.text}", model="mock", latency_ms=ms,
+                                     english=f"[mock EN] {req.text}", display_en=True)
         if spec.get("quality") == "garbled" or spec.get("tr") is None:
-            return TranslationResult(False, "", source_quality="garbled", model="mock", latency_ms=ms)
-        return TranslationResult(True, spec["tr"], source_quality=spec.get("quality", "ok"), model="mock", latency_ms=ms)
+            return TranslationResult(False, "", source_quality="garbled", model="mock", latency_ms=ms,
+                                     english="", display_en=False, source_quality_en="garbled")
+        d_en, en, err_en = self._english(spec, req.text)
+        return TranslationResult(True, spec["tr"], source_quality=spec.get("quality", "ok"), model="mock",
+                                 latency_ms=ms, english=en, display_en=d_en, error_en=err_en)
 
     async def interpret(self, req: InterpretRequest) -> TranslationResult:
         self.requests += 1
@@ -54,10 +66,12 @@ class MockTranslator:
         else:
             links = []
         display = relation in ("new_content", "resolves_held", "independent")
+        d_en, en, err_en = self._english(spec, req.text) if display else (False, "", None)
         return TranslationResult(
             display=display, turkish=spec.get("tr", f"[mock TR] {req.text}") if display else "",
             relation=relation, linked_ids=[i for i in links if i in cand_ids],
             conflict_note=spec.get("note", ""), model="mock", latency_ms=ms,
+            english=en, display_en=d_en, error_en=err_en,
         )
 
     def status(self) -> dict:

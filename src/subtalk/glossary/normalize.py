@@ -5,6 +5,7 @@ import re
 import unicodedata
 
 _PUNCT = re.compile(r"[^\w\s:\-]", re.UNICODE)
+_DASHES = re.compile(r"[‐‑‒–—―−]")
 _WS = re.compile(r"\s+")
 
 
@@ -14,6 +15,7 @@ def norm_mn(text: str) -> str:
     ё/е are NOT merged automatically; variants must be listed explicitly as
     aliases (glossary integration rule)."""
     text = unicodedata.normalize("NFC", text or "").casefold()
+    text = _DASHES.sub("-", text)  # "13:4–8" keeps its verse range
     text = _PUNCT.sub(" ", text)
     return _WS.sub(" ", text).strip()
 

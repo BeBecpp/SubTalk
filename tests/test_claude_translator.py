@@ -61,8 +61,16 @@ class FakeClient:
         return self
 
 
-OK = {"display": True, "turkish": "Merhaba.", "source_quality": "ok", "segment_kind": "speech",
-      "bible_mentions": [], "flags": []}
+def lang(text, display=True, quality="ok"):
+    return {"display": display, "text": text, "source_quality": quality, "flags": []}
+
+
+# Dual contract: one request returns Turkish and English.
+OK = {"turkish": lang("Merhaba."), "english": lang("Hello."), "segment_kind": "speech", "bible_mentions": []}
+
+
+def single(text, display=True):
+    return {"caption": lang(text, display), "segment_kind": "speech", "bible_mentions": []}
 
 
 def req(glossary, text="Сайн байна уу."):
@@ -75,7 +83,13 @@ async def test_request_shape(glossary):
     t = ClaudeTranslator(TranslateCfg(), glossary, "k", client=fake)
     r = await t.translate(req(glossary))
     assert r.display and r.turkish == "Merhaba."
+    assert r.display_en and r.english == "Hello."
+    assert len(fake.calls) == 1  # one request for both languages (single_request mode)
     call = fake.calls[0]
+    schema = call["output_config"]["format"]["schema"]
+    assert set(schema["required"]) >= {"turkish", "english"}
+    user = json.loads(call["messages"][0]["content"])
+    assert user["TARGETS"] == ["Turkish", "English"]
     assert call["beta"] is True and call["betas"] == [FALLBACK_BETA] and call["fallbacks"] == "default"
     assert call["model"] == "claude-sonnet-5-5"
     assert call["system"][0]["cache_control"] == {"type": "ephemeral"}
@@ -84,6 +98,89 @@ async def test_request_shape(glossary):
     assert "thinking" not in call and "temperature" not in call
     assert fake.options[0] == {"timeout": 5.0, "max_retries": 0}
     assert t.status()["spent_usd"] > 0
+
+
+async def test_missing_english_does_not_invalidate_turkish(glossary):
+    payload = {"turkish": lang("Merhaba."), "segment_kind": "speech", "bible_mentions": []}
+    t = ClaudeTranslator(TranslateCfg(), glossary, "k", client=FakeClient([response(payload)]))
+    r = await t.translate(req(glossary))
+    assert r.lang("tr").display and r.lang("tr").text == "Merhaba."
+    en = r.lang("en")
+    assert not en.display and en.error == "missing_language"
+
+
+async def test_english_withheld_independently(glossary):
+    payload = {"turkish": lang("Merhaba."), "english": lang("", False, "garbled"),
+               "segment_kind": "speech", "bible_mentions": []}
+    t = ClaudeTranslator(TranslateCfg(), glossary, "k", client=FakeClient([response(payload)]))
+    r = await t.translate(req(glossary))
+    assert r.lang("tr").display and not r.lang("en").display and r.lang("en").error is None
+
+
+async def test_parallel_mode_isolates_failures(glossary):
+    timeout = anthropic.APITimeoutError(request=httpx.Request("POST", "https://api.anthropic.com"))
+    # tr: ok; en: primary + fallback both time out
+    fake = FakeClient([response(single("Merhaba.")), timeout, timeout])
+
+    class Ordered(FakeClient):
+        pass
+
+    cfg = TranslateCfg(dual_mode="parallel")
+    t = ClaudeTranslator(cfg, glossary, "k", client=fake)
+    r = await t.translate(req(glossary))
+    # The first call is Turkish (gather starts tr first); English timed out twice.
+    assert r.lang("tr").text == "Merhaba."
+    en = r.lang("en")
+    assert not en.display and en.timed_out and en.error == "timeout"
+    assert len(fake.calls) == 3
+    targets = [json.loads(c["messages"][0]["content"])["TARGETS"] for c in fake.calls]
+    assert ["Turkish"] in targets and ["English"] in targets
+
+
+async def test_total_timeout_is_classified(glossary):
+    from subtalk.translate.base import TranslatorTimeout
+    timeout = anthropic.APITimeoutError(request=httpx.Request("POST", "https://api.anthropic.com"))
+    t = ClaudeTranslator(TranslateCfg(), glossary, "k", client=FakeClient([timeout, timeout]))
+    with pytest.raises(TranslatorTimeout):
+        await t.translate(req(glossary))
+
+
+async def test_ledger_reserves_commits_and_refuses(glossary, tmp_path):
+    from subtalk.budget import TestBudgetLedger
+    ledger = TestBudgetLedger(tmp_path / "ledger.json", limit_usd=5.0, stop_usd=4.5)
+    t = ClaudeTranslator(TranslateCfg(), glossary, "k", client=FakeClient([response(OK)]), ledger=ledger,
+                         ledger_group="unit")
+    await t.translate(req(glossary))
+    s = ledger.summary()
+    assert s["requests"] == 1 and s["spent_usd"] > 0 and s["by_group"]["unit"]["requests"] == 1
+    assert ledger.reserved == 0  # reservation replaced by the actual cost
+    # Persisted: a new ledger object (process restart) sees the same spend.
+    again = TestBudgetLedger(tmp_path / "ledger.json")
+    assert again.spent == ledger.spent
+    # Nearly exhausted ledger refuses before any request is sent.
+    tight = TestBudgetLedger(tmp_path / "tight.json", limit_usd=0.01, stop_usd=0.005)
+    fake = FakeClient([response(OK)])
+    t2 = ClaudeTranslator(TranslateCfg(), glossary, "k", client=fake, ledger=tight)
+    with pytest.raises(BudgetExceeded):
+        await t2.translate(req(glossary))
+    assert fake.calls == []
+
+
+async def test_ledger_releases_reservation_on_retryable_error(glossary, tmp_path):
+    from subtalk.budget import TestBudgetLedger
+    timeout = anthropic.APITimeoutError(request=httpx.Request("POST", "https://api.anthropic.com"))
+    ledger = TestBudgetLedger(tmp_path / "l.json")
+    t = ClaudeTranslator(TranslateCfg(), glossary, "k", client=FakeClient([timeout, response(OK)]), ledger=ledger)
+    await t.translate(req(glossary))
+    assert ledger.reserved == 0 and ledger.summary()["requests"] == 1
+
+
+def test_ledger_never_loosens_recorded_limits(tmp_path):
+    from subtalk.budget import TestBudgetLedger
+    TestBudgetLedger(tmp_path / "l.json", limit_usd=5.0, stop_usd=4.5).commit(
+        1, model="m", cost_usd=0.1, input_tokens=1, output_tokens=1, cache_read=0, cache_write=0)
+    loose = TestBudgetLedger(tmp_path / "l.json", limit_usd=100.0, stop_usd=90.0)
+    assert loose.stop == 4.5 and loose.limit == 5.0
 
 
 async def test_system_prompt_is_stable(glossary):
@@ -150,7 +247,11 @@ async def test_haiku_has_no_server_fallback(glossary):
 def test_user_message_contains_locked_reference(glossary):
     r = req(glossary, "Эфэс тавдугаар бүлэг гучин гуравдугаар зүйл.")
     msg = json.loads(build_user_message(r, glossary))
-    assert msg["LOCKED_REFERENCES"][0]["render_as"] == "Efesliler 5:33"
+    assert msg["LOCKED_REFERENCES"][0]["render_as_tr"] == "Efesliler 5:33"
+    assert msg["LOCKED_REFERENCES"][0]["render_as_en"] == "Ephesians 5:33"
+    first_cor = json.loads(build_user_message(req(glossary, "1 Коринт 13:4-8."), glossary))
+    assert first_cor["LOCKED_REFERENCES"][0]["render_as_en"] == "1 Corinthians 13:4-8"
+    assert first_cor["LOCKED_REFERENCES"][0]["render_as_tr"] == "1. Korintliler 13:4-8"
     bad = req(glossary, "Эфэс тавдугаар бүлгийн гучин дөрөвдүгээр зүйл.")
     msg = json.loads(build_user_message(bad, glossary))
     assert msg["LOCKED_REFERENCES"] == [] and msg["INVALID_REFERENCES"][0]["verse"] == 34

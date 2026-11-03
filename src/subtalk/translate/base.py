@@ -1,4 +1,9 @@
-"""Translator interface shared by the Claude and mock implementations."""
+"""Translator interface shared by the Claude and mock implementations.
+
+One recognition event -> one TranslationResult with an independent result per
+target language (Turkish 'tr', English 'en'). A problem in one language never
+invalidates the other.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -7,12 +12,18 @@ from typing import Protocol
 from subtalk.glossary.citations import Citation
 from subtalk.glossary.service import TermHint
 
+TARGETS = ("tr", "en")
+
+# Per-language status shown to the operator.
+PASS, WITHHELD, FAILED, TIMED_OUT, STALE = "PASS", "WITHHELD", "FAILED", "TIMED_OUT", "STALE"
+
 
 @dataclass
 class ContextPair:
     lang: str
     source: str
     turkish: str
+    english: str = ""
 
 
 @dataclass
@@ -21,6 +32,7 @@ class MnCandidate:
     mongolian: str
     turkish: str | None
     status: str  # published | held | translated | dropped
+    english: str | None = None
 
 
 @dataclass
@@ -35,6 +47,7 @@ class TranslateRequest:
     recent: list[ContextPair] = field(default_factory=list)
     main_speech: bool = False
     script_context: object | None = None  # reserved for the future script plugin (inactive)
+    renderings: dict | None = None  # target -> citation key -> rendering
 
 
 @dataclass
@@ -50,12 +63,30 @@ class Usage:
     cache_write: int = 0
     cost_usd: float = 0.0
 
+    def add(self, other: "Usage") -> None:
+        self.input_tokens += other.input_tokens
+        self.output_tokens += other.output_tokens
+        self.cache_read += other.cache_read
+        self.cache_write += other.cache_write
+        self.cost_usd += other.cost_usd
+
+
+@dataclass
+class LangOutput:
+    """Model output for one target language (before guards)."""
+    display: bool
+    text: str = ""
+    source_quality: str = "ok"
+    flags: list[str] = field(default_factory=list)
+    error: str | None = None  # missing_language | timeout | api_error | refusal | invalid_json ...
+    timed_out: bool = False
+
 
 @dataclass
 class TranslationResult:
-    display: bool
+    display: bool  # Turkish
     turkish: str
-    source_quality: str = "ok"  # ok | degraded | garbled
+    source_quality: str = "ok"
     segment_kind: str = "speech"
     bible_mentions: list[dict] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
@@ -66,9 +97,28 @@ class TranslationResult:
     latency_ms: float = 0.0
     usage: Usage = field(default_factory=Usage)
     error: str | None = None
+    english: str = ""
+    display_en: bool | None = None  # None -> English was not produced
+    source_quality_en: str | None = None
+    flags_en: list[str] = field(default_factory=list)
+    error_en: str | None = None
+    timed_out_en: bool = False
+    latency_ms_en: float | None = None
+
+    def lang(self, target: str) -> LangOutput:
+        if target == "en":
+            if self.display_en is None:
+                return LangOutput(False, "", error=self.error_en or "missing_language", timed_out=self.timed_out_en)
+            return LangOutput(self.display_en, self.english, self.source_quality_en or self.source_quality,
+                              list(self.flags_en), self.error_en, self.timed_out_en)
+        return LangOutput(self.display, self.turkish, self.source_quality, list(self.flags), self.error)
 
 
 class TranslatorError(Exception):
+    pass
+
+
+class TranslatorTimeout(TranslatorError):
     pass
 
 
