@@ -50,6 +50,12 @@ button { font: inherit; color: inherit; }
 .app.live-event .header { background: linear-gradient(180deg, rgba(239,91,85,.10), transparent), var(--surface); }
 .main { display: grid; grid-template-columns: 248px 1fr 268px; gap: 10px; padding: 10px; min-height: 0; }
 .col { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.main > .col:first-child { overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+.main > .col:first-child .btn { height: 36px; }
+.main > .col:first-child .btn.estop { height: 52px; }
+.main > .col:first-child .panel { padding: 10px 12px; }
+.main > .col:first-child .stack { gap: 7px; }
+.main > .col:first-child .toggle { padding: 7px 10px; }
 
 /* ---------- header ---------- */
 .header {
@@ -166,6 +172,16 @@ button { font: inherit; color: inherit; }
 .ev .src { color: var(--text-2); font-size: 12.5px; }
 .ev .tr { color: var(--text); font-size: 13.5px; margin-top: 3px; }
 .ev .why { color: var(--text-3); font-size: 11px; margin-top: 3px; }
+.ev .tl { display: grid; grid-template-columns: 26px auto 1fr; gap: 6px; align-items: baseline; margin-top: 3px; }
+.ev .tl .code { font: 700 10px/1 var(--font); letter-spacing: 1px; color: var(--text-3); }
+.ev .tl .ls { font: 700 9.5px/1 var(--font); letter-spacing: .8px; padding: 3px 5px; border-radius: 4px; white-space: nowrap; }
+.ev .tl .tx { color: var(--text); font-size: 13.5px; }
+.ev .tl .tx.muted { color: var(--text-3); font-size: 12px; }
+.ls.PASS { color: var(--green); background: var(--green-dim); }
+.ls.WITHHELD { color: var(--amber); background: var(--amber-dim); }
+.ls.FAILED, .ls.TIMED_OUT { color: var(--red); background: var(--red-dim); }
+.ls.STALE { color: var(--grey); background: var(--surface-3); }
+.seg button:disabled { opacity: .4; cursor: not-allowed; }
 .ev .st { font: 600 10px/1 var(--font); letter-spacing: 1px; text-transform: uppercase; padding: 5px 7px; border-radius: 5px; align-self: start; white-space: nowrap; }
 .st.published { color: var(--green); background: var(--green-dim); }
 .st.translating, .st.translated, .st.heard { color: var(--blue); background: var(--blue-dim); }

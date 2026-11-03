@@ -37,7 +37,7 @@ const ST = {
 
   // Live state socket with stale detection and engine-restart detection.
   connect(handlers) {
-    let ws = null, lastMsg = 0, bootId = null, backoff = 500, closed = false;
+    let ws = null, lastMsg = 0, bootId = null, backoff = 500, closed = false, staleShown = true, renderError = null;
     const open = () => {
       const proto = location.protocol === "https:" ? "wss" : "ws";
       ws = new WebSocket(`${proto}://${location.host}/ws/ui`);
@@ -47,7 +47,21 @@ const ST = {
         lastMsg = Date.now();
         if (bootId && snap.boot_id !== bootId) { handlers.onRestart(); return; }
         bootId = snap.boot_id;
-        handlers.onSnapshot(snap);
+        // A display bug must never leave an out-of-date screen looking current:
+        // if rendering fails, treat the screen as stale (controls locked, overlay shown).
+        try {
+          handlers.onSnapshot(snap);
+        } catch (err) {
+          console.error("render failed", err);
+          lastMsg = 0;
+          staleShown = true;
+          renderError = "Display error - this screen may be out of date. Press F5.";
+          handlers.onStale(true, 0, renderError);
+          return;
+        }
+        renderError = null;
+        // Fresh authoritative state: unlock immediately (not on the next 1 s tick).
+        if (staleShown) { staleShown = false; handlers.onStale(false, lastMsg); }
       };
       ws.onclose = (ev) => {
         if (closed) return;
@@ -60,7 +74,8 @@ const ST = {
     open();
     setInterval(() => {
       const stale = !lastMsg || Date.now() - lastMsg > 3000;
-      handlers.onStale(stale, lastMsg);
+      staleShown = stale;
+      handlers.onStale(stale, lastMsg, stale ? renderError : null);
       if (ws && ws.readyState === 1) { try { ws.send("ping"); } catch (_) { /* ignore */ } }
     }, 1000);
     // After a restart the server has a new boot id: our cookie is invalid.

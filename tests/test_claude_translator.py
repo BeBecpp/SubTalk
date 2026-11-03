@@ -282,8 +282,13 @@ def _live_key() -> str | None:
 @pytest.mark.live
 @pytest.mark.skipif(not _live_key(), reason="no ANTHROPIC_API_KEY / CLAUDE_KEY in environment or .env")
 async def test_live_claude_smoke(glossary):
-    """One real request (~$0.003): checks the API accepts the exact production request shape."""
-    t = ClaudeTranslator(TranslateCfg(), glossary, _live_key())
+    """One real request (~$0.004): checks the API accepts the exact production request shape.
+    Spend is recorded in the persisted test ledger (state/api_test_budget.json)."""
+    from subtalk.budget import TestBudgetLedger
+    ledger = TestBudgetLedger(ROOT / "state" / "api_test_budget.json")
+    t = ClaudeTranslator(TranslateCfg(), glossary, _live_key(), ledger=ledger, ledger_group="smoke")
     r = await t.translate(req(glossary, "Эрхэм зочид оо, тавтай морилно уу."))
     assert r.display and r.turkish
+    assert r.display_en and r.english
+    print("LIVE EN:", r.english)
     print("LIVE:", r.model, round(r.latency_ms), "ms", r.turkish, t.status()["spent_usd"])

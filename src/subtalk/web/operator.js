@@ -6,7 +6,7 @@ let snap = null;
 let stale = true;
 let restarted = false;
 let conn = null;
-const expectations = new Map(); // button id -> {check, until}
+const expectations = new Map(); // button element -> {check, until} (segment buttons have no id)
 
 // ------------------------------------------------------------------ auth
 async function boot() {
@@ -47,10 +47,10 @@ function start() {
   if (conn) conn.close();
   conn = ST.connect({
     onSnapshot: render,
-    onStale: (isStale) => {
+    onStale: (isStale, _last, message) => {
       stale = isStale;
       $("stale").classList.toggle("hidden", !isStale || !$("login").classList.contains("hidden"));
-      if (!restarted) $("staleMsg").textContent = "Connection lost — reconnecting…";
+      if (!restarted) $("staleMsg").textContent = message || "Connection lost — reconnecting…";
       if (snap) renderControls(snap);
     },
     onRestart: () => {
@@ -77,7 +77,7 @@ async function run(btn, type, args, check, versioned) {
   }
   if (btn && check) {
     btn.classList.add("acked");  // acknowledged by the server, waiting for actual state
-    expectations.set(btn.id, { check, until: Date.now() + 5000 });
+    expectations.set(btn, { check, until: Date.now() + 5000 });
   }
   return true;
 }
@@ -109,6 +109,12 @@ toggle($("tMain"), "set_main_speech", "main_speech");
 toggle($("tMusic"), "set_music_mode", "music_mode");
 $("jaPolicy").querySelectorAll("button").forEach((b) => b.addEventListener("click", () =>
   run(b, "set_ja_policy", { policy: b.dataset.v }, (s) => s.context.ja_policy === b.dataset.v)));
+$("outMode").querySelectorAll("button").forEach((b) => b.addEventListener("click", () =>
+  run(b, "set_output_mode", { mode: b.dataset.v }, (s) => s.context.output_mode === b.dataset.v)));
+$("btnTest").addEventListener("click", async () => {
+  const ok = await run($("btnTest"), "send_test_caption", {});
+  if (ok) ST.toast("Test caption queued for the TEST meeting - check it in Zoom");
+});
 
 $("btnEngineStart").addEventListener("click", () => run($("btnEngineStart"), "engine_start", {}, (s) => s.engine.processing));
 $("btnEngineStop").addEventListener("click", () => {
@@ -178,7 +184,7 @@ function kv(id, rows) {
 const STATE_TEXT = {
   DISCONNECTED: ["Not connected", "Paste the Zoom caption URL to begin"],
   CONNECTED: ["Ready · not live", "Nothing is sent until you hold “go LIVE”"],
-  LIVE: ["LIVE", "Turkish captions are being sent"],
+  LIVE: ["LIVE", "Captions are being sent"],
   PAUSED: ["Paused", "New captions are dropped, not queued"],
   E_STOPPED: ["E-STOP", "Output halted. Hold reset, then go live again."],
 };
@@ -187,8 +193,8 @@ function render(s) {
   snap = s;
   const o = s.output;
   // expectations: acknowledged -> actual
-  for (const [id, exp] of expectations) {
-    if (exp.check(s) || Date.now() > exp.until) { $(id).classList.remove("acked"); expectations.delete(id); }
+  for (const [el, exp] of expectations) {
+    if (exp.check(s) || Date.now() > exp.until) { el.classList.remove("acked"); expectations.delete(el); }
   }
   $("devBanner").classList.toggle("hidden", !s.dev_passcodes);
   $("eventName").textContent = s.event_name || "";
@@ -212,7 +218,9 @@ function render(s) {
   const [title, sub] = STATE_TEXT[o.state] || [o.state, ""];
   $("outState").textContent = title;
   $("outState").style.color = o.state === "LIVE" ? "var(--green)" : o.state === "E_STOPPED" ? "var(--red)" : o.state === "PAUSED" ? "var(--amber)" : "";
-  $("outSub").textContent = o.reason === "zoom_failures" ? "Auto-paused: Zoom rejected captions" : sub;
+  const modeLabel = { TR: "Turkish", EN: "English", BILINGUAL: "Turkish + English" }[s.context.output_mode] || "";
+  $("outSub").textContent = o.reason === "zoom_failures" ? "Auto-paused: Zoom rejected captions"
+    : (o.state === "LIVE" ? `${sub} · ${modeLabel}` : sub);
 
   renderOnAir(o);
   renderFeed(s.events || [], s.pipeline || {});
@@ -251,7 +259,20 @@ function renderFeed(events, p) {
     row.appendChild(ST.el("div", "lang " + e.kind, KIND_LABEL[e.kind] || e.kind));
     const body = ST.el("div");
     body.appendChild(ST.el("div", "src", e.text || (e.kind === "MUSIC" ? "music mode" : "(no speech)")));
-    if (e.turkish) body.appendChild(ST.el("div", "tr", e.turkish));
+    const out = e.out || {};
+    [["tr", "TR", e.turkish], ["en", "EN", e.english]].forEach(([k, code, text]) => {
+      const o = out[k];
+      if (!o && !text) return;
+      const line = ST.el("div", "tl");
+      line.appendChild(ST.el("span", "code", code));
+      const st = o ? o.status : "PASS";
+      const chip = ST.el("span", "ls " + st, st.replace("_", " "));
+      if (o && o.reasons && o.reasons.length) chip.title = o.reasons.join(", ");
+      line.appendChild(chip);
+      const shown = text || (o && o.text) || (o && o.reasons && o.reasons.length ? o.reasons.join(", ") : "");
+      line.appendChild(ST.el("span", "tx" + (text ? "" : " muted"), shown));
+      body.appendChild(line);
+    });
     const why = [];
     if (e.relation) why.push(e.relation.replace("_", " "));
     if (e.citations && e.citations.length) why.push("📖 " + e.citations.join(", "));
@@ -341,6 +362,9 @@ function renderControls(s) {
   $("tMain").title = c.main_speech_by ? "Last changed by " + c.main_speech_by : "";
   $("tMusic").classList.toggle("on", c.music_mode);
   $("jaPolicy").querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === c.ja_policy); b.disabled = !canControl; });
+  $("outMode").querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === c.output_mode); b.disabled = !canControl; });
+  set("btnTest", canControl && s.output.target === "TEST" && ["CONNECTED", "LIVE", "PAUSED"].includes(st));
+  $("btnTest").classList.toggle("hidden", s.output.target === "EVENT");
   ["btnEngineStart", "btnEngineStop", "btnResync", "btnWarm", "btnAutoMatch", "btnSpeakerCtl"].forEach((id) => set(id, canControl));
   set("btnEngineStart", canControl && !s.engine.processing && s.engine.state !== "FAULT");
   set("btnEngineStop", canControl && s.engine.processing);

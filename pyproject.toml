@@ -21,6 +21,8 @@ asr = ["faster-whisper>=1.1", "onnxruntime>=1.18"]
 # Audio sender (Computer A)
 sender = ["sounddevice>=0.4.7"]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.24"]
+# Browser end-to-end tests (uses the installed Microsoft Edge; no browser download needed)
+e2e = ["playwright>=1.45", "psutil>=5.9"]
 
 [project.scripts]
 subtalk = "subtalk.cli:main"
@@ -41,4 +43,7 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 pythonpath = ["src", "sender"]
-markers = ["live: makes real paid API calls (needs ANTHROPIC_API_KEY or CLAUDE_KEY)"]
+markers = [
+    "live: makes real paid API calls (needs ANTHROPIC_API_KEY or CLAUDE_KEY)",
+    "e2e: real browser tests against a real server process (needs the e2e extra + Microsoft Edge)",
+]

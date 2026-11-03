@@ -32,7 +32,10 @@
         <div class="state-big" id="outState">—</div>
         <div class="state-sub" id="outSub"></div>
         <div class="stack">
-          <button class="btn gold" id="btnConnect">Connect Zoom captions…</button>
+          <div class="row">
+            <button class="btn gold" id="btnConnect" title="Paste the Zoom caption URL">Connect…</button>
+            <button class="btn" id="btnTest" title="Sends a labelled test caption - TEST meeting only">Test caption</button>
+          </div>
           <button class="btn primary" id="btnLive" title="Hold to go live">Hold to go LIVE</button>
           <div class="row">
             <button class="btn" id="btnPause">Pause</button>
@@ -53,6 +56,14 @@
           <div class="toggle music" id="tMusic" role="switch" tabindex="0">
             <div><div class="lbl">Music / ceremony mode</div><div class="desc">No speech captions</div></div>
             <span class="switch"></span>
+          </div>
+          <div>
+            <div class="hint" style="margin:0 0 5px">Caption language sent to Zoom</div>
+            <div class="seg" id="outMode">
+              <button data-v="TR" title="Turkish only">Türkçe</button>
+              <button data-v="EN" title="English only">English</button>
+              <button data-v="BILINGUAL" title="Both in one caption">TR + EN</button>
+            </div>
           </div>
           <div>
             <div class="hint" style="margin:0 0 5px">Japanese speech</div>

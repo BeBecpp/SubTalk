@@ -23,6 +23,7 @@ logs/
 models/
 recordings/
 bench_out/
+test-artifacts/
 
 # Local tooling
 .claude/
