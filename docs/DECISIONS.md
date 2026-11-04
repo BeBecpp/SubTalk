@@ -2,6 +2,22 @@
 
 Newest first. Each entry: decision, evidence, consequences.
 
+## D-018 (2026-11-04) S-41 talk script: used for checks and phrases, not for live substitution
+
+- The owner supplied the Mongolian S-41 talk and their own TR + EN translation (private, `event/talk/`,
+  gitignored). Live captions still translate what is actually spoken (no script matching).
+- Found by reading it: verse lists ("Эфэс 5:25,28,29", "Эхлэл 2:21,22", spoken "хорин тав, хорин
+  найм, хорин есдүгээр") lost every verse after the first. Parser + guards now keep them:
+  "Efesliler 5:25, 28, 29" / "Ephesians 5:25, 28, 29"; non-ascending or out-of-range lists invalid.
+- Guards run on all 87 paragraphs against the owner's translation: 81 passed, 6 blocked. Two guard
+  rules were too strict and were relaxed narrowly: "Гэрч" may become "Jehovah's Witness(es)" /
+  "Yehova'nın Şahidi" (only that phrase); spouse words are allowed when the source says "гэр бүл
+  бол-" / "гэрлэ-". Now 85 pass; the 2 left add an unspoken subject/object (Jehovah, "your wife"),
+  which SubTalk deliberately never does.
+- Names file `event/event_names.json`: Galkhuu, Akane, Bat-Erdene (owner's spellings).
+- Phrase deck is bilingual (`en:`), sent in the current caption mode/layout and paced; the event deck
+  holds the owner's vow, ring and prayer texts. Vows: see the Friday decision (auto vs phrase deck).
+
 ## D-017 (2026-11-04) Strict caption TTL on arrival
 
 - The 10-min soak showed a caption reaching Zoom 13.6 s after speech end (TTL 12 s): the gate

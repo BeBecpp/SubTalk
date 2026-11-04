@@ -62,6 +62,14 @@ required. "n/a" = music / applause (no text). Cases are synthetic; not a measure
 | 4 Nov | separate TEST meeting, web client, host view | bilingual captions shown, TR first, Turkish letters correct; `\n` **not rendered**; single-line layout readable; 13 captions in order; Pause/Resume/Stop/E-STOP behaved; caption visible ~8-10 s. Details: `docs/ZOOM_TEST_THURSDAY.md` |
 | Thu 5 Nov | desktop app + phone participants, network loss, rejoin | **pending** |
 
+## S-41 talk: guards vs the owner's human translation (4 Nov, free, no Claude)
+
+87 Mongolian paragraphs checked with SubTalk's guards against the owner's TR + EN translation:
+- Before fixes: 81 pass / 6 blocked. Defects found and fixed: verse lists truncated ("5:25,28,29" →
+  "5:25"); "Гэрч" → "Jehovah's Witness" and "гэр бүл болох" → "husband and wife" wrongly blocked.
+- After fixes: **85 pass / 2 blocked**; both add an unspoken subject or object (by design).
+- Not yet: Claude's own translation of the talk compared with the owner's (optional, ~$0.3).
+
 ## Failure-injection soak (mock Claude + mock Zoom, real pipeline / controller / sender)
 
 | Date | Duration | Faults | Violations | Notes |

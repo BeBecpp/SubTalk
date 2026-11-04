@@ -25,6 +25,7 @@ from subtalk.config import Config, anthropic_api_key, audio_token, relay_token
 from subtalk.glossary.guards import Guards
 from subtalk.glossary.service import GlossaryService
 from subtalk.glossary.store import load_glossary
+from subtalk.output.compose import compose_parts
 from subtalk.output.controller import CommandError, OutputConfig, OutputController
 from subtalk.output.viewer import ViewerFeed
 from subtalk.pipeline.core import ContextState, Pipeline
@@ -596,9 +597,16 @@ class Engine:
             self.context.speaker_control_enabled = bool(a["enabled"])
             self._ctx_version += 1
         elif ctype == "send_phrase":
-            text = str(a["text"])[:200]
+            text = str(a["text"])[:400]
             en = next((p["en"] for p in self.phrases if p["text"] == text), "")
-            o.send_manual(text, en=en)
+            # Same caption language and layout as automatic captions (TR + EN by default).
+            z, mode = self.cfg.zoom, self.context.output_mode
+            parts = compose_parts({"tr": text, "en": en}, mode,
+                                  z.bilingual_max_chars if mode == "BILINGUAL" else z.max_chars,
+                                  z.bilingual_labels, self.context.caption_layout)
+            if not parts:
+                raise CommandError(f"This phrase has no {'English' if mode == 'EN' else 'text'} for mode {mode}")
+            o.send_manual(text, en=en, parts=parts)
         elif ctype == "send_test_caption":
             stamp = time.strftime("%H:%M:%S")
             mode = self.context.output_mode

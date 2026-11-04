@@ -1,23 +1,33 @@
-# Operator phrase deck (manual captions). One click + confirm sends the text to Zoom.
-# status: review_required -> have a Turkish speaker check the wording before the event.
-# Override per event in event/phrases.yaml (same format, gitignored).
+# Operator phrase deck (manual captions). One click + confirm sends the phrase to Zoom in the
+# current caption language (TR only / EN only / TR + EN, current layout).
+# text = Turkish, en = English. status: review_required -> have native speakers check the wording.
+# Override per event in event/phrases.yaml (same format, gitignored; replaces this whole list).
 status: review_required
 phrases:
   - label: "Welcome / captions start"
-    text: "Türkçe altyazılara hoş geldiniz. Altyazılar yapay zekâ ile otomatik olarak çevrilmektedir."
+    text: "Altyazılara hoş geldiniz. Altyazılar yapay zekâ ile otomatik olarak çevrilmektedir."
+    en: "Welcome to the captions. They are translated automatically by AI."
   - label: "Ceremony starts shortly"
     text: "Tören birazdan başlayacak."
+    en: "The ceremony will begin shortly."
   - label: "[Music]"
     text: "[Müzik]"
+    en: "[Music]"
   - label: "[Song]"
     text: "[İlahi]"
+    en: "[Song]"
   - label: "[Applause]"
     text: "[Alkış]"
+    en: "[Applause]"
   - label: "Prayer (no text)"
     text: "[Dua ediliyor]"
+    en: "[Prayer]"
   - label: "Short break"
     text: "Kısa bir ara."
+    en: "A short break."
   - label: "Captions paused (technical)"
-    text: "Türkçe altyazılara teknik bir nedenle kısa bir ara verildi."
+    text: "Altyazılara teknik bir nedenle kısa bir ara verildi."
+    en: "Captions are paused briefly for a technical reason."
   - label: "Captions resumed"
-    text: "Türkçe altyazılar yeniden başladı."
+    text: "Altyazılar yeniden başladı."
+    en: "Captions have resumed."

@@ -341,3 +341,40 @@ def test_viewer_disabled_by_default(client):
         with c.websocket_connect("/ws/viewer") as ws:
             ws.receive_text()
     assert e.value.code == 4404
+
+
+def test_phrase_deck_follows_caption_language_and_keeps_long_vows_whole(tmp_path):
+    cfg = make_cfg(tmp_path, session=[])
+    ev = tmp_path / "event"
+    ev.mkdir(parents=True, exist_ok=True)
+    # Synthetic long phrase (not event text): long enough to need several paced parts.
+    vow_tr = ("Bu uzun bir deneme cümlesidir ve birkaç parçaya bölünmesi gerekir. Her kelime sırasıyla ekranda "
+              "görünmeli, hiçbir kelime kaybolmamalı ve Türkçe satır her zaman önce gelmelidir. Sonuna kadar okuyun.")
+    vow_en = ("This is a long test sentence that has to be split into several parts. Every word must appear in "
+              "order, no word may be lost, and the Turkish line must always come first. Read it to the end.")
+    (ev / "phrases.yaml").write_text(yaml.safe_dump({"phrases": [
+        {"label": "[Music]", "text": "[Müzik]", "en": "[Music]"},
+        {"label": "Vow", "text": vow_tr, "en": vow_en}]}, allow_unicode=True), encoding="utf-8")
+    c, engine = make_client(cfg)
+    with c:
+        login(c)
+        assert cmd(c, "connect_zoom", {"url": "mock", "target": "TEST"})["accepted"]
+        assert cmd(c, "start_live")["accepted"]
+        assert cmd(c, "send_phrase", {"text": "[Müzik]"})["accepted"]
+        assert cmd(c, "send_phrase", {"text": vow_tr})["accepted"]
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline and engine.output.queue_len + (1 if not engine.mock_zoom.meeting().captions else 0):
+            time.sleep(0.1)
+        texts = [x.text for x in engine.mock_zoom.meeting().captions]
+        assert texts[0] == "TR: [Müzik] | EN: [Music]"
+        vow_parts = texts[1:]
+        assert len(vow_parts) >= 2 and all(p.startswith("TR: ") and " | EN: " in p for p in vow_parts)
+        tr_words = " ".join(p.split(" | EN: ")[0][4:] for p in vow_parts).split()
+        en_words = " ".join(p.split(" | EN: ")[1] for p in vow_parts).split()
+        assert tr_words == vow_tr.split() and en_words == vow_en.split()  # nothing lost, order kept
+        assert cmd(c, "set_output_mode", {"mode": "TR"})["accepted"]
+        assert cmd(c, "send_phrase", {"text": "[Müzik]"})["accepted"]
+        deadline = time.monotonic() + 8
+        while time.monotonic() < deadline and engine.mock_zoom.meeting().captions[-1].text != "[Müzik]":
+            time.sleep(0.1)
+        assert engine.mock_zoom.meeting().captions[-1].text == "[Müzik]"

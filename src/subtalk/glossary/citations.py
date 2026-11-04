@@ -46,13 +46,14 @@ class Citation:
     verse_end: int | None
     status: str  # valid | unverified | invalid | book_only
     reason: str = ""
+    more: tuple[int, ...] = ()  # further verses of the same chapter: "5:25,28,29" -> (28, 29)
 
     @property
     def has_numbers(self) -> bool:
         return self.chapter is not None
 
     def key(self) -> tuple:
-        return (self.book_id, self.chapter, self.verse, self.verse_end)
+        return (self.book_id, self.chapter, self.verse, self.verse_end, self.more)
 
 
 def format_ref(glossary: Glossary, c: Citation, lang: str = "tr") -> str | None:
@@ -67,7 +68,7 @@ def format_ref(glossary: Glossary, c: Citation, lang: str = "tr") -> str | None:
     ref = f"{name} {c.chapter}:{c.verse}"
     if c.verse_end:
         ref += f"-{c.verse_end}"
-    return ref
+    return ref + "".join(f", {v}" for v in c.more)
 
 
 def format_tr(glossary: Glossary, c: Citation) -> str | None:
@@ -75,7 +76,23 @@ def format_tr(glossary: Glossary, c: Citation) -> str | None:
 
 
 def validate(glossary: Glossary, book_id: str, chapter: int | None, verse: int | None,
-             verse_end: int | None) -> Citation:
+             verse_end: int | None, more: tuple[int, ...] = ()) -> Citation:
+    c = _validate(glossary, book_id, chapter, verse, verse_end)
+    if not more or c.status not in ("valid", "unverified"):
+        return c
+    max_v = glossary.verse_counts.get(f"{book_id} {chapter}")
+    prev = verse_end or verse
+    for v in more:
+        if v <= prev:
+            return Citation(book_id, chapter, verse, verse_end, "invalid", "verse list not ascending", more)
+        if max_v is not None and v > max_v:
+            return Citation(book_id, chapter, verse, verse_end, "invalid", f"verse {v} > {max_v}", more)
+        prev = v
+    return Citation(book_id, chapter, verse, verse_end, c.status, c.reason, more)
+
+
+def _validate(glossary: Glossary, book_id: str, chapter: int | None, verse: int | None,
+              verse_end: int | None) -> Citation:
     if chapter is None:
         return Citation(book_id, None, None, None, "book_only")
     max_ch = glossary.chapter_counts.get(book_id)
@@ -139,29 +156,52 @@ class CitationDetector:
                 return book_id, j + n
         return None
 
-    def _parse_tail(self, tokens: list[str], start: int) -> tuple[int | None, int | None, int | None]:
+    @staticmethod
+    def _more_digits(tokens: list[str], j: int, last: int) -> tuple[int, ...]:
+        """Bare numbers right after "5:25" in increasing order are more verses ("5:25, 28, 29"
+        - commas are not tokens). A smaller number ("2:24 3 удаа") is something else."""
+        more = []
+        while j < len(tokens):
+            m = re.fullmatch(r"(\d+)(?:-[а-яөүё]+)?", tokens[j])
+            if not m or int(m.group(1)) <= last:
+                break
+            last = int(m.group(1))
+            more.append(last)
+            j += 1
+        return tuple(more)
+
+    def _parse_tail(self, tokens: list[str], start: int) -> tuple[int | None, int | None, int | None, tuple]:
         """Parse chapter/verse spoken right after the book name."""
         j = start
         if j < len(tokens) and tokens[j].startswith("ном"):  # "Эфэс номын 5..." / "Эхлэл номын"
             j += 1
         if j >= len(tokens):
-            return None, None, None
+            return None, None, None, ()
         m = re.fullmatch(r"(\d+):(\d+)(?:-(\d+))?", tokens[j])
         if m:
-            return int(m.group(1)), int(m.group(2)), int(m.group(3)) if m.group(3) else None
-        window = tokens[j:j + 12]
+            v, ve = int(m.group(2)), int(m.group(3)) if m.group(3) else None
+            return int(m.group(1)), v, ve, self._more_digits(tokens, j + 1, ve or v)
+        window = tokens[j:j + 16]
         spans = parse_mn_numbers(window)
         if not spans or spans[0].start != 0:
-            return None, None, None  # numbers must follow the book name immediately
+            return None, None, None, ()  # numbers must follow the book name immediately
         first = spans[0]
         after_first = window[first.end] if first.end < len(window) else ""
         chapter = first.value
         verse = None
         nxt_index = first.end + (1 if after_first.startswith(CHAPTER_WORDS) else 0)
         second = next((s for s in spans[1:] if s.start == nxt_index), None)
+        more: list[int] = []
         if second is not None:
             verse = second.value
-        return chapter, verse, None
+            # "хорин тав, хорин найм, хорин есдүгээр зүйл": adjacent, increasing numbers
+            prev_span, last = second, second.value
+            for s in spans[spans.index(second) + 1:]:
+                if s.start != prev_span.end or s.value <= last:
+                    break
+                more.append(s.value)
+                prev_span, last = s, s.value
+        return chapter, verse, None, tuple(more)
 
     def detect_mn(self, text: str) -> list[Citation]:
         """Book names such as "Эхлэл" (beginning) or "Дуулал" (song) are also
@@ -177,7 +217,7 @@ class CitationDetector:
                 i += 1
                 continue
             book_id, end = hit
-            chapter, verse, verse_end = self._parse_tail(tokens, end)
+            chapter, verse, verse_end, more = self._parse_tail(tokens, end)
             next_tok = tokens[end] if end < len(tokens) else ""
             book_cue = has_cue or next_tok.startswith("ном")
             if chapter is not None and verse is None and not (book_cue or self._chapter_word_after(tokens, end)):
@@ -185,7 +225,7 @@ class CitationDetector:
             if chapter is None and not book_cue:
                 i = end
                 continue
-            out.append(validate(self.g, book_id, chapter, verse, verse_end))
+            out.append(validate(self.g, book_id, chapter, verse, verse_end, more if verse else ()))
             i = end
         return self._dedupe(out)
 

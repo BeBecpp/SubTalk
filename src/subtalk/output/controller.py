@@ -300,9 +300,9 @@ class OutputController:
         self._enqueue(text, "test", now, now + self.cfg.manual_ttl_s, (), front=True,
                       parts=[p for p in text.split("\f") if p.strip()])
 
-    def send_manual(self, text: str, *, en: str | None = None) -> None:
-        """Operator phrase deck / emergency manual caption (Turkish ``text``;
-        optional English ``en`` for the guest viewer)."""
+    def send_manual(self, text: str, *, en: str | None = None, parts: list[str] | None = None) -> None:
+        """Operator phrase deck / emergency manual caption (Turkish ``text``, optional English
+        ``en``). ``parts`` are the composed Zoom payloads (e.g. "TR: ... | EN: ..."), paced."""
         self._require(OutputState.LIVE, OutputState.PAUSED)
         text = (text or "").strip()
         if not text:
@@ -313,7 +313,7 @@ class OutputController:
             self.viewer.publish_caption({"tr": text, "en": (en or "").strip()}, kind="manual")
         if self.zoom_ready:
             now = self._clock()
-            self._enqueue(text, "manual", now, now + self.cfg.manual_ttl_s, (), front=True)
+            self._enqueue(text, "manual", now, now + self.cfg.manual_ttl_s, (), front=True, parts=parts)
         else:
             self._on_change()
 

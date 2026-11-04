@@ -31,7 +31,9 @@ SRC = {
     "covenant": {"mn": ("гэрээ",), "ja": ("契約",)},
     "amen": {"mn": ("амен", "аминь"), "ja": ("アーメン",)},
     "verse": {"mn": ("зүйл", "эшлэл", "ишлэл", "шүлэг"), "ja": ("節", "聖句")},
-    "spouse": {"mn": ("эхнэр", "нөхөр", "нөхр", "хань", "гэргий", "хос", "сүйт", "гэр бүлийн хүн"),
+    # "гэр бүл бол-" (become a family) / "гэрлэ-" (marry): at a wedding this IS becoming husband and wife.
+    "spouse": {"mn": ("эхнэр", "нөхөр", "нөхр", "хань", "гэргий", "хос", "сүйт", "гэр бүлийн хүн",
+                      "гэр бүл бол", "гэрлэ"),
                "ja": ("妻", "夫", "奥さん", "旦那", "配偶", "夫婦", "新婦", "新郎", "花嫁", "花婿", "嫁")},
     "groom": {"mn": ("сүйт залуу", "хүргэн", "сүйт"), "ja": ("新郎", "花婿", "婿")},
     "bride": {"mn": ("сүйт бүсгүй", "бэр", "сүйт"), "ja": ("新婦", "花嫁", "嫁")},
@@ -48,12 +50,15 @@ class Profile:
     concepts: dict[str, re.Pattern]  # concept -> invented-word pattern
     chapter_word: str  # "bölüm" / "chapter"
     case_sensitive_books: bool
+    # "Jehovah's Witness(es)": the standard rendering of a spoken "Гэрч" (Witness) in JW speech.
+    witnesses_re: re.Pattern = re.compile(r"$^")
 
 
 TR = Profile(
     lower=turkish_lower,
     word_re=re.compile(r"[\wâîûçğıöşü’']+"),
     jehovah_prefix="yehova",
+    witnesses_re=re.compile(r"yehova[’']n[ıi]n\s+şahi[dt]\w*"),
     divine_re=re.compile(r"(yehova|tanrı|allah)\w*([’'].*)?|rab+(?:[’']\w*|im|in|imiz|iniz|ı|i)?"),
     concepts={
         "prayer": re.compile(r"dua\w*([’'].*)?"),
@@ -76,6 +81,7 @@ EN = Profile(
     lower=str.lower,
     word_re=re.compile(r"[\w’']+"),
     jehovah_prefix="jehovah",
+    witnesses_re=re.compile(r"jehovah[’']s\s+witness(es)?"),
     divine_re=re.compile(r"(jehovah|god|gods|lord|allah|heavenly)([’']s)?"),
     concepts={
         "prayer": re.compile(r"pray(s|ed|ing|er|ers)?"),
@@ -228,7 +234,11 @@ class Guards:
         words = prof.word_re.findall(prof.lower(text))
         # 2. Divine name: preserved when spoken, never invented.
         src_jehovah = any(contains_form(t.ja if lang == "ja" else t.mn, source, lang) for t in self._jehovah)
-        out_jehovah = any(w.startswith(prof.jehovah_prefix) for w in words)
+        dwords = words  # words checked for divine references
+        if not src_jehovah and lang == "mn" and _source_has(source, lang, ("гэрч",)):
+            # "Гэрч нөхөр" -> "a husband who is one of Jehovah's Witnesses": allowed only as that phrase.
+            dwords = prof.word_re.findall(prof.witnesses_re.sub(" ", prof.lower(text)))
+        out_jehovah = any(w.startswith(prof.jehovah_prefix) for w in dwords)
         if src_jehovah and not out_jehovah:
             blocked.append("divine_name_missing")
         if out_jehovah and not src_jehovah:
@@ -236,7 +246,7 @@ class Guards:
         src_divine = src_jehovah or any(
             contains_form(t.ja if lang == "ja" else t.mn, source, lang) for t in self._divine_terms
         )
-        if not src_divine and any(prof.divine_re.fullmatch(w) for w in words):
+        if not src_divine and any(prof.divine_re.fullmatch(w) for w in dwords):
             blocked.append("divine_reference_invented")
 
         # 3. Religious/ceremony concepts and people must come from the source.
@@ -252,7 +262,7 @@ class Guards:
         else:
             src_numbers.update(s.value for s in parse_mn_numbers(mn_tokens(source)))
         for c in citations:
-            src_numbers.update(x for x in (c.chapter, c.verse, c.verse_end) if x is not None)
+            src_numbers.update(x for x in (c.chapter, c.verse, c.verse_end, *c.more) if x is not None)
         for n in digit_numbers(text):
             if n not in src_numbers:
                 blocked.append(f"number_invented:{n}")

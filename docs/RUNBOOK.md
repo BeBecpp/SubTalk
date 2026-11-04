@@ -28,6 +28,11 @@ phrase deck only → no captions. Decide at GO/NO-GO, not during a talk.
 
 * Songs, processional, long music: switch **Music / ceremony mode** on; optionally send *[İlahi]* / *[Müzik]*. Switch it off when speech resumes.
 * Father's interpreted talk: **Main Speech** on (or the speaker page). It never stops normal translation.
+* Bible readings (5 in the S-41 talk): the read verses are captioned as spoken. If reading is unclear,
+  phrase deck ▸ *Bible reading (no text)*.
+* Vows (groom and bride repeat after the speaker): use what Friday decided - either automatic
+  captions, or **Pause** → phrase deck ▸ *Vow - groom (Galkhuu)* / *Vow - bride (Akane)* → **Resume**.
+  Then *Rings / registration*, *Prayer by Bat-Erdene* (or *Prayer (no text)*), *Congratulations*.
 * Someone speaks Japanese on their own (not interpreting): Japanese ▸ **All**, back to **Auto** afterwards.
 * Watch the verdict pill: CAPTIONING / LISTENING are fine. Anything red: see below.
 

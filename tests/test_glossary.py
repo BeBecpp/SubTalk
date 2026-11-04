@@ -451,3 +451,62 @@ def test_english_does_not_block_ordinary_words(guards, svc):
 
 def test_guard_empty(guards, svc):
     assert check(guards, svc, "Сайн уу", "").blocked == ["empty_output"]
+
+
+# --------------------------------------------------------------- verse lists (S-41 talk, 4 Nov)
+@pytest.mark.parametrize("src,tr,en_", [
+    ("Эхлэл 2:21,22-ыг нээцгээе.", "Başlangıç 2:21, 22", "Genesis 2:21, 22"),
+    ("Эфэс 5:25,28,29-г уншицгаая.", "Efesliler 5:25, 28, 29", "Ephesians 5:25, 28, 29"),
+    ("Эфэс 5:25, 28, 29-г уншицгаая.", "Efesliler 5:25, 28, 29", "Ephesians 5:25, 28, 29"),
+    ("Эфэс тавдугаар бүлгийн хорин тав, хорин найм, хорин есдүгээр зүйлийг уншъя.",
+     "Efesliler 5:25, 28, 29", "Ephesians 5:25, 28, 29"),
+    ("Эфэс 5:22-24-ыг харъя.", "Efesliler 5:22-24", "Ephesians 5:22-24"),
+])
+def test_verse_lists_are_kept_whole(glossary, svc, src, tr, en_):
+    from subtalk.glossary.citations import format_ref
+    (c,) = svc.citations.detect(src, "mn")
+    assert c.status == "valid"
+    assert format_ref(glossary, c, "tr") == tr and format_ref(glossary, c, "en") == en_
+
+
+def test_number_after_reference_that_is_not_a_verse(svc):
+    (c,) = svc.citations.detect("Эхлэл 2:24 3 удаа уншсан.", "mn")
+    assert (c.verse, c.more) == (24, ())
+
+
+def test_verse_list_beyond_chapter_is_invalid(svc):
+    (c,) = svc.citations.detect("Эфэс 5:25, 40 уншъя.", "mn")
+    assert c.status == "invalid"
+
+
+def test_guard_accepts_verse_list_and_blocks_an_invented_extra(guards, svc):
+    src = "Эфэс 5:25,28,29-г уншицгаая."
+    assert check(guards, svc, src, "Efesliler 5:25, 28, 29'u okuyalım.").ok
+    assert en(guards, svc, src, "Let's read Ephesians 5:25, 28, 29.").ok
+    r = en(guards, svc, src, "Let's read Ephesians 5:25, 28, 30.")
+    assert not r.ok and "number_invented:30" in r.blocked
+    spoken = "Эфэс тавдугаар бүлгийн хорин тав, хорин найм, хорин есдүгээр зүйлийг уншъя."
+    assert en(guards, svc, spoken, "Let's read Ephesians 5:25, 28, 29.").ok
+
+
+# --------------------------------------------------------------- S-41 talk findings (4 Nov)
+def test_witness_husband_may_be_rendered_jehovahs_witness(guards, svc):
+    src = "Гэрч нөхөр эхнэртээ эелдэг байна."
+    assert en(guards, svc, src, "A husband who is one of Jehovah's Witnesses is kind to his wife.").ok
+    assert check(guards, svc, src, "Yehova'nın Şahidi olan bir koca eşine nazik davranır.").ok
+    # ...but only as that phrase: a plain unspoken "Jehovah" is still invented
+    r = en(guards, svc, src, "Jehovah wants a husband to be kind to his wife.")
+    assert not r.ok and "divine_name_invented" in r.blocked
+
+
+def test_jehovahs_witness_without_spoken_witness_is_blocked(guards, svc):
+    r = en(guards, svc, "Нөхөр эхнэрээ хайрлах ёстой.", "A husband who is one of Jehovah's Witnesses should love his wife.")
+    assert not r.ok and "divine_name_invented" in r.blocked
+
+
+def test_becoming_a_family_at_the_vows_allows_husband_and_wife(guards, svc):
+    src = "Тэд өнөөдөр гэр бүл болно."
+    assert en(guards, svc, src, "Today they become husband and wife.").ok
+    assert check(guards, svc, src, "Bugün karı koca oluyorlar.").ok
+    r = en(guards, svc, "Галхүүд баяр хүргэе.", "Congratulations to Galkhuu and his wife.")
+    assert not r.ok and "spouse_invented" in r.blocked  # a name alone still never gets a spouse

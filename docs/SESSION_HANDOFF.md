@@ -26,6 +26,11 @@ reliable recovery. Guest viewer / Cloudflare relay = disabled experimental code 
 - Dev laptop CPU cannot run Whisper live (D-016). faster-whisper `asr` extra now installed in .venv.
 - Soak harness `subtalk soak` (mock Claude + mock Zoom, faults + invariants); 60 s run: 0 violations.
 
+- S-41 talk (owner's MN script + TR/EN translation, private in `event/talk/`): verse lists fixed,
+  two over-strict guards relaxed (85/87 human paragraphs pass), names file + bilingual phrase deck
+  with vows created in `event/` (D-018). Friday checklist: `docs/REHEARSAL_FRIDAY.md`.
+- Computer B: RTX 4060 8 GB, 32 GB RAM, i9 (owner, 4 Nov). Rehearsal with the real mic on Friday.
+
 ## VERIFIED TEST RESULTS
 See `docs/TEST_REPORT.md`.
 
@@ -43,10 +48,9 @@ $0.4978 of $5.00 (190 requests, ledger `state/api_test_budget.json`). Spend befo
 $4.0022 before the automatic stop at $4.50.
 
 ## EXACT NEXT ACTION
-1. Thursday: Zoom TEST meeting with a desktop-app participant and a phone (Show Captions on):
-   check 1-line vs 2-line, readability at real speed, network loss, host rejoin / new token.
-2. Friday: Computer B — `subtalk bench-asr` on real Mongolian recordings (GPU), real audio path,
-   per-stage latency vs target; runbook rehearsal; freeze.
+1. Thursday: Zoom TEST meeting with a desktop-app participant and a phone (Show Captions on).
+2. Before Friday: Computer B install + `large-v3` download (`docs/REHEARSAL_FRIDAY.md` section 0).
+3. Friday: follow `docs/REHEARSAL_FRIDAY.md`; decide vows (auto vs phrase deck); freeze.
 
 ## COMMAND TO REPRODUCE
 ```
