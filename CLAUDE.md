@@ -100,6 +100,8 @@ Production (Computer B): `docs/SETUP.md`. Use `127.0.0.1`, not `localhost` (IPv6
 - Before every commit: `git diff --cached` review + check no `sk-ant-` / caption URL / `.env` staged.
 - Tests never post to the wedding meeting. Real Zoom only in a separate TEST meeting.
 - Output never auto-resumes LIVE after a restart; never switch TEST -> EVENT automatically.
+- `event/` is gitignored except `event/talk/` (owner's talk + translation), tracked only because
+  the GitHub repo is private (D-020). Never push while `gh repo view --json isPrivate` is false.
 - Nothing of SubTalk is public. Never expose the dashboard, speaker page, audio ingest or engine
   port to the internet. (Experimental relay token `SUBTALK_RELAY_TOKEN` / `relay/.dev.vars`: never commit.)
 

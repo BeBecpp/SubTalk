@@ -14,7 +14,10 @@ dist/
 !.env.example
 *.env.txt
 secrets/
-event/
+# event/: private. Only event/talk/ (owner's talk script + TR/EN translation) is tracked,
+# by owner request (4 Nov), and only while the GitHub repo is PRIVATE (D-020).
+event/*
+!event/talk/
 config/local.yaml
 
 # Runtime state, logs, models, recordings

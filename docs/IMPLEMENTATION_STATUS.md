@@ -54,6 +54,6 @@ recorded (`util/latency.py`, dashboard diagnostics). Measured so far: Claude p50
 - Real mixer audio through the sender on Computer A.
 - Tailscale access from a real phone; LAN access from a second computer.
 - Turkish and English human review of translations, glossary terms and phrase deck.
-- Japanese native review of the JA phrase deck (vows) and of live JA captions; Japanese spelling
-  of the names (Galkhuu, Akane, Bat-Erdene) - Latin letters until the family gives one.
+- Japanese native review of the JA phrase deck (vows) and of live JA captions. Names stay in
+  Latin letters in Japanese (owner, 4 Nov).
 - Thursday: is a three-language caption readable on desktop and phone (length, wrapping)?

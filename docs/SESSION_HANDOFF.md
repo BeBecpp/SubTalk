@@ -14,7 +14,7 @@ reliable recovery. Guest viewer / Cloudflare relay = disabled experimental code 
 - Sat 7 Nov: wedding with the frozen release. Never claim Thu/Fri tests passed before they run.
 
 ## CURRENT GIT COMMIT
-`11cebc6` + 4 Nov work (Zoom findings, sender 403 fix, prompt fix, soak harness): see `git log`.
+`5504b5e` (Japanese captions, CI green on 3.12 + 3.13) + this docs note: see `git log`.
 
 ## LAST COMPLETED TASK (4 Nov)
 - Real Zoom TEST meeting (web client, host view, separate instant meeting): bilingual captions
@@ -33,6 +33,7 @@ reliable recovery. Guest viewer / Cloudflare relay = disabled experimental code 
 - Japanese captions (owner, 4 Nov evening; D-019): modes JA / TRILINGUAL (TR + EN + JA) for vows
   and MC (the talk has a live Japanese interpreter → TR + EN there). Live eval clean; found and fixed
   an invalid verse spelled out in words. JA phrase deck = Claude draft, needs a native check.
+  Names stay in Latin letters in Japanese captions (owner decision, 4 Nov; no katakana).
 
 ## VERIFIED TEST RESULTS
 See `docs/TEST_REPORT.md`.
@@ -69,4 +70,4 @@ $3.6273 before the automatic stop at $4.50.
   (desktop app) and a phone join with Show Captions on.
 - Friday: Computer B with the NVIDIA GPU, mixer audio, Mongolian test recordings.
 - Turkish/English reviewers for translations and glossary terms.
-- A Japanese native speaker: JA phrase deck (vows) and the Japanese spelling of the names.
+- A Japanese native speaker: JA phrase deck (vows).

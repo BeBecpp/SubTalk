@@ -2,6 +2,14 @@
 
 Newest first. Each entry: decision, evidence, consequences.
 
+## D-020 (2026-11-04) The talk files are tracked in git (private repo only)
+
+- Owner request: commit `event/talk/` (the Mongolian S-41 talk and the owner's TR + EN translation)
+  so it travels with the repo; the owner makes the GitHub repo private.
+- Only `event/talk/` is unignored. `event_names.json`, `phrases.yaml` and approvals stay untracked.
+- Pushed only after `gh repo view` reported the repo private. If the repo ever becomes public again,
+  these files must be removed from history first.
+
 ## D-019 (2026-11-04) Japanese captions: operator mode TR + EN + JA for non-interpreted parts
 
 - Owner: guests are Turkish friends, American friends and the Japanese family. The talk is
@@ -28,8 +36,8 @@ Newest first. Each entry: decision, evidence, consequences.
   digits, kanji or TR / EN number words. Re-run of the 11 reference cases: all correct, 5:34
   withheld in all three languages.
 - Phrase deck: optional `ja:`; Japanese texts in `event/phrases.yaml` are Claude's draft from the
-  owner's English (needs a native Japanese check). Names stay Latin until the family gives a
-  Japanese spelling (`ja_target` in `event/event_names.json`).
+  owner's English (needs a native Japanese check). Names stay in Latin letters in Japanese
+  captions (owner decision, 4 Nov): Galkhuu, Akane, Bat-Erdene; no katakana (`ja_target` unused).
 
 ## D-018 (2026-11-04) S-41 talk script: used for checks and phrases, not for live substitution
 

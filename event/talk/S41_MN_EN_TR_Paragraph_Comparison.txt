@@ -1,0 +1,537 @@
+[Title] S-41 · Mongolian / English / Turkish
+[Subtitle] Paragraph-aligned translation review · Galkhuu & Akane · 7 November 2026
+[SpeechCue] MN = source manuscript; EN = English; TR = Turkish. Scripture reading cues are non-spoken. The source does not include the text of the verses read aloud.
+[Heading1] A Family That Pleases God   /   Tanrı'yı Memnun Eden Bir Aile
+[Heading1] MARRIAGE IS GOD'S GIFT TO HUMANS SO THEY CAN ENJOY LOVE AND HAPPINESS FOREVER (4 min)   /   EVLİLİK, İNSANLARIN SONSUZA DEK SEVGİ VE MUTLULUK İÇİNDE YAŞAMASI İÇİN TANRI'NIN VERDİĞİ BİR HEDİYEDİR (4 dk.)
+[ParaLabel] SOURCE PARAGRAPH 02
+[MNReference] MN   Гэрлэлт бол Ехова Бурхны бэлэг. Их үнэ цэнэтэй бэлэг. Библийн эхний бүлэгт Ехова бүх зүйлийг бүтээсэн тухай харин 2-р бүлэгт гэр бүлийг санаачлан бий болгосон тухай гардаг.
+[TranslationLabel] EN  ·  English
+Marriage is a gift from Jehovah God—a very precious gift. The first chapter of the Bible tells us how Jehovah created everything, while the second chapter explains how he originated the family arrangement.
+[TranslationLabel] TR  ·  Türkçe
+Evlilik, Yehova Tanrı'nın verdiği bir hediyedir; hem de çok değerli bir hediye. Kutsal Kitabın ilk bölümünde Yehova'nın her şeyi nasıl yarattığı, ikinci bölümünde ise aile düzenini nasıl başlattığı anlatılır.
+[ParaLabel] SOURCE PARAGRAPH 03
+[MNReference] MN   Адамыг бүтээсэн зорилго нь газар дэлхийг хүмүүсээр дүүргэн газрыг эзэмшүүлж, арчлан тордуулахын тулд юм.
+[TranslationLabel] EN  ·  English
+Adam was created so that the earth could be filled with people, brought under their care, cultivated, and looked after.
+[TranslationLabel] TR  ·  Türkçe
+Âdem, yeryüzünün insanlarla dolması, insanların yeryüzünü yönetip işleyerek ona bakması amacıyla yaratıldı.
+[ParaLabel] SOURCE PARAGRAPH 04
+[MNReference] MN   Үүнийг биелүүлэхэд нь Адамд туслагч хэрэгтэй байв. Эхлэл 2:21,22-т Ехова юу хийснийг бичсэн байгаа.
+[TranslationLabel] EN  ·  English
+To accomplish this purpose, Adam needed a helper. Genesis 2:21, 22 tells us what Jehovah did.
+[TranslationLabel] TR  ·  Türkçe
+Bu amacı gerçekleştirebilmesi için Âdem'in bir yardımcıya ihtiyacı vardı. Başlangıç 2:21, 22'de Yehova'nın ne yaptığı anlatılıyor.
+[ParaLabel] SOURCE PARAGRAPH 05
+[MNReference] MN   Нээгээд хамт уншицгаая. Ехова анхны гэр бүлийг хэрхэн бий болгосон бэ?
+[TranslationLabel] EN  ·  English
+Let's open our Bibles and read it together. How did Jehovah establish the first family?
+[TranslationLabel] TR  ·  Türkçe
+Kutsal Kitaplarımızı açıp birlikte okuyalım. Yehova ilk aileyi nasıl kurdu?
+[SpeechCue] READING CUE (not spoken): Genesis 2:21–22 / Başlangıç 2:21–22
+[ParaLabel] SOURCE PARAGRAPH 06
+[MNReference] MN   Эмэгтэй хүнийг эрэгтэй хүний хавиргаар бүтээсэн. Тэгэхэд нь Адам баярлан хөөрсөндөө “Яснаас минь авсан яс, Махнаас минь авсан мах ингээд хүн боллоо” гэж хэлсэн байдаг.
+[TranslationLabel] EN  ·  English
+Jehovah made the woman from the man's rib. Adam was so overjoyed that he said, ‘At last, here is bone of my bones and flesh of my flesh.’
+[TranslationLabel] TR  ·  Türkçe
+Yehova kadını erkeğin kaburga kemiğinden yarattı. Âdem öyle sevindi ki, 'İşte sonunda! Kemiği kemiklerimden, eti etimden olan biri' dedi.
+[ParaLabel] SOURCE PARAGRAPH 07
+[MNReference] MN   24-р зүйлийг харвал Ехова Бурхан анхны гэр бүлийг санаачилсан тухай бичсэн байна. Үүнийг бас уншицгаая.
+[TranslationLabel] EN  ·  English
+Verse 24 shows that Jehovah God was the one who originated the first family. Let's read that verse too.
+[TranslationLabel] TR  ·  Türkçe
+24. ayet Yehova Tanrı'nın ilk aile düzenini başlattığını gösteriyor. Onu da birlikte okuyalım.
+[SpeechCue] READING CUE (not spoken): Genesis 2:24 / Başlangıç 2:24
+[ParaLabel] SOURCE PARAGRAPH 08
+[MNReference] MN   Ехова ийнхүү анхны гэр бүлийг бий болгосон юм. 1 эрэгтэй хүн, 1 эмэгтэй хүн нөхөр эхнэр болно.
+[TranslationLabel] EN  ·  English
+That is how Jehovah established the first family. One man and one woman become husband and wife.
+[TranslationLabel] TR  ·  Türkçe
+Yehova ilk aileyi böyle kurdu. Bir erkek ve bir kadın karı koca olur.
+[ParaLabel] SOURCE PARAGRAPH 09
+[MNReference] MN   Эндээс гэрлэлтийн тухай нэг чухал зүйлийг мэдэж авна. Нөхөр, эхнэр 2 нэг бие болно гэсэн нь гэрлэлт бол үүрдийнх байх ёстой гэсэн үг. Үүнийг Есүс Христ “Нэг бие болсон учир Бурхны нийлүүлснийг хэн ч бүү салгаг” гэж хэлснээрээ эхнэр нөхөр салах учиргүйг батлан хэлсэн.
+[TranslationLabel] EN  ·  English
+This teaches us something very important about marriage. The husband and wife become one flesh, which means marriage is meant to last for life. Jesus Christ confirmed that a husband and wife should not separate when he said, ‘Since they have become one flesh, let no one separate what God has joined together.’
+[TranslationLabel] TR  ·  Türkçe
+Bu bize evlilikle ilgili çok önemli bir şey öğretiyor. Karı koca tek beden olur; bu da evliliğin ömür boyu sürmesi gerektiği anlamına gelir. İsa Mesih de 'Artık tek beden olduklarına göre, Tanrı'nın birleştirdiğini kimse ayırmasın' diyerek karı kocanın ayrılmaması gerektiğini açıkça belirtti.
+[ParaLabel] SOURCE PARAGRAPH 10
+[MNReference] MN   Ехова гэр бүлийг үүрдийн холбоо байхаар санаачилсан.
+[TranslationLabel] EN  ·  English
+Jehovah intended marriage to be a lasting bond.
+[TranslationLabel] TR  ·  Türkçe
+Yehova evliliği kalıcı bir bağ olarak tasarladı.
+[ParaLabel] SOURCE PARAGRAPH 11
+[MNReference] MN   Ехова бол хайрын сэтгэлтэй жаргалтай Бурхан. Тиймээс эхнэр нөхөр хоёр бие биеэ хайрлаж, жаргалтай амьдарвал, Еховагийн сайшаалыг хүртэнэ.
+[TranslationLabel] EN  ·  English
+Jehovah is a loving and happy God. So when a husband and wife love each other and live happily together, they gain Jehovah's approval.
+[TranslationLabel] TR  ·  Türkçe
+Yehova sevgi dolu ve mutlu bir Tanrı'dır. Bu yüzden karı koca birbirini sevip mutlu bir yaşam sürdüğünde Yehova'nın onayını kazanır.
+[ParaLabel] SOURCE PARAGRAPH 12
+[MNReference] MN   Үүний тулд юу хийх хэрэгтэй вэ? Одоо хамтдаа библийн зарчим зөвлөгөөнүүдээс үзэцгээе.
+[TranslationLabel] EN  ·  English
+What do they need to do for that to happen? Let's look together at some Bible principles and counsel.
+[TranslationLabel] TR  ·  Türkçe
+Peki bunun için ne yapmaları gerekiyor? Şimdi Kutsal Kitaptaki bazı ilke ve öğütleri birlikte ele alalım.
+[Heading1] HOW CAN WE KEEP OUR FAMILY LOVING, HAPPY, AND STRONG? (4 min)   /   AİLEMİZİN SEVGİ DOLU, MUTLU VE GÜÇLÜ KALMASI İÇİN NE YAPABİLİRİZ? (4 dk.)
+[ParaLabel] SOURCE PARAGRAPH 14
+[MNReference] MN   Ялангуяа Галхүү, Акане 2-т хэрэгтэй гэсэн зүйлүүдээс үзнэ. Өнөөдөр их олон хүн цугларсан байгаа ч. Ийм олон хүмүүсийн дунд зөвхөн та 2 зөвлөгөө авна гэдэг нь ховор боломж шүү.
+[TranslationLabel] EN  ·  English
+We'll especially consider counsel that will help Galkhuu and Akane. Many people have gathered here today, but among all these people, the two of you have the rare opportunity to receive counsel especially for you.
+[TranslationLabel] TR  ·  Türkçe
+Özellikle Galkhuu ve Akane'ye yararlı olacak öğütler üzerinde duracağız. Bugün burada çok sayıda insan toplandı. Ama bu kadar insanın arasında yalnızca ikinizin size özel öğütler alması gerçekten ender bir fırsat.
+[ParaLabel] SOURCE PARAGRAPH 15
+[MNReference] MN   Харин өнөөдөр та 2 догдолсон байгаа болохоор сайн тогтоохгүй байж магад. Харин бичлэг хийж байгаа болохоор дараа үе үе үзэж байгаарай.
+[TranslationLabel] EN  ·  English
+Of course, you're probably very excited today, so you might not remember everything. But the event is being recorded, so please watch it from time to time afterward.
+[TranslationLabel] TR  ·  Türkçe
+Tabii bugün çok heyecanlı olduğunuz için her şeyi aklınızda tutamayabilirsiniz. Fakat konuşma kaydedildiğinden, daha sonra ara sıra yeniden izleyin.
+[ParaLabel] SOURCE PARAGRAPH 16
+[MNReference] MN   Тэгээд өөрсдөөсөө би надад өгсөн библийн зарчмыг хэр сайн хэрэгжүүлж байгаа вэ? Гэж асуугаарай.
+[TranslationLabel] EN  ·  English
+Then ask yourselves, ‘How well am I applying the Bible principles I was given?’
+[TranslationLabel] TR  ·  Türkçe
+Sonra kendinize, 'Bana verilen Kutsal Kitap ilkelerini ne kadar iyi uyguluyorum?' diye sorun.
+[ParaLabel] SOURCE PARAGRAPH 17
+[MNReference] MN   Дараа нь бие биеэсээ би хэр сайн нөхөр эсвэл эхнэр болж байгаа вэ? Гэж асуугаарай.
+[TranslationLabel] EN  ·  English
+Also ask each other, ‘How well am I doing as a husband or as a wife?’
+[TranslationLabel] TR  ·  Türkçe
+Birbirinize de, 'Ben ne kadar iyi bir koca ya da eş oluyorum?' diye sorun.
+[ParaLabel] SOURCE PARAGRAPH 18
+[MNReference] MN   Харин хариулахдаа боломж олдсон дээр гээд хамаа ямаагүй битгий хэлээрэй. Эелдэг хүндэтгэлтэй хэлээрэй.
+[TranslationLabel] EN  ·  English
+But when you answer, don't think, ‘Here's my chance!’ and say whatever comes to mind. Speak kindly and respectfully.
+[TranslationLabel] TR  ·  Türkçe
+Ama cevap verirken, 'İşte fırsat!' deyip aklınıza geleni pat diye söylemeyin. Birbirinizle nazik ve saygılı konuşun.
+[ParaLabel] SOURCE PARAGRAPH 19
+[MNReference] MN   Ехова Бурхны өгч байгаа нөхөрт зориулсан, эхнэрт зориулсан зөвлөгөөг сайн санаж үргэлж хэрэгжүүлж яваарай. Бурхнаа эн тэргүүнд тавьж, зөвлөгөөг нь дагавал гэр бүл чинь тогтвортой байх болно.
+[TranslationLabel] EN  ·  English
+Always remember and apply Jehovah God's counsel for husbands and wives. If you put God first and follow his guidance, your marriage will be stable.
+[TranslationLabel] TR  ·  Türkçe
+Yehova Tanrı'nın kocalara ve eşlerine verdiği öğütleri iyi hatırlayın ve her zaman uygulayın. Tanrı'yı ilk sıraya koyup rehberliğini izlerseniz evliliğiniz sağlam olacaktır.
+[ParaLabel] SOURCE PARAGRAPH 20
+[MNReference] MN   Библид гэр бүлийн 2-г томсон дээстэй зүйрлэсэн байдаг. Энэ нь эхнэр нөхөр 2 нэг баг болж харилцан бие биеэ дэмжинэ гэсэн үг.
+[TranslationLabel] EN  ·  English
+The Bible uses the illustration of a braided cord in connection with marriage. It helps us see that husband and wife are one team, supporting each other.
+[TranslationLabel] TR  ·  Türkçe
+Kutsal Kitap evlilikle ilgili olarak örülmüş bir ip benzetmesi kullanır. Bu benzetme, karı kocanın bir takım olduğunu ve birbirini desteklemesi gerektiğini anlamamıza yardım eder.
+[ParaLabel] SOURCE PARAGRAPH 22
+[MNReference] MN   Ер нь сур, дээс томохдоо 3-р томдог тэ. Бат бэх болж тийм ч амархан тасрахгүй. Тиймээс нөхөр эхнэрийн хэн хэн нь Ехова Бурхныг хайрладаг бол гэр бат бөх болно.
+[TranslationLabel] EN  ·  English
+You know, when people braid leather thongs or ropes, they usually use three strands, don't they? That makes the cord strong and hard to break. In the same way, when both husband and wife love Jehovah God, their marriage becomes strong.
+[TranslationLabel] TR  ·  Türkçe
+Biliyorsunuz, deri kayışları ya da ipleri örerken genellikle üçlü öreriz, değil mi? Böylece ip sağlam olur ve kolay kolay kopmaz. Aynı şekilde hem koca hem de karısı Yehova Tanrı'yı severse evlilikleri güçlü olur.
+[ParaLabel] SOURCE PARAGRAPH 23
+[MNReference] MN   Яаж 3-р томсон дээс шиг байх вэ? Еховагийн өгдөг зөвлөгөө хамгийн найдвартай гэдгийг үргэлж санаж яваарай. Ехова бидний бүтээсэн, гэр бүлийг санаачилсан. Ехова бүгдийг мэддэг.
+[TranslationLabel] EN  ·  English
+How can your marriage become like that threefold cord? Always remember that Jehovah's counsel is the most trustworthy. Jehovah created us and originated the family arrangement. He knows everything.
+[TranslationLabel] TR  ·  Türkçe
+Peki evliliğiniz nasıl üç katlı bir ip gibi olabilir? Yehova'nın verdiği öğütlerin en güvenilir öğütler olduğunu hep hatırlayın. Bizi yaratan ve aile düzenini başlatan Yehova'dır. O her şeyi bilir.
+[ParaLabel] SOURCE PARAGRAPH 24
+[MNReference] MN   Тиймээс хамтдаа Библи судалж, залбирч, Бурхнаа шүтвэл хоорондоо ч Еховатай ч дотно болно.
+[TranslationLabel] EN  ·  English
+So when you study the Bible together, pray together, and worship God together, you will draw closer both to each other and to Jehovah.
+[TranslationLabel] TR  ·  Türkçe
+Bu yüzden birlikte Kutsal Kitabı inceler, dua eder ve Yehova'ya tapınırsanız hem birbirinize hem de Yehova'ya daha da yakınlaşırsınız.
+[Heading1] A HUSBAND WHO EARNS DEEP RESPECT (7 min)   /   DERİN SAYGI KAZANAN BİR KOCA (7 dk.)
+[ParaLabel] SOURCE PARAGRAPH 26
+[MNReference] MN   Ехова эр хүнийг өрхийн тэргүүнээр томилсон. Нөхөр хүнд ямар зөвлөгөө байгаа үзье.
+[TranslationLabel] EN  ·  English
+Jehovah appointed the man to be the head of the family. Let's see what counsel he gives husbands.
+[TranslationLabel] TR  ·  Türkçe
+Yehova erkeği ailenin başı olarak görevlendirdi. Şimdi kocalara hangi öğütleri verdiğine bakalım.
+[ParaLabel] SOURCE PARAGRAPH 27
+[MNReference] MN   Өрхийн тэргүүн гэр бүлээ төлөөлөн шийдвэр гаргана. Энэ нь Галхүү Аканег төлөөлж шийдвэр гаргана. Гаргасан шийдвэрийн үр дүнг Акане бас үүрэлцэнэ.
+[TranslationLabel] EN  ·  English
+The head of the family makes decisions on behalf of the family. So Galkhuu will make decisions that affect Akane too, and Akane will share in the consequences of those decisions.
+[TranslationLabel] TR  ·  Türkçe
+Ailenin başı, ailesini temsil ederek kararlar verir. Yani Galkhuu'nun verdiği kararlar Akane'yi de etkileyecek ve Akane bu kararların sonuçlarını onunla birlikte yaşayacak.
+[ParaLabel] SOURCE PARAGRAPH 28
+[MNReference] MN   Тиймээс Галхүү чамд их чухал үүрэг оногдож байна. Чиний гаргасан шийдвэрээс хамаарч Акане баяр хөөртэй байна эсвэл зовно. Иймээс аливааг хийхдээ хайрын сэтгэлээр хийгээрэй.
+[TranslationLabel] EN  ·  English
+So Galkhuu, a very important responsibility rests on you. Depending on the decisions you make, Akane may be happy or she may suffer. That's why you should always act with love.
+[TranslationLabel] TR  ·  Türkçe
+Galkhuu, bu nedenle omuzlarında çok önemli bir sorumluluk var. Verdiğin kararlara bağlı olarak Akane mutlu da olabilir, sıkıntı da çekebilir. Bu yüzden her şeyi sevgiyle yap.
+[ParaLabel] SOURCE PARAGRAPH 29
+[MNReference] MN   Бас өрхийн тэргүүний үүрэгт эхнэртээ хайр халамж тавих багтдаг.
+[TranslationLabel] EN  ·  English
+Being the family head also means showing love and tender care for your wife.
+[TranslationLabel] TR  ·  Türkçe
+Ailenin başı olmak, eşine sevgi ve şefkat göstermek anlamına da gelir.
+[ParaLabel] SOURCE PARAGRAPH 30
+[MNReference] MN   Мөн өрхийн тэргүүний үүрэгт гэр бүлийнхнийхээ Галхүүгийн хувьд Аканегийн Бурхантай дотно байх, бие махбод, сэтгэл санааны болон амарч зугаацах хэрэгцээг хангах зэрэг багтдаг.
+[TranslationLabel] EN  ·  English
+It also includes caring for the family's needs. In Galkhuu's case, that means helping Akane remain close to God and providing for her physical, emotional, and recreational needs.
+[TranslationLabel] TR  ·  Türkçe
+Ayrıca ailenin ihtiyaçlarıyla ilgilenmek de bu sorumluluğun bir parçasıdır. Galkhuu'nun durumunda bu, Akane'nin Tanrı'yla yakın bir ilişki sürdürmesine yardım etmeyi, onun fiziksel, duygusal ve dinlenme ihtiyaçlarını karşılamayı da kapsar.
+[ParaLabel] SOURCE PARAGRAPH 31
+[MNReference] MN   Үүнийг Галхүү сайн хийнэ гэдэгт итгэлтэй байна. Хэтрүүлэн ч хийх байх. Харин энэ дотроос Еховатай дотно байх хамгийн чухал учраас үүнийг №1 тавьж өөрөө манлайлан хийдэг байгаарай.
+[TranslationLabel] EN  ·  English
+I'm sure Galkhuu will do this well—perhaps even more than expected! But of all these needs, staying close to Jehovah is the most important. So make that your number one priority and take the lead in it yourself.
+[TranslationLabel] TR  ·  Türkçe
+Galkhuu'nun bunları çok iyi yapacağına eminim; belki beklenenden de fazlasını yapacak! Ancak tüm bu ihtiyaçların içinde Yehova'ya yakın kalmak en önemlisidir. O nedenle bunu birinci sıraya koy ve bu konuda kendin örnek ol.
+[ParaLabel] SOURCE PARAGRAPH 32
+[MNReference] MN   Өрхийн тэргүүн байна гэдэг нь дарангуйлах ёсгүй, хатуу ширүүн хандах учиргүй. Эфэс 5:25,28,29-г уншицгаая. Дарангуйлах биш яаж хандаж ёстой вэ?
+[TranslationLabel] EN  ·  English
+Being head of the family doesn't mean being domineering or treating your wife harshly. Let's read Ephesians 5:25, 28, and 29. Instead of dominating her, how should a husband treat his wife?
+[TranslationLabel] TR  ·  Türkçe
+Ailenin başı olmak, baskıcı davranmak ya da eşine sert davranmak demek değildir. Efesliler 5:25, 28 ve 29'u okuyalım. Peki koca eşine baskı yapmak yerine nasıl davranmalı?
+[SpeechCue] READING CUE (not spoken): Ephesians 5:25, 28–29 / Efesliler 5:25, 28–29
+[ParaLabel] SOURCE PARAGRAPH 33
+[MNReference] MN   Есүс нөхрүүдийн дагах жишээг үлдээсэн. 1-р зууны хурал буюу Христийн дагалдагчид бэлэгдлийн утгаар Есүсийн сүйт бүсгүй. Есүс тэднийхээ төлөө дуртайяа амиа өгсөн.
+[TranslationLabel] EN  ·  English
+Jesus set an example for husbands to follow. The first-century Christian congregation—Christ's followers—is figuratively spoken of as Jesus' bride. Jesus willingly gave his life for them.
+[TranslationLabel] TR  ·  Türkçe
+İsa kocaların izlemesi gereken örneği bıraktı. Birinci yüzyıldaki Hıristiyan cemaati, yani Mesih'in takipçileri, mecazi anlamda İsa'nın gelini olarak anlatılır. İsa onlar için seve seve canını verdi.
+[ParaLabel] SOURCE PARAGRAPH 34
+[MNReference] MN   Есүс маш олон сайхан зан чанартай. Хувиа боддоггүй, бусдын эрх ашгийг нэгдүгээт тавьдаг.
+[TranslationLabel] EN  ·  English
+Jesus has many wonderful qualities. He is unselfish and puts the interests of others first.
+[TranslationLabel] TR  ·  Türkçe
+İsa'nın pek çok güzel niteliği vardır. Bencil değildir; başkalarının yararını kendi çıkarlarının önüne koyar.
+[ParaLabel] SOURCE PARAGRAPH 35
+[MNReference] MN   Дөлгөөн зантай, библийн түүхийг харвал хэн ч бай Түүн дээр очоод сэтгэл сэргэдэг.
+[TranslationLabel] EN  ·  English
+He is mild-tempered. As we see in the Bible accounts, anyone who approached him could leave feeling refreshed.
+[TranslationLabel] TR  ·  Türkçe
+Yumuşak huyludur. Kutsal Kitap kayıtlarında gördüğümüz gibi, ona yaklaşan herkes kendini ferahlamış hissedebilirdi.
+[ParaLabel] SOURCE PARAGRAPH 36
+[MNReference] MN   Гэрч нөхөрүүд үүнийг дууриах учиртай. Галхүүгийн хувьд үүнийг анхаарч хэрэгжүүлэх үе эхлэж байна. Есүс хурлыг хэрхэн хайрладаг байсан шиг Галхүү эхнэрээ тийнхүү хайрлах учиртай.
+[TranslationLabel] EN  ·  English
+Husbands who are Jehovah's Witnesses should imitate him. Galkhuu, now is the time for you to put these qualities into practice. Just as Jesus loved the congregation, you should love your wife.
+[TranslationLabel] TR  ·  Türkçe
+Yehova'nın Şahidi olan kocalar onu örnek almalıdır. Galkhuu, artık bu nitelikleri gösterme zamanın geldi. İsa cemaati nasıl sevdiyse sen de eşini öyle sevmelisin.
+[ParaLabel] SOURCE PARAGRAPH 37
+[MNReference] MN   Библид нөхрүүдийг эхнэрээ хайрлахыг үргэлж уриалдаг. Энэ нь эрэгтэй хүн хайрлах чадваргүй гэсэн үг бишээ. Эр хүнд хайрлах зүйл их олон байгаа.
+[TranslationLabel] EN  ·  English
+The Bible repeatedly urges husbands to love their wives. That doesn't mean men are incapable of love. A man already has many people and things he loves.
+[TranslationLabel] TR  ·  Türkçe
+Kutsal Kitap kocaları eşlerini sevmeye tekrar tekrar teşvik eder. Bu, erkeklerin sevme yeteneği olmadığı anlamına gelmez. Bir erkeğin zaten sevdiği pek çok kişi ve şey vardır.
+[ParaLabel] SOURCE PARAGRAPH 38
+[MNReference] MN   Христиан эр хүн гэвэл.
+[TranslationLabel] EN  ·  English
+Think of a Christian man. He loves:
+[TranslationLabel] TR  ·  Türkçe
+Hıristiyan bir erkeği düşünün. O şunları sever:
+[ParaLabel] SOURCE PARAGRAPH 39
+[MNReference] MN   Бурхнаа
+[TranslationLabel] EN  ·  English
+God,
+[TranslationLabel] TR  ·  Türkçe
+Tanrı'yı,
+[ParaLabel] SOURCE PARAGRAPH 40
+[MNReference] MN   Есүсийг
+[TranslationLabel] EN  ·  English
+Jesus,
+[TranslationLabel] TR  ·  Türkçe
+İsa'yı,
+[ParaLabel] SOURCE PARAGRAPH 41
+[MNReference] MN   Эцэг эхээ
+[TranslationLabel] EN  ·  English
+his parents,
+[TranslationLabel] TR  ·  Türkçe
+anne babasını,
+[ParaLabel] SOURCE PARAGRAPH 42
+[MNReference] MN   Галхүүгийн хувьд
+[TranslationLabel] EN  ·  English
+and in Galkhuu's case,
+[TranslationLabel] TR  ·  Türkçe
+Galkhuu'nun durumunda ise
+[ParaLabel] SOURCE PARAGRAPH 43
+[MNReference] MN   Эгчийгээ
+[TranslationLabel] EN  ·  English
+his older sister,
+[TranslationLabel] TR  ·  Türkçe
+ablasını,
+[ParaLabel] SOURCE PARAGRAPH 44
+[MNReference] MN   Хурлынхнаа
+[TranslationLabel] EN  ·  English
+his fellow congregation members,
+[TranslationLabel] TR  ·  Türkçe
+cemaatteki kardeşlerini,
+[ParaLabel] SOURCE PARAGRAPH 45
+[MNReference] MN   Бүр машнаа хайрладаг.
+[TranslationLabel] EN  ·  English
+and even his car!
+[TranslationLabel] TR  ·  Türkçe
+hatta arabasını bile!
+[ParaLabel] SOURCE PARAGRAPH 46
+[MNReference] MN   Харин одооноос эхнэрээ хайрлах нь нэмэгдэж байна. Тиймээс эхнэрээ хайрлаж халамжлахыг анхаарч байгаарай.
+[TranslationLabel] EN  ·  English
+Now he has someone else to love—his wife. So give special attention to loving her and caring for her.
+[TranslationLabel] TR  ·  Türkçe
+Şimdiyse seveceği bir kişi daha var: eşi. Bu yüzden eşini sevmeye ve onunla ilgilenmeye özellikle dikkat et.
+[ParaLabel] SOURCE PARAGRAPH 47
+[MNReference] MN   Эхнэрийнхээ хэрэгцээг нь хангах хэрэгтэй. Тэргүүн нь гээд бяр чадлаа гаргах, элдэвээр хэлж болохгүй. Доромжлох доош нь ч хийж болохгүй
+[TranslationLabel] EN  ·  English
+You need to meet your wife's needs. Being the head doesn't give you the right to use physical force, speak abusively, humiliate her, or belittle her.
+[TranslationLabel] TR  ·  Türkçe
+Eşinin ihtiyaçlarını karşılamalısın. Ailenin başı olman kaba kuvvet kullanma, ağır sözler söyleme, onu aşağılama ya da küçümseme hakkı vermez.
+[ParaLabel] SOURCE PARAGRAPH 48
+[MNReference] MN   Гэрч нөхөр, эхнэрээ өөрийн бие адил хайрлах ёстой. Ямар ч хүн өөрийгөө гаргуунд нь гаргадаггүй, зовоодоггүй, харин хэрэгцээгээ хангадаг.
+[TranslationLabel] EN  ·  English
+A Witness husband should love his wife as his own body. No one deliberately neglects or mistreats his own body. Rather, he cares for what it needs.
+[TranslationLabel] TR  ·  Türkçe
+Yehova'nın Şahidi olan bir koca, eşini kendi bedeni gibi sevmelidir. Hiç kimse kendi bedenini bile bile ihmal etmez ya da ona eziyet etmez. Tersine, ihtiyaçlarını karşılar.
+[ParaLabel] SOURCE PARAGRAPH 49
+[MNReference] MN   Галхүү өөрөөсөө илүү машиндаа анхаарал тавьдаг байж магадгүй.
+[TranslationLabel] EN  ·  English
+Galkhuu may sometimes pay more attention to his car than to himself!
+[TranslationLabel] TR  ·  Türkçe
+Galkhuu bazen arabasına kendisinden bile fazla özen gösteriyor olabilir!
+[ParaLabel] SOURCE PARAGRAPH 50
+[MNReference] MN   Харин өнөөдрөөс Аканег хайрлаарай. Акане №1 тавиарай. Есүсийг дууриан хайр халамжаа илэрхийлж мэдрүүлэх учиртай. Энэ нь сайныг хийгээд өөртөө сэтгэл ханах биш эхнэр чинь сэтгэл хангалуун болох хүртэл чи хичээх хэрэгтэй гэсэн үгээ.
+[TranslationLabel] EN  ·  English
+But from today onward, love Akane. Put Akane first. Imitate Jesus by expressing your love and care in ways she can really feel. The point isn't just to do something good and feel pleased with yourself; it's to keep making an effort until your wife truly feels loved and cared for.
+[TranslationLabel] TR  ·  Türkçe
+Ama bugünden itibaren Akane'yi sev. Akane'yi ilk sıraya koy. İsa'yı örnek alarak sevgini ve ilgini onun gerçekten hissedebileceği şekilde göster. Amaç yalnızca iyi bir şey yapıp kendinden memnun olmak değil; eşin gerçekten sevildiğini ve önemsendiğini hissedene kadar çaba göstermektir.
+[Heading1] A WIFE WHO IS DEARLY LOVED (6 min)   /   SEVGİYLE DEĞER VERİLEN BİR EŞ (6 dk.)
+[ParaLabel] SOURCE PARAGRAPH 52
+[MNReference] MN   Акане чамд зориулсан ямар зөвлөгөө байгааг үзье.
+[TranslationLabel] EN  ·  English
+Akane, let's consider the counsel especially for you.
+[TranslationLabel] TR  ·  Türkçe
+Akane, şimdi özellikle sana verilen öğütlere bakalım.
+[ParaLabel] SOURCE PARAGRAPH 53
+[MNReference] MN   Эхнэр хүн гэр бүлдээ эрхэм чухал, хүндтэй үүрэгтэйг Библид бичсэн байдаг.
+[TranslationLabel] EN  ·  English
+The Bible says that a wife has an important and honorable role in her family.
+[TranslationLabel] TR  ·  Türkçe
+Kutsal Kitap eşin aile içinde önemli ve saygın bir rolü olduğunu söyler.
+[ParaLabel] SOURCE PARAGRAPH 54
+[MNReference] MN   Нөхрүүдэд эхнэрээ хүндлэхийг тушаасан байдаг. Энэ нь эхнэр гэдэг үнэхээр чухал хүн шүү гэдгийг онцолдог.
+[TranslationLabel] EN  ·  English
+Husbands are commanded to honor their wives. That highlights just how important and valuable a wife is.
+[TranslationLabel] TR  ·  Türkçe
+Kocalara eşlerine saygı göstermeleri emredilir. Bu da eşin gerçekten ne kadar önemli ve değerli olduğunu vurgular.
+[ParaLabel] SOURCE PARAGRAPH 55
+[MNReference] MN   Эхнэрийг нөхөрийн туслагч гэдэг. Энэ нь нөхрөөсөө дорд гэсэн үг биш, зарц барлаг гэсэн үг биш.
+[TranslationLabel] EN  ·  English
+The wife is called her husband's helper. That doesn't mean she is inferior to him or that she is a servant.
+[TranslationLabel] TR  ·  Türkçe
+Kadına kocasının yardımcısı denir. Bu, kocasından daha aşağı olduğu ya da onun hizmetçisi olduğu anlamına gelmez.
+[ParaLabel] SOURCE PARAGRAPH 56
+[MNReference] MN   Бодоод үзээрэй. Та хийж чадахгүй зүйл дээрээ тусламж авъя гэвэл тухайн зүйлийг сайн хийж чаддаг хүнээс тусламж авна биз дээ. Тэгэхлээр эхнэр гэдэг нь нөхөрийн хийж чадахгүй зүйлийг хийж чаддаг гэсэн үг. Та нар санал нийлэх бизээ. Эхнэрүүд мундаг тэ!
+[TranslationLabel] EN  ·  English
+Think about it. If you need help with something you cannot do, wouldn't you ask someone who is good at doing it? So being a helper means that a wife has abilities that her husband may lack. Don't you agree? Wives are amazing, aren't they?
+[TranslationLabel] TR  ·  Türkçe
+Bir düşünün. Yapamadığınız bir işte yardıma ihtiyacınız olursa o işi iyi bilen birinden yardım istemez misiniz? Demek ki bir eşin yardımcı olması, kocasının yapamadığı bazı şeyleri yapabildiği anlamına gelir. Siz de aynı fikirde misiniz? Eşler gerçekten harika, değil mi?
+[ParaLabel] SOURCE PARAGRAPH 57
+[MNReference] MN   Эхнэрүүд гэр бүлээ тогтвортой, аз жаргалтай байхад ихээхэн хувь нэмэр оруулдаг. Хэрхэн хувь нэмэрээ оруулахыг Эфэс 5:22-24-т бичсэн байна. Үүнийг уншицгаая. Эхнэр хүн юу хийх вэ?
+[TranslationLabel] EN  ·  English
+Wives make an enormous contribution to a family's stability and happiness. Ephesians 5:22-24 explains how they can do that. Let's read it. What should a wife do?
+[TranslationLabel] TR  ·  Türkçe
+Kadınlar ailenin sağlam ve mutlu olmasına büyük katkıda bulunur. Bunu nasıl yapabilecekleri Efesliler 5:22-24'te yazıyor. Birlikte okuyalım. Peki bir kadın ne yapmalı?
+[SpeechCue] READING CUE (not spoken): Ephesians 5:22–24 / Efesliler 5:22–24
+[ParaLabel] SOURCE PARAGRAPH 58
+[MNReference] MN   Хүн хүндээ захирагдахыг тодорхой хэмжээгээр Ехова зөвшөөрсөн. Энэ нь бидэнд ч тустай. Удирдлага байхгүй бол эмх замбараагүй, хэрүүл маргаантай, эх захгүй болно. Ийм нөхцөлд хүн жаргалтай амьдарч чадахгүй нь ойлгомжтой.
+[TranslationLabel] EN  ·  English
+Jehovah has allowed people to be subject to one another to a certain extent, and this benefits us too. Without leadership, there would be confusion, arguments, and disorder. Clearly, people could not live happily in such circumstances.
+[TranslationLabel] TR  ·  Türkçe
+Yehova insanların belli ölçüde birbirlerinin yetkisine tabi olmasına izin vermiştir; bu bizim yararımızadır da. Bir düzen ve rehberlik olmazsa karışıklık, tartışmalar ve başıboşluk ortaya çıkar. Böyle bir ortamda insanların mutlu yaşaması elbette mümkün değildir.
+[ParaLabel] SOURCE PARAGRAPH 59
+[MNReference] MN   Акане өнөөдрийг хүртэл Ехова Бурхан, Есүс гэсэн тэргүүнүүдтэй байсан. Харин өнөөдрөөс Галхүү гэдэг тэргүүнтэй болно. Диваажин болтол төгс бус тэргүүнтэй байна гэсэн үг.
+[TranslationLabel] EN  ·  English
+Until today, Akane has recognized Jehovah God and Jesus as her heads. From today on, she will also have Galkhuu as her head. That means that until Paradise, she will have a head who is imperfect.
+[TranslationLabel] TR  ·  Türkçe
+Akane bugüne kadar Yehova Tanrı'yı ve İsa'yı baş olarak kabul ediyordu. Bugünden itibaren Galkhuu da onun başı olacak. Yani Cennet gelene kadar kusurlu bir başa sahip olacak.
+[ParaLabel] SOURCE PARAGRAPH 60
+[MNReference] MN   Тиймээс өнөөдрөөс Галхүү бас чамайг захирах болно.
+[TranslationLabel] EN  ·  English
+So starting today, Galkhuu will also have authority over you.
+[TranslationLabel] TR  ·  Türkçe
+Dolayısıyla bugünden itibaren Galkhuu'nun da senin üzerinde aile reisi olarak yetkisi olacak.
+[ParaLabel] SOURCE PARAGRAPH 61
+[MNReference] MN   Чамд тус болох зүйлийг үргэлжлүүлээд Эфэс 5:33-с уншъя.
+[TranslationLabel] EN  ·  English
+Let's continue with Ephesians 5:33 for something else that will help you.
+[TranslationLabel] TR  ·  Türkçe
+Sana yardımcı olacak başka bir noktayı görmek için Efesliler 5:33'ü de okuyalım.
+[SpeechCue] READING CUE (not spoken): Ephesians 5:33 / Efesliler 5:33
+[ParaLabel] SOURCE PARAGRAPH 62
+[MNReference] MN   Ехова эмэгтэй хүнийг эрэгтэй хүнд тохирох туслагч байхаар бүтээсэн. Өрсөлдөгч болгох гээгүй.
+[TranslationLabel] EN  ·  English
+Jehovah created the woman to be a helper who would complement the man, not a rival who would compete with him.
+[TranslationLabel] TR  ·  Türkçe
+Yehova kadını erkeğe uygun, onu tamamlayan bir yardımcı olarak yarattı; rakibi olsun diye değil.
+[ParaLabel] SOURCE PARAGRAPH 63
+[MNReference] MN   Акане Галхүүгийн сайн туслагч байна гэдэгт бид итгэлтэй байна.
+[TranslationLabel] EN  ·  English
+We are confident that Akane will be a good helper to Galkhuu.
+[TranslationLabel] TR  ·  Türkçe
+Akane'nin Galkhuu'ya çok iyi bir yardımcı olacağına inanıyoruz.
+[ParaLabel] SOURCE PARAGRAPH 64
+[MNReference] MN   Акане сая уншсан зүйлийг санаж яваарай. Нөхрөө гүнээ хүндэтгэх ёстой. Галхүүг дэмжснээрээ хүндэлж байгаагаа харуулах болно.
+[TranslationLabel] EN  ·  English
+Akane, always remember what we just read. You should have deep respect for your husband. You can show that respect by supporting Galkhuu.
+[TranslationLabel] TR  ·  Türkçe
+Akane, az önce okuduğumuz sözleri hep hatırla. Kocana derin saygı duymalısın. Galkhuu'yu destekleyerek ona saygı duyduğunu gösterebilirsin.
+[ParaLabel] SOURCE PARAGRAPH 65
+[MNReference] MN   Нөхөр чинь төгс хүн биш алдаа гаргах нь ойлгомжтой. Алдаа гаргахад нөхрөө шүүмжилэх хэрэггүй. Харин оронд нь Галхүүг ойлгохыг хичээгээрэй. Алдааг нь биш гаргасан хичээл зүтгэлийг нь анхаараарай.
+[TranslationLabel] EN  ·  English
+Your husband isn't perfect, and of course he will make mistakes. When he does, don't rush to criticize him. Instead, try to understand Galkhuu. Focus on his efforts rather than on his mistakes.
+[TranslationLabel] TR  ·  Türkçe
+Kocan kusursuz değil; elbette hatalar yapacak. Böyle zamanlarda onu eleştirmeye kalkışma. Bunun yerine Galkhuu'yu anlamaya çalış. Hatalarına değil, gösterdiği çabaya odaklan.
+[ParaLabel] SOURCE PARAGRAPH 66
+[MNReference] MN   Галхүүгийн тулах цэг нь Акане байх болно. Хэрвээ тулах цэг нь доороос нь хатгавал Галхүү тогтвортой байж чадахгүй. Галхүү тогтворгүй бол гэр бүл чинь нурах аюултай.
+[TranslationLabel] EN  ·  English
+Akane will be Galkhuu's support. But if that support keeps prodding him from underneath, Galkhuu won't be able to stand firm. If he loses his footing, your family could fall apart.
+[TranslationLabel] TR  ·  Türkçe
+Akane, Galkhuu'nun dayanağı olacak. Ama bu dayanak onu alttan sürekli dürterse Galkhuu sağlam duramaz. O sağlam duramazsa aileniz dağılma tehlikesiyle karşılaşabilir.
+[ParaLabel] SOURCE PARAGRAPH 67
+[MNReference] MN   Гэрч эхнэр сайн хамтрагч, сайн туслагч байх учиртай. Гэрээ ая тухтай, аз жаргалтай болгохын тулд ихээхэн хүчин чармайлт гаргах хэрэгтэй.
+[TranslationLabel] EN  ·  English
+A wife who is one of Jehovah's Witnesses should be a good partner and a good helper. She should put forth real effort to make her home comfortable and happy.
+[TranslationLabel] TR  ·  Türkçe
+Yehova'nın Şahidi olan bir eş, iyi bir hayat arkadaşı ve iyi bir yardımcı olmalıdır. Evini huzurlu ve mutlu bir yer haline getirmek için gerçekten çaba göstermelidir.
+[ParaLabel] SOURCE PARAGRAPH 68
+[MNReference] MN   Заримдаа дэмжих гэхээр нөхрийн чинь гаргасан шийдвэр ойлгомжгүй, хийж байгаа зүйл ойлгомжгүй байж магадгүй. Буруу биш л бол нөхрөө дэмжээрэй.
+[TranslationLabel] EN  ·  English
+Sometimes you may not understand a decision your husband makes or why he is doing something. As long as it is not wrong, support him.
+[TranslationLabel] TR  ·  Türkçe
+Bazen kocanın verdiği bir kararı ya da neden öyle davrandığını anlamayabilirsin. Yanlış bir şey yapmadığı sürece onu destekle.
+[Heading1] GROWING IN LOVE FOR EACH OTHER (4 min)   /   BİRBİRİNİZİ GİDEREK DAHA ÇOK SEVMEK (4 dk.)
+[ParaLabel] SOURCE PARAGRAPH 70
+[MNReference] MN   Хос 2 маань өнөөдөр үнэхээр сайхан харагдаж байна. Хувцас чинь хуримаа үнэхээр сайхан чимж байна. Та 2 яг ингэж хувцасласан шигээ хайрыг хувцас мэт өмсөөрэй. Хайр бол Еховагийн өгсөн гэрлэлт гэдэг сайхан бэлгийг чимдэг зүйл.
+[TranslationLabel] EN  ·  English
+Our couple look wonderful today. Your clothes make this wedding especially beautiful. Just as you have put on such lovely clothes, put on love as though it were a garment. Love adorns the beautiful gift of marriage that Jehovah has given us.
+[TranslationLabel] TR  ·  Türkçe
+Çiftimiz bugün gerçekten harika görünüyor. Kıyafetleriniz düğününüze ayrı bir güzellik katıyor. Nasıl bu güzel giysileri giydiyseniz sevgiyi de bir giysi gibi üzerinize giyin. Sevgi, Yehova'nın verdiği o güzel evlilik hediyesini süsler.
+[ParaLabel] SOURCE PARAGRAPH 71
+[MNReference] MN   Бас өөр олон ач тустай.
+[TranslationLabel] EN  ·  English
+Love brings many other benefits as well.
+[TranslationLabel] TR  ·  Türkçe
+Sevginin başka pek çok yararı da vardır.
+[ParaLabel] SOURCE PARAGRAPH 72
+[MNReference] MN   Аканед хайраа мэдрүүлбэл тэр чамд зүрх сэтгэлээ өгөх болно.
+[TranslationLabel] EN  ·  English
+If you help Akane feel your love, she will give you her heart.
+[TranslationLabel] TR  ·  Türkçe
+Akane'ye sevgini hissettirirsen o da kalbini sana açacaktır.
+[ParaLabel] SOURCE PARAGRAPH 73
+[MNReference] MN   Галхүүд хайраа мэдрүүлбэл тэр чинээ төлөө бүхнийг хийж өгөх сэтгэлтэй байх болно.
+[TranslationLabel] EN  ·  English
+If you help Galkhuu feel your love, he will be moved to do everything he can for you.
+[TranslationLabel] TR  ·  Türkçe
+Galkhuu'ya sevgini hissettirirsen o da senin için elinden gelen her şeyi yapmak isteyecektir.
+[ParaLabel] SOURCE PARAGRAPH 74
+[MNReference] MN   Хувцас биеийг хамгаалдаг. Манай энд өвөл хахир хатуу болдог учраас гадуур явахад дулаахан хувцас их хэрэгтэй.
+[TranslationLabel] EN  ·  English
+Clothing protects the body. Winters are very harsh where we live, so we need warm clothes when we go outside.
+[TranslationLabel] TR  ·  Türkçe
+Giysiler bedenimizi korur. Yaşadığımız yerde kışlar çok sert geçtiği için dışarı çıktığımızda sıcak tutan giysilere ihtiyacımız olur.
+[ParaLabel] SOURCE PARAGRAPH 75
+[MNReference] MN   Хайр хахир хатуу Сатаны ертөнцөд гэр бүлийн эв нэгдлийг хамгаалдаг чухал зүйл.
+[TranslationLabel] EN  ·  English
+In the same way, love protects a family's unity in this harsh world ruled by Satan.
+[TranslationLabel] TR  ·  Türkçe
+Aynı şekilde sevgi de Şeytan'ın yönetimindeki bu sert dünyada ailenin birliğini korur.
+[ParaLabel] SOURCE PARAGRAPH 76
+[MNReference] MN   Ханьдаа хайраа илэрхийлэх арга замыг өдөр бүр хайгаарай.
+[TranslationLabel] EN  ·  English
+Every day, look for ways to express love to your marriage mate.
+[TranslationLabel] TR  ·  Türkçe
+Eşinize sevginizi göstermenin yollarını her gün arayın.
+[ParaLabel] SOURCE PARAGRAPH 77
+[MNReference] MN   Хайгаарай.
+[TranslationLabel] EN  ·  English
+Keep looking.
+[TranslationLabel] TR  ·  Türkçe
+Aramaya devam edin.
+[ParaLabel] SOURCE PARAGRAPH 78
+[MNReference] MN   Дахин хэлье хайгаарай.
+[TranslationLabel] EN  ·  English
+Let me say it again: keep looking.
+[TranslationLabel] TR  ·  Türkçe
+Bir kez daha söylüyorum: aramaya devam edin.
+[ParaLabel] SOURCE PARAGRAPH 79
+[MNReference] MN   Өдөр бүр бие биетэйгээ ярилцах цаг зав гаргаж байгаарай. Бие биеэ анхааралтай сонсоорой.
+[TranslationLabel] EN  ·  English
+Make time to talk with each other every day. Listen carefully to one another.
+[TranslationLabel] TR  ·  Türkçe
+Her gün birbirinizle konuşmak için zaman ayırın. Birbirinizi dikkatle dinleyin.
+[ParaLabel] SOURCE PARAGRAPH 80
+[MNReference] MN   Дэмий зүйл ярьж байна гэж санагдвал тэр бодлоо таягдан хаяарай. Дэмий юм ярьсан гэж биш хань маань намайг тоохгүй байна гэсэн сэтгэгдэл төрдөг юм шүү.
+[TranslationLabel] EN  ·  English
+Even if you think your mate is talking about something unimportant, put that thought aside. Your mate may not feel that they have said something silly; rather, they may feel, ‘My mate isn't paying attention to me.’
+[TranslationLabel] TR  ·  Türkçe
+Eşinizin önemsiz bir şeyden söz ettiğini düşünseniz bile bu düşünceyi bir kenara bırakın. Eşiniz, 'Saçma bir şey söyledim' diye düşünmekten çok, 'Eşim beni önemsemiyor' diye hissedebilir.
+[ParaLabel] SOURCE PARAGRAPH 81
+[MNReference] MN   Жижиг зүйл дээр ч хайр халамжаа үзүүлж байгаарай. Хайрлаж байгаагаа үг хэлээрэй, үйлдлээрэй мэдрүүлээрэй.
+[TranslationLabel] EN  ·  English
+Show love and tender care even in small things. Tell each other that you love one another, and show it through your actions.
+[TranslationLabel] TR  ·  Türkçe
+Küçük şeylerde bile sevgi ve ilgi gösterin. Birbirinize sevdiğinizi söyleyin, bunu davranışlarınızla da hissettirin.
+[ParaLabel] SOURCE PARAGRAPH 82
+[MNReference] MN   ИЙНХҮҮ ХИЧЭЭВЭЛ ГЭР БҮЛ ЧИНЬ БАТ БЭХ БАЙНА. УЧИР НЬ ХАЙР ХЭЗЭЭ Ч ДУУСДАГГҮЙ.
+[TranslationLabel] EN  ·  English
+IF YOU DO THIS, YOUR MARRIAGE WILL REMAIN STRONG, BECAUSE LOVE NEVER ENDS.
+[TranslationLabel] TR  ·  Türkçe
+BUNLARI YAPARSANIZ EVLİLİĞİNİZ SAĞLAM KALACAK, ÇÜNKÜ SEVGİ ASLA SON BULMAZ.
+[ParaLabel] SOURCE PARAGRAPH 84
+[MNReference] MN   Библид байдаг олон сайхан зөвлөгөөнүүдээс заримыг нь сонслоо. Цаашдаа ч Ехова Бурхныхаа өгдөг амьдарлын бусад хүрээнд ч хамаатай заавар зөвлөгөө тушаалуудыг сурч мэдэж аваад хэрэгжүүлээрэй.
+[TranslationLabel] EN  ·  English
+We've considered some of the wonderful counsel found in the Bible. Keep learning and applying Jehovah God's guidance, counsel, and commandments that can help you in other areas of life too.
+[TranslationLabel] TR  ·  Türkçe
+Kutsal Kitaptaki güzel öğütlerden bazılarını ele aldık. Yehova Tanrı'nın yaşamın başka alanlarında da yararlı olan rehberliğini, öğütlerini ve emirlerini öğrenmeye ve uygulamaya devam edin.
+[ParaLabel] SOURCE PARAGRAPH 85
+[MNReference] MN   Өнөөдрөөс ганцаараа биш 2-роорой хэрэгжүүлж эхлэнэ. Хамтдаа хичээцгээгээрэй.
+[TranslationLabel] EN  ·  English
+From today onward, you won't be putting these things into practice on your own, but together as a couple. Keep working at them together.
+[TranslationLabel] TR  ·  Türkçe
+Bugünden itibaren bunları artık tek başınıza değil, ikiniz birlikte uygulayacaksınız. Birlikte çaba göstermeye devam edin.
+[Heading1] MARRIAGE VOWS (3 min)   /   EVLİLİK YEMİNLERİ (3 dk.)
+[ParaLabel] SOURCE PARAGRAPH 87
+[MNReference] MN   Одоо тангараг өргөж Ехова Бурхны өмнө гэр бүл болох цаг ирлээ.
+[TranslationLabel] EN  ·  English
+Now the time has come for you to make your vows and become husband and wife before Jehovah God.
+[TranslationLabel] TR  ·  Türkçe
+Şimdi yeminlerinizi ederek Yehova Tanrı'nın önünde karı koca olma zamanı geldi.
+[ParaLabel] SOURCE PARAGRAPH 88
+[MNReference] MN   Сүйт залуу дараах үгийг дагаж хэлээрэй:
+[TranslationLabel] EN  ·  English
+Groom, please repeat these words after me:
+[TranslationLabel] TR  ·  Türkçe
+Damat, lütfen şu sözleri benim ardımdan tekrarla:
+[ParaLabel] SOURCE PARAGRAPH 89
+[MNReference] MN   «Галхүү миний бие нь, Акане чамайг гэргийгээ болгож, Христийн дагалдагч нөхөрт зориулсан, Библийн зарчмын дагуу, чамайгаа хайрлан эрхэмлэж, насан туршдаа үнэнч байхаа, тангараглаж байна».
+[TranslationLabel] EN  ·  English
+‘I, Galkhuu, take you, Akane, to be my wife. In accordance with the Bible principles for Christian husbands, I solemnly vow to love and cherish you and to remain faithful to you for as long as I live.’
+[TranslationLabel] TR  ·  Türkçe
+'Ben Galkhuu, seni, Akane, eşim olarak kabul ediyorum. Hıristiyan kocalar için Kutsal Kitapta yer alan ilkelere uygun olarak seni seveceğime, sana değer vereceğime ve ömrüm boyunca sana sadık kalacağıma yemin ediyorum.'
+[ParaLabel] SOURCE PARAGRAPH 90
+[MNReference] MN   Сүйт бүсгүй дараах үгийг дагаж хэлээрэй:
+[TranslationLabel] EN  ·  English
+Bride, please repeat these words after me:
+[TranslationLabel] TR  ·  Türkçe
+Gelin, lütfen şu sözleri benim ardımdan tekrarla:
+[ParaLabel] SOURCE PARAGRAPH 91
+[MNReference] MN   «Акане миний бие нь, Галхүү чамайг эр нөхрөө болгож, Христийн дагалдагч эхнэрт зориулсан, Библийн зарчмын дагуу, чамайгаа хайрлан хүндэлж, насан туршдаа үнэнч байхаа, тангараглаж байна».
+[TranslationLabel] EN  ·  English
+‘I, Akane, take you, Galkhuu, to be my husband. In accordance with the Bible principles for Christian wives, I solemnly vow to love and respect you and to remain faithful to you for as long as I live.’
+[TranslationLabel] TR  ·  Türkçe
+'Ben Akane, seni, Galkhuu, kocam olarak kabul ediyorum. Hıristiyan eşler için Kutsal Kitapta yer alan ilkelere uygun olarak seni seveceğime, sana saygı göstereceğime ve ömrüm boyunca sana sadık kalacağıma yemin ediyorum.'
+[ParaLabel] SOURCE PARAGRAPH 92
+[MNReference] MN   Хос 2 маань бөгжөө зүүгээд гарч ирсэн байна: «Галхүү, Акане хоёр гэр бүл болсныг зүүсэн бөгж, энэхүү гэрлэлтийн бүртэл илтгэн харуулж байна».
+[TranslationLabel] EN  ·  English
+The couple have come forward already wearing their rings. ‘The rings worn by Galkhuu and Akane, along with this marriage registration, bear witness to the fact that they are now husband and wife.’
+[TranslationLabel] TR  ·  Türkçe
+Çiftimiz yüzüklerini takmış olarak karşımıza çıktı. 'Galkhuu ve Akane'nin taktığı yüzükler ve bu evlilik kaydı, artık karı koca olduklarının göstergesidir.'
+[ParaLabel] SOURCE PARAGRAPH 94
+[MNReference] MN   Шинэхэн хосыг ивээлээ хайрлахыг Бурхнаас гуйн Бат-Эрдэнэ биднийг төлөөлөн залбирна.
+[TranslationLabel] EN  ·  English
+Bat-Erdene will now offer a prayer on our behalf, asking God to bless the newly married couple.
+[TranslationLabel] TR  ·  Türkçe
+Şimdi Bat-Erdene, yeni evli çiftimizi bereketlemesi için Tanrı'ya hepimiz adına dua edecek.
+[ParaLabel] SOURCE PARAGRAPH 97
+[MNReference] MN   Өнөөдрөөс эхлээд та 2 нэг бие Еховагийн санаачилсны дагуу нэгэн гэр бүл боллоо.
+[TranslationLabel] EN  ·  English
+From today onward, the two of you are one flesh and one family, just as Jehovah intended.
+[TranslationLabel] TR  ·  Türkçe
+Bugünden itibaren Yehova'nın amaçladığı gibi ikiniz tek beden, tek bir aile oldunuz.
+[ParaLabel] SOURCE PARAGRAPH 98
+[MNReference] MN   «Галхүү Акане хоёртоо гэр бүл болсонд нь чин сэтгэлээсээ ахин дахин баяр хүргэцгээе!».
+[TranslationLabel] EN  ·  English
+Let's once again offer our warmest congratulations to Galkhuu and Akane on their marriage!
+[TranslationLabel] TR  ·  Türkçe
+Galkhuu ve Akane'yi evlendikleri için bir kez daha içtenlikle kutlayalım!
