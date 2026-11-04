@@ -2,6 +2,35 @@
 
 Newest first. Each entry: decision, evidence, consequences.
 
+## D-019 (2026-11-04) Japanese captions: operator mode TR + EN + JA for non-interpreted parts
+
+- Owner: guests are Turkish friends, American friends and the Japanese family. The talk is
+  interpreted into Japanese live; the vows and the MC's words are not, so Japanese guests need
+  captions there.
+- Zoom's manual caption API is ONE stream (D-011): every guest sees the same caption and reads
+  their own label. No per-guest language choice (the viewer that offered it stays disabled, D-014).
+- New caption modes: `JA` and `TRILINGUAL` ("TR: ... | EN: ... | JA: ..."). Default stays
+  `BILINGUAL`. Japanese is requested from Claude (same single request) only while the mode shows
+  it, so TR + EN captions cost and latency are unchanged in BILINGUAL.
+- Japanese guards = the same rules on character patterns: エホバ preserved / never invented; no
+  invented 神 / 天の父 (精神, 神経, 神聖 excluded); no invented 妻 / 夫 (丈夫, 工夫, 夫人 excluded),
+  新郎 / 新婦, 祈, 誓, 契約, 節; references only in render_as_ja form ("エフェソス 5:25, 28, 29",
+  "創世記 2章"); digits incl. full-width; names (Latin spelling, or a Japanese form if spoken).
+- Composer: Japanese splits only after 。、！？ or after a phrase-final particle followed by a new
+  content word; CJK characters count double width. Per-language width in TRILINGUAL: 50.
+- Live eval (4 Nov, 52 cases, TRILINGUAL): TR 50/0 FAIL, EN 50/0 FAIL, JA 48 pass + 2 check errors
+  (Japanese source kept as あかね; 契約 is also "contract" in Japanese - checks fixed, not model
+  failures) + 1 guard-withheld (invalid reference). Claude p50 2.07 s / p95 3.70 s (TR + EN alone:
+  1.85 / 2.76 s). Cost $0.19.
+- Found by that run: with the longer prompt Claude spelled the non-existent Ephesians 5:34 out in
+  words ("verse thirty-four"), which the digit guard missed (4/4 earlier runs withheld it). Fixed
+  twice: prompt ("no digits and no number words") and a guard that blocks the invalid number in
+  digits, kanji or TR / EN number words. Re-run of the 11 reference cases: all correct, 5:34
+  withheld in all three languages.
+- Phrase deck: optional `ja:`; Japanese texts in `event/phrases.yaml` are Claude's draft from the
+  owner's English (needs a native Japanese check). Names stay Latin until the family gives a
+  Japanese spelling (`ja_target` in `event/event_names.json`).
+
 ## D-018 (2026-11-04) S-41 talk script: used for checks and phrases, not for live substitution
 
 - The owner supplied the Mongolian S-41 talk and their own TR + EN translation (private, `event/talk/`,

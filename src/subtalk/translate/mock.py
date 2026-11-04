@@ -1,7 +1,7 @@
 """Deterministic mock translator for development (no paid API calls).
 
-Produces Turkish and English. ``translations`` maps a source text to a spec:
-{"tr": ..., "en": ..., "relation": ..., "quality": ..., "fail_en": bool}.
+Produces Turkish and English (and Japanese when requested). ``translations`` maps a source
+text to a spec: {"tr": ..., "en": ..., "ja": ..., "relation": ..., "quality": ..., "fail_en": bool}.
 """
 from __future__ import annotations
 
@@ -35,7 +35,19 @@ class MockTranslator:
             return None, "", "missing_language"
         return True, spec.get("en") or f"[mock EN] {text}", None
 
+    @staticmethod
+    def _with_ja(res: TranslationResult, req: TranslateRequest, spec: dict | None) -> TranslationResult:
+        if "ja" in req.targets and res.display:
+            res.japanese = (spec or {}).get("ja") or f"[mock JA] {req.text}"
+            res.display_ja = True
+        elif "ja" in req.targets:
+            res.display_ja, res.source_quality_ja = False, res.source_quality
+        return res
+
     async def translate(self, req: TranslateRequest) -> TranslationResult:
+        return self._with_ja(await self._translate(req), req, self.translations.get(req.text))
+
+    async def _translate(self, req: TranslateRequest) -> TranslationResult:
         self.requests += 1
         ms = await self._delay()
         if self.fail_next:
@@ -54,6 +66,9 @@ class MockTranslator:
                                  latency_ms=ms, english=en, display_en=d_en, error_en=err_en)
 
     async def interpret(self, req: InterpretRequest) -> TranslationResult:
+        return self._with_ja(await self._interpret(req), req, self.translations.get(req.text))
+
+    async def _interpret(self, req: InterpretRequest) -> TranslationResult:
         self.requests += 1
         ms = await self._delay()
         self.latency.add(ms)

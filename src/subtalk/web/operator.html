@@ -63,9 +63,12 @@
             <div class="seg" id="outMode">
               <button data-v="TR" title="Turkish only">TR only</button>
               <button data-v="EN" title="English only">EN only</button>
-              <button data-v="BILINGUAL" title="Both in one caption (default)">TR + EN</button>
+              <button data-v="JA" title="Japanese only">JA only</button>
+              <button data-v="BILINGUAL" title="Turkish + English in one caption (default; the interpreted talk)">TR + EN</button>
+              <button data-v="TRILINGUAL" title="Turkish + English + Japanese in one caption: vows, MC - parts the interpreter does not cover" style="grid-column: span 2">TR + EN + JA</button>
             </div>
-            <div class="seg" id="capLayout" style="margin-top:6px" title="How TR + EN are laid out in one Zoom caption">
+            <div class="hint" style="margin:5px 0 0">TR + EN + JA: vows / MC. During the interpreted talk: TR + EN.</div>
+            <div class="seg" id="capLayout" style="margin-top:6px" title="How the languages are laid out in one Zoom caption">
               <button data-v="two_line" title="TR line, then EN line">2 lines</button>
               <button data-v="single_line" title="Fallback if Zoom runs the two lines together">1 line</button>
             </div>

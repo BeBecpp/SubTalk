@@ -1,4 +1,4 @@
-"""Live Claude evaluation: Turkish and English, checked independently.
+"""Live Claude evaluation: Turkish and English (optionally Japanese), checked independently.
 
 Runs each case through the production path (glossary analysis -> Claude ->
 deterministic guards, per target language) and applies an automatic check per
@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import re
 import time
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -20,6 +21,7 @@ from subtalk.glossary.guards import Guards
 from subtalk.glossary.normalize import turkish_lower
 from subtalk.glossary.service import GlossaryService
 from subtalk.translate.base import (
+    ALL_TARGETS,
     TARGETS,
     BudgetExceeded,
     InterpretRequest,
@@ -33,6 +35,8 @@ NEG = {
     "tr": re.compile(r"\w+(m[ae]d[ıiuü]|m[ae]m[ıiuü]ş|m[ae]z\b|m[ae]y[ıiuü]|m[ae]l[ıi]|m[ae]yece|m[ae]yaca)\w*"
                      r"|\bdeğil|\byok\b|\bgerekmez|\bolmaz|\basla\b|\bhiç\b"),
     "en": re.compile(r"\b(not|never|no|nobody|nothing|neither|nor|cannot)\b|n['’]t\b"),
+    # Japanese negation (heuristic): ない / ません / ず / なかった / いけない / なりません.
+    "ja": re.compile(r"ない|ません|ず|ぬ|なかった|いけ|なりません"),
 }
 DIGITS = re.compile(r"\d")
 
@@ -63,7 +67,9 @@ CHECKS: dict[str, dict[str, dict]] = {
     "vow_not_inferred": {"tr": {"must_not": ["yemin"]}, "en": {"must_not": ["vow"]}},
     "explicit_vow": {"tr": {"must": ["yemin"]}, "en": {"must": ["vow"]}},
     "bible_explanation": {"tr": {"negation": True, "no_digits": True}, "en": {"negation": True, "no_digits": True}},
-    "invalid_reference": {"tr": {"must_not": ["5:33", "5:34"]}, "en": {"must_not": ["5:33", "5:34"]}},
+    # The non-existent verse must not appear in digits OR words (4 Nov: "verse thirty-four" slipped through).
+    "invalid_reference": {"tr": {"must_not": ["5:33", "5:34", "34"], "must_not_re": [r"otuz\s*(dört|üç)"]},
+                          "en": {"must_not": ["5:33", "5:34", "34"], "must_not_re": [r"thirty[\s-]*(four|three)"]}},
     "book_no_verse": {"tr": {"no_digits": True}, "en": {"no_digits": True}},
     "prayer": {"tr": {"must": ["dua"]}, "en": {"must": ["pray"]}},
     "title_reference": {"tr": {"must": ["kutsal kitap"], "no_digits": True},
@@ -150,6 +156,46 @@ REPETITION_CONTEXT = MnCandidate(
 )
 
 
+# Japanese checks (used with --japanese). Substrings of the NFKC-normalised, lower-cased caption.
+JA_CHECKS: dict[str, dict] = {
+    "divine_name": {"must": ["エホバ"]},
+    "human_father": {"must": ["父"], "must_not": ["エホバ", "天の父", "神"]},
+    "adv_father_is_not_god": {"must": ["父"], "must_not": ["エホバ", "天の父"]},
+    "en_father_gives_talk": {"must": ["父"], "must_not": ["エホバ", "天の父", "神"]},
+    "god_not_jehovah": {"must": ["神"], "must_not": ["エホバ"]},
+    "brother_congregation": {"must_not": ["galkhuu", "新郎", "花婿"]},
+    "sister_not_nurse": {"must_not": ["看護"]},
+    "elder_office": {"must": ["長老"]},
+    "en_elder_talk": {"must": ["長老"], "must_not": ["会長", "議長"]},
+    "ephesians_alias": {"must": ["エフェソス 5:33"]},
+    "ephesians_current": {"must": ["エフェソス 5:33"]},
+    "first_corinthians": {"must": ["コリント第一 13:4"]},
+    "genesis": {"must": ["創世記 2:24"]},
+    "deuteronomy": {"must": ["申命記 6:4"]},
+    "revelation": {"must": ["啓示 21:4"]},
+    "negation": {"negation": True},
+    "obligation_negation": {"negation": True},
+    "adv_prohibition": {"negation": True},
+    "en_marriage_not_contract": {"must": ["結婚"], "negation": True},
+    "en_never_leaves_us": {"must": ["エホバ"], "negation": True},
+    "vow_not_inferred": {"must_not": ["誓"]},
+    "adv_no_vow_from_love": {"must_not": ["誓"]},
+    "explicit_vow": {"must": ["誓"]},
+    "invalid_reference": {"must_not": ["5:33", "5:34", "34", "三十四"]},
+    "book_no_verse": {"no_digits": True},
+    "prayer": {"must": ["祈"]},
+    "mc_welcome": {"must_not": ["エホバ", "神", "祈"]},
+    "groom_name": {"must": ["galkhuu"], "must_not": ["妻", "花嫁", "新婦", "夫婦"]},
+    "akane_name": {"must_any": [["akane", "あかね", "アカネ"]], "must_not": ["夫", "花婿", "新郎", "夫婦"]},
+    "japanese_independent": {"display": True},
+    "en_jehovah_loves_us": {"must": ["エホバ", "愛"]},
+    "en_holy_spirit": {"must": ["聖なる力"]},
+    "en_jesus_christ": {"must": ["イエス"]},
+    "en_husband_wife": {"must": ["夫", "妻"]},
+    "en_brothers_sisters": {"must": ["兄弟姉妹"]},
+    "adv_jehovah_witnesses_org": {"must": ["エホバの証人"]},
+}
+
 @dataclass
 class LangCase:
     text: str = ""
@@ -185,6 +231,8 @@ class CaseResult:
 
 
 def _norm(text: str, target: str) -> str:
+    if target == "ja":
+        text = unicodedata.normalize("NFKC", text)
     low = turkish_lower(text) if target == "tr" else text.lower()
     return " " + low.replace("’", "'").replace("‘", "'") + " "
 
@@ -246,8 +294,10 @@ def all_cases(glossary) -> list[dict]:
     return list(glossary.eval_cases) + EXTRA_CASES
 
 
-async def run_eval(translator, glossary, case_ids: list[str] | None = None) -> list[CaseResult]:
+async def run_eval(translator, glossary, case_ids: list[str] | None = None,
+                   japanese: bool = False) -> list[CaseResult]:
     svc, guards = GlossaryService(glossary), Guards(glossary)
+    targets = ALL_TARGETS if japanese else TARGETS
     out: list[CaseResult] = []
     for case in all_cases(glossary):
         cid = case["id"]
@@ -256,40 +306,43 @@ async def run_eval(translator, glossary, case_ids: list[str] | None = None) -> l
         lang = case.get("language")
         r = CaseResult(cid, lang or "-", case.get("source_text", ""))
         if cid in NOT_TEXT or lang not in ("mn", "ja"):
-            for t in TARGETS:
+            for t in targets:
                 r.out[t] = LangCase(auto="n/a", problems=["speech-free case: covered by language-decision tests"])
             out.append(r)
             continue
-        checks = case.get("checks") or CHECKS.get(cid, {})
+        checks = dict(case.get("checks") or CHECKS.get(cid, {}))
+        if japanese and "ja" not in checks and cid in JA_CHECKS:
+            checks["ja"] = JA_CHECKS[cid]
         a = svc.analyze(r.source, lang)
         main = case.get("mode") == "main_speech"
         interpret = cid == "japanese_repetition" or case.get("interpret_context")
         try:
             if interpret:
                 req = InterpretRequest(1, lang, r.source, "ok", a.hints, a.citations, a.citation_renderings,
-                                       main_speech=main, candidates=[REPETITION_CONTEXT], renderings=a.renderings)
+                                       main_speech=main, candidates=[REPETITION_CONTEXT], renderings=a.renderings,
+                                       targets=targets)
                 res = await translator.interpret(req)
                 r.relation = res.relation
             else:
                 req = TranslateRequest(1, lang, r.source, "ok", a.hints, a.citations, a.citation_renderings,
-                                       main_speech=main, renderings=a.renderings)
+                                       main_speech=main, renderings=a.renderings, targets=targets)
                 res = await translator.translate(req)
                 r.relation = "independent" if lang == "ja" else None
         except BudgetExceeded as exc:
             r.error = f"budget: {exc}"
-            for t in TARGETS:
+            for t in targets:
                 r.out[t] = LangCase(auto="error", problems=[r.error])
             out.append(r)
             break  # never continue past the budget stop
         except TranslatorError as exc:
             r.error = str(exc)
-            for t in TARGETS:
+            for t in targets:
                 r.out[t] = LangCase(auto="error", problems=[r.error])
             out.append(r)
             continue
         r.latency_ms, r.model = res.latency_ms, res.model
         r.cost_usd, r.cache_read, r.cache_write = res.usage.cost_usd, res.usage.cache_read, res.usage.cache_write
-        for t in TARGETS:
+        for t in targets:
             o = res.lang(t)
             lc = LangCase(text=o.text, display=bool(o.display and not o.error))
             if o.error:
@@ -314,7 +367,7 @@ def summarize(results: list[CaseResult]) -> dict:
         return round(lat[min(len(lat) - 1, round(p / 100 * (len(lat) - 1)))]) if lat else None
 
     per_lang = {}
-    for t in TARGETS:
+    for t in [t for t in ALL_TARGETS if any(t in r.out for r in results)]:
         autos = [r.out.get(t, LangCase()).auto for r in results]
         per_lang[t] = {k: autos.count(k) for k in ("pass", "FAIL", "withheld", "error", "n/a")}
         per_lang[t]["guard_withheld"] = sum(r.out.get(t, LangCase()).guard_ok is False for r in results)
@@ -323,6 +376,7 @@ def summarize(results: list[CaseResult]) -> dict:
         "requests_with_output": sum(1 for r in results if r.model),
         "turkish": per_lang["tr"],
         "english": per_lang["en"],
+        **({"japanese": per_lang["ja"]} if "ja" in per_lang else {}),
         "latency_p50_ms": pct(50),
         "latency_p95_ms": pct(95),
         "latency_max_ms": round(lat[-1]) if lat else None,
@@ -344,11 +398,12 @@ def write_report(results: list[CaseResult], out_dir: Path, tag: str = "") -> tup
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     s = summarize(results)
     lines = [f"# Claude live eval {stamp}", "", "```", json.dumps(s, ensure_ascii=False, indent=2), "```", "",
-             "| case | TR | Turkish | EN | English | problems |", "|---|---|---|---|---|---|"]
+             "| case | TR | Turkish | EN | English | JA | Japanese | problems |", "|---|---|---|---|---|---|---|---|"]
     for r in results:
-        tr, en = r.out.get("tr", LangCase()), r.out.get("en", LangCase())
+        tr, en, ja = r.out.get("tr", LangCase()), r.out.get("en", LangCase()), r.out.get("ja", LangCase())
         cell = lambda lc: (lc.text or ("(withheld)" if lc.auto == "withheld" else "")).replace("|", "/").replace("\n", " ")  # noqa: E731
-        probs = "; ".join([f"TR {p}" for p in tr.problems] + [f"EN {p}" for p in en.problems]).replace("|", "/")
-        lines.append(f"| {r.id} | {tr.auto} | {cell(tr)} | {en.auto} | {cell(en)} | {probs} |")
+        probs = "; ".join([f"TR {p}" for p in tr.problems] + [f"EN {p}" for p in en.problems]
+                          + [f"JA {p}" for p in ja.problems]).replace("|", "/")
+        lines.append(f"| {r.id} | {tr.auto} | {cell(tr)} | {en.auto} | {cell(en)} | {ja.auto} | {cell(ja)} | {probs} |")
     md.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return jl, md

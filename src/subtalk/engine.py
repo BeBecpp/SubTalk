@@ -25,7 +25,7 @@ from subtalk.config import Config, anthropic_api_key, audio_token, relay_token
 from subtalk.glossary.guards import Guards
 from subtalk.glossary.service import GlossaryService
 from subtalk.glossary.store import load_glossary
-from subtalk.output.compose import compose_parts
+from subtalk.output.compose import LABELS, MODE_LANGS, compose_parts, mode_max_chars
 from subtalk.output.controller import CommandError, OutputConfig, OutputController
 from subtalk.output.viewer import ViewerFeed
 from subtalk.pipeline.core import ContextState, Pipeline
@@ -274,7 +274,8 @@ class Engine:
         for p in (self.cfg.path(self.cfg.paths.event_dir) / "phrases.yaml", self.cfg.path("resources/phrases.yaml")):
             if p.exists():
                 doc = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
-                return [{"label": str(x.get("label", "")), "text": str(x["text"]), "en": str(x.get("en") or "")}
+                return [{"label": str(x.get("label", "")), "text": str(x["text"]), "en": str(x.get("en") or ""),
+                         "ja": str(x.get("ja") or "")}
                         for x in doc.get("phrases", []) if x.get("text")]
         return []
 
@@ -598,28 +599,31 @@ class Engine:
             self._ctx_version += 1
         elif ctype == "send_phrase":
             text = str(a["text"])[:400]
-            en = next((p["en"] for p in self.phrases if p["text"] == text), "")
+            phrase = next((p for p in self.phrases if p["text"] == text), {})
+            en, ja = phrase.get("en", ""), phrase.get("ja", "")
             # Same caption language and layout as automatic captions (TR + EN by default).
             z, mode = self.cfg.zoom, self.context.output_mode
-            parts = compose_parts({"tr": text, "en": en}, mode,
-                                  z.bilingual_max_chars if mode == "BILINGUAL" else z.max_chars,
+            parts = compose_parts({"tr": text, "en": en, "ja": ja}, mode, mode_max_chars(z, mode),
                                   z.bilingual_labels, self.context.caption_layout)
             if not parts:
-                raise CommandError(f"This phrase has no {'English' if mode == 'EN' else 'text'} for mode {mode}")
+                missing = {"EN": "English", "JA": "Japanese"}.get(mode, "text")
+                raise CommandError(f"This phrase has no {missing} for mode {mode}")
             o.send_manual(text, en=en, parts=parts)
         elif ctype == "send_test_caption":
             stamp = time.strftime("%H:%M:%S")
             mode = self.context.output_mode
-            tr = f"SubTalk TEST {stamp} — Türkçe: ç ğ ı İ ö ş ü"
-            en = f"SubTalk TEST {stamp} — English: it's a test, “quotes”"
+            sample = {"tr": f"SubTalk TEST {stamp} — Türkçe: ç ğ ı İ ö ş ü",
+                      "en": f"SubTalk TEST {stamp} — English: it's a test, “quotes”",
+                      "ja": f"SubTalk TEST {stamp} — 日本語：結婚式、ありがとうございます"}
+            langs = MODE_LANGS[mode]
             sep = "\n" if self.context.caption_layout == "two_line" else " | "
-            text = {"TR": tr, "EN": en}.get(mode, f"TR: {tr}{sep}EN: {en}")
+            text = sample[langs[0]] if len(langs) == 1 else sep.join(LABELS[t] + sample[t] for t in langs)
             o.send_test(text)
             return {"text": text}
         elif ctype == "set_output_mode":
             mode = str(a["mode"]).upper()
-            if mode not in ("TR", "EN", "BILINGUAL"):
-                raise CommandError("Output mode must be TR, EN or BILINGUAL")
+            if mode not in MODE_LANGS:
+                raise CommandError("Output mode must be one of " + ", ".join(MODE_LANGS))
             self.context.output_mode = mode
             self._ctx_version += 1
             self.alert("info", "output_mode", f"Caption language: {mode} ({session.name})")

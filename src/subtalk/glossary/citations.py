@@ -57,14 +57,14 @@ class Citation:
 
 
 def format_ref(glossary: Glossary, c: Citation, lang: str = "tr") -> str | None:
-    """Canonical rendering in the target language ('tr' or 'en'), or None when
-    numbers must not be shown."""
+    """Canonical rendering in the target language ('tr', 'en' or 'ja'), or None when
+    numbers must not be shown. Japanese follows the JW Japanese style: "エフェソス 5:25", "エフェソス 5章"."""
     book = glossary.book(c.book_id)
-    name = (book.en or book.tr) if lang == "en" else book.tr
+    name = (book.en or book.tr) if lang == "en" else book.ja if lang == "ja" else book.tr
     if c.status in ("invalid", "book_only") or c.chapter is None:
         return name if c.status == "book_only" else None
     if c.verse is None:
-        return f"{name} chapter {c.chapter}" if lang == "en" else f"{name} {c.chapter}. bölüm"
+        return {"en": f"{name} chapter {c.chapter}", "ja": f"{name} {c.chapter}章"}.get(lang, f"{name} {c.chapter}. bölüm")
     ref = f"{name} {c.chapter}:{c.verse}"
     if c.verse_end:
         ref += f"-{c.verse_end}"

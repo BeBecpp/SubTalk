@@ -7,6 +7,7 @@ wording is never presented as authoritative in either language.
 """
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 
 from subtalk.glossary.citations import Citation, CitationDetector, format_ref
@@ -14,7 +15,7 @@ from subtalk.glossary.match import contains_form
 from subtalk.glossary.store import Glossary
 
 MAX_HINTS = 14
-TARGETS = ("tr", "en")
+TARGETS = ("tr", "en", "ja")  # citation renderings for every possible caption language
 _PRIORITY_ORDER = {"always": 0, "triggered": 1, "context": 2}
 
 
@@ -29,13 +30,18 @@ class TermHint:
     en: str = ""
     en_status: str = ""
     en_notes: str = ""
+    ja: str = ""  # Japanese JW wording: the glossary's first Japanese form (or the name spelling)
 
     def wording(self, lang: str) -> str:
+        if lang == "ja":
+            return self.ja
         return (self.en or self.tr) if lang == "en" else self.tr
 
     def label(self, lang: str = "tr") -> str:
         if self.kind == "name":
             return "NAME"
+        if lang == "ja":  # the Japanese forms are the pack's JW Japanese wording (no separate review status)
+            return "REQUIRED" if self.priority == "always" else "PREFERRED (when this meaning is intended)"
         status = self.en_status if lang == "en" else self.status
         reviewed = status in (("en_source_checked", "en_core", "human_approved") if lang == "en"
                               else ("tr_attested", "human_approved"))
@@ -46,6 +52,8 @@ class TermHint:
         return "PREFERRED (when this meaning is intended)"
 
     def note(self, lang: str = "tr") -> str:
+        if lang == "ja":
+            return f"use exactly '{self.ja}'" if self.kind == "name" else ""
         return (self.en_notes or self.notes) if lang == "en" else self.notes
 
 
@@ -68,7 +76,8 @@ class GlossaryService:
             forms = t.ja if lang == "ja" else t.mn
             if forms and contains_form(forms, text, lang):
                 hits.append(TermHint(t.id, t.tr, t.status, t.priority, t.notes,
-                                     en=t.en, en_status=t.en_status, en_notes=t.en_notes))
+                                     en=t.en, en_status=t.en_status, en_notes=t.en_notes,
+                                     ja=unicodedata.normalize("NFKC", t.ja[0]) if t.ja else ""))
         for n in self.g.names:
             forms = n.ja if lang == "ja" else n.mn
             if forms and contains_form(forms, text, lang):
@@ -78,7 +87,7 @@ class GlossaryService:
                 en = n.target("en")
                 hits.append(TermHint(n.id, n.tr, "approved" if n.approved else "unapproved", "always",
                                      f"use exactly '{n.tr}'", "name", en=en, en_status="name",
-                                     en_notes=f"use exactly '{en}'"))
+                                     en_notes=f"use exactly '{en}'", ja=n.target("ja")))
         hits.sort(key=lambda h: (h.kind != "name", _PRIORITY_ORDER.get(h.priority, 3), h.status == "review_required"))
         return hits[:MAX_HINTS]
 

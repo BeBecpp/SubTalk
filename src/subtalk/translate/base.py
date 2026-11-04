@@ -1,8 +1,8 @@
 """Translator interface shared by the Claude and mock implementations.
 
 One recognition event -> one TranslationResult with an independent result per
-target language (Turkish 'tr', English 'en'). A problem in one language never
-invalidates the other.
+target language (Turkish 'tr', English 'en', and Japanese 'ja' when the
+operator's caption mode includes it). A problem in one language never invalidates the others.
 """
 from __future__ import annotations
 
@@ -12,7 +12,8 @@ from typing import Protocol
 from subtalk.glossary.citations import Citation
 from subtalk.glossary.service import TermHint
 
-TARGETS = ("tr", "en")
+TARGETS = ("tr", "en")  # always requested
+ALL_TARGETS = ("tr", "en", "ja")  # "ja" only when the caption mode shows Japanese
 
 # Per-language status shown to the operator.
 PASS, WITHHELD, FAILED, TIMED_OUT, STALE = "PASS", "WITHHELD", "FAILED", "TIMED_OUT", "STALE"
@@ -24,6 +25,7 @@ class ContextPair:
     source: str
     turkish: str
     english: str = ""
+    japanese: str = ""
 
 
 @dataclass
@@ -48,6 +50,7 @@ class TranslateRequest:
     main_speech: bool = False
     script_context: object | None = None  # reserved for the future script plugin (inactive)
     renderings: dict | None = None  # target -> citation key -> rendering
+    targets: tuple[str, ...] = TARGETS
 
 
 @dataclass
@@ -104,8 +107,19 @@ class TranslationResult:
     error_en: str | None = None
     timed_out_en: bool = False
     latency_ms_en: float | None = None
+    japanese: str = ""
+    display_ja: bool | None = None  # None -> Japanese was not produced (or not requested)
+    source_quality_ja: str | None = None
+    flags_ja: list[str] = field(default_factory=list)
+    error_ja: str | None = None
+    timed_out_ja: bool = False
 
     def lang(self, target: str) -> LangOutput:
+        if target == "ja":
+            if self.display_ja is None:
+                return LangOutput(False, "", error=self.error_ja or "missing_language", timed_out=self.timed_out_ja)
+            return LangOutput(self.display_ja, self.japanese, self.source_quality_ja or self.source_quality,
+                              list(self.flags_ja), self.error_ja, self.timed_out_ja)
         if target == "en":
             if self.display_en is None:
                 return LangOutput(False, "", error=self.error_en or "missing_language", timed_out=self.timed_out_en)

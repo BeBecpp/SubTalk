@@ -30,6 +30,9 @@ reliable recovery. Guest viewer / Cloudflare relay = disabled experimental code 
   two over-strict guards relaxed (85/87 human paragraphs pass), names file + bilingual phrase deck
   with vows created in `event/` (D-018). Friday checklist: `docs/REHEARSAL_FRIDAY.md`.
 - Computer B: RTX 4060 8 GB, 32 GB RAM, i9 (owner, 4 Nov). Rehearsal with the real mic on Friday.
+- Japanese captions (owner, 4 Nov evening; D-019): modes JA / TRILINGUAL (TR + EN + JA) for vows
+  and MC (the talk has a live Japanese interpreter → TR + EN there). Live eval clean; found and fixed
+  an invalid verse spelled out in words. JA phrase deck = Claude draft, needs a native check.
 
 ## VERIFIED TEST RESULTS
 See `docs/TEST_REPORT.md`.
@@ -42,13 +45,14 @@ See `docs/TEST_REPORT.md`.
 - A partial `large-v3` download (~196 MB) is in the HuggingFace cache (harmless; can be deleted).
 
 ## CURRENT API TEST SPEND
-$0.4978 of $5.00 (190 requests, ledger `state/api_test_budget.json`). Spend before this budget ~$0.19.
+$0.8727 of $5.00 (301 requests, ledger `state/api_test_budget.json`). Spend before this budget ~$0.19.
 
 ## REMAINING TEST BUDGET
-$4.0022 before the automatic stop at $4.50.
+$3.6273 before the automatic stop at $4.50.
 
 ## EXACT NEXT ACTION
-1. Thursday: Zoom TEST meeting with a desktop-app participant and a phone (Show Captions on).
+1. Thursday: Zoom TEST meeting with a desktop-app participant and a phone (Show Captions on);
+   include row 18 (TR + EN + JA readability).
 2. Before Friday: Computer B install + `large-v3` download (`docs/REHEARSAL_FRIDAY.md` section 0).
 3. Friday: follow `docs/REHEARSAL_FRIDAY.md`; decide vows (auto vs phrase deck); freeze.
 
@@ -65,3 +69,4 @@ $4.0022 before the automatic stop at $4.50.
   (desktop app) and a phone join with Show Captions on.
 - Friday: Computer B with the NVIDIA GPU, mixer audio, Mongolian test recordings.
 - Turkish/English reviewers for translations and glossary terms.
+- A Japanese native speaker: JA phrase deck (vows) and the Japanese spelling of the names.

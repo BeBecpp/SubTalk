@@ -74,8 +74,11 @@ class EventName:
     role: str
     approved: bool
     en: str = ""
+    ja_target: str = ""  # spelling inside Japanese captions (e.g. katakana); empty -> the Latin spelling
 
     def target(self, lang: str) -> str:
+        if lang == "ja":
+            return self.ja_target or self.en or self.tr
         return (self.en or self.tr) if lang == "en" else self.tr
 
 
@@ -213,7 +216,7 @@ def load_glossary(
     names = [
         EventName(id=n["id"], mn=tuple(n.get("mn", [])), ja=tuple(n.get("ja", [])), tr=n["tr"],
                   role=n.get("role", ""), approved=bool(n.get("approved")) and names_source == "event",
-                  en=n.get("en", ""))
+                  en=n.get("en", ""), ja_target=n.get("ja_target", ""))
         for n in names_raw
     ]
 

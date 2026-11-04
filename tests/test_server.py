@@ -378,3 +378,30 @@ def test_phrase_deck_follows_caption_language_and_keeps_long_vows_whole(tmp_path
         while time.monotonic() < deadline and engine.mock_zoom.meeting().captions[-1].text != "[Müzik]":
             time.sleep(0.1)
         assert engine.mock_zoom.meeting().captions[-1].text == "[Müzik]"
+
+
+def test_trilingual_mode_test_caption_and_japanese_phrase(tmp_path):
+    cfg = make_cfg(tmp_path, session=[])
+    ev = tmp_path / "event"
+    ev.mkdir(parents=True, exist_ok=True)
+    (ev / "phrases.yaml").write_text(yaml.safe_dump({"phrases": [
+        {"label": "Thanks", "text": "Teşekkürler.", "en": "Thank you.", "ja": "ありがとうございます。"},
+        {"label": "[Music]", "text": "[Müzik]", "en": "[Music]"}]}, allow_unicode=True), encoding="utf-8")
+    c, engine = make_client(cfg)
+    with c:
+        login(c)
+        assert cmd(c, "connect_zoom", {"url": "mock", "target": "TEST"})["accepted"]
+        assert cmd(c, "set_output_mode", {"mode": "TRILINGUAL"})["accepted"]
+        r = cmd(c, "send_test_caption")
+        assert " | EN: " in r["data"]["text"] and " | JA: " in r["data"]["text"]
+        assert cmd(c, "start_live")["accepted"]
+        assert cmd(c, "send_phrase", {"text": "Teşekkürler."})["accepted"]
+        assert cmd(c, "send_phrase", {"text": "[Müzik]"})["accepted"]  # no Japanese: TR + EN still sent
+        assert cmd(c, "set_output_mode", {"mode": "JA"})["accepted"]
+        assert not cmd(c, "send_phrase", {"text": "[Müzik]"})["accepted"]  # no Japanese text -> refused
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline and len(engine.mock_zoom.meeting().captions) < 3:
+            time.sleep(0.1)
+        texts = [x.text for x in engine.mock_zoom.meeting().captions]
+        assert texts[1] == "TR: Teşekkürler. | EN: Thank you. | JA: ありがとうございます。"
+        assert texts[2] == "TR: [Müzik] | EN: [Music]"

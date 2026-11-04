@@ -28,6 +28,10 @@ phrase deck only → no captions. Decide at GO/NO-GO, not during a talk.
 
 * Songs, processional, long music: switch **Music / ceremony mode** on; optionally send *[İlahi]* / *[Müzik]*. Switch it off when speech resumes.
 * Father's interpreted talk: **Main Speech** on (or the speaker page). It never stops normal translation.
+  Caption language **TR + EN** (the interpreter speaks Japanese).
+* Parts WITHOUT the interpreter (MC, vows, rings, prayer, congratulations): caption language
+  **TR + EN + JA**, back to **TR + EN** when the interpreted talk starts. Phrase deck entries send
+  their Japanese too in this mode.
 * Bible readings (5 in the S-41 talk): the read verses are captioned as spoken. If reading is unclear,
   phrase deck ▸ *Bible reading (no text)*.
 * Vows (groom and bride repeat after the speaker): use what Friday decided - either automatic
@@ -50,7 +54,7 @@ phrase deck only → no captions. Decide at GO/NO-GO, not during a talk.
 | Dashboard shows "Connection lost" | The engine keeps running. Refresh the browser. | Assume output stopped |
 | "Engine restarted" | Output is OFF. Sign in, check chips, Connect (if needed), hold go LIVE. | |
 | Guests say TR and EN run together | Caption layout ▸ **1 line** (`TR: … \| EN: …`). | |
-| Captions too long / too fast to read | Caption language ▸ **TR only** (or EN only) - one language per caption. | |
+| Captions too long / too fast to read | TR + EN + JA → **TR + EN**; still too much → **TR only**. | |
 | Total failure | Phrase deck if possible (*Captions paused*), otherwise nothing - the ceremony continues. | Touch Zoom/camera settings for SubTalk |
 
 ## After the ceremony

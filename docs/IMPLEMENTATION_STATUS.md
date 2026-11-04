@@ -35,6 +35,8 @@ recorded (`util/latency.py`, dashboard diagnostics). Measured so far: Claude p50
 | Composer: aligned parts, refs/numbers/negations kept whole, reading-time pacing | mock (test_compose) |
 | Glossary v1 + English extension, citation parser, TR + EN guards | mock + source-checked (jw.org NWT) |
 | TR + EN live eval incl. 13 English-focused high-risk cases | live-API (see TEST_REPORT) |
+| Japanese captions: modes JA / TRILINGUAL, JA guards, JA composer (no spaces, double width), JA phrase deck (draft) | mock + live-API (4 Nov, D-019) |
+| Invalid Bible reference never shown, also not spelled out in words (TR / EN / JA) | mock + live-API (4 Nov) |
 | Persistent $5 test ledger | used live |
 | Dashboard, Speaker page, auth, lease, restart sign-out, layout switch | browser e2e (Edge) |
 | CI on Python 3.12 + 3.13 | GitHub Actions |
@@ -52,3 +54,6 @@ recorded (`util/latency.py`, dashboard diagnostics). Measured so far: Claude p50
 - Real mixer audio through the sender on Computer A.
 - Tailscale access from a real phone; LAN access from a second computer.
 - Turkish and English human review of translations, glossary terms and phrase deck.
+- Japanese native review of the JA phrase deck (vows) and of live JA captions; Japanese spelling
+  of the names (Galkhuu, Akane, Bat-Erdene) - Latin letters until the family gives one.
+- Thursday: is a three-language caption readable on desktop and phone (length, wrapping)?

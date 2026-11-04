@@ -221,7 +221,8 @@ function render(s) {
   const [title, sub] = STATE_TEXT[o.state] || [o.state, ""];
   $("outState").textContent = title;
   $("outState").style.color = o.state === "LIVE" ? "var(--green)" : o.state === "E_STOPPED" ? "var(--red)" : o.state === "PAUSED" ? "var(--amber)" : "";
-  const modeLabel = { TR: "Turkish", EN: "English", BILINGUAL: "Turkish + English" }[s.context.output_mode] || "";
+  const modeLabel = { TR: "Turkish", EN: "English", JA: "Japanese", BILINGUAL: "Turkish + English",
+    TRILINGUAL: "Turkish + English + Japanese" }[s.context.output_mode] || "";
   $("outSub").textContent = o.reason === "zoom_failures" ? "Auto-paused: Zoom rejected captions"
     : (o.state === "LIVE" ? `${sub} · ${modeLabel}` : sub);
 
@@ -263,7 +264,7 @@ function renderFeed(events, p) {
     const body = ST.el("div");
     body.appendChild(ST.el("div", "src", e.text || (e.kind === "MUSIC" ? "music mode" : "(no speech)")));
     const out = e.out || {};
-    [["tr", "TR", e.turkish], ["en", "EN", e.english]].forEach(([k, code, text]) => {
+    [["tr", "TR", e.turkish], ["en", "EN", e.english], ["ja", "JA", e.japanese]].forEach(([k, code, text]) => {
       const o = out[k];
       if (!o && !text) return;
       const line = ST.el("div", "tl");
@@ -370,7 +371,7 @@ function renderControls(s) {
   $("tMusic").classList.toggle("on", c.music_mode);
   $("jaPolicy").querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === c.ja_policy); b.disabled = !canControl; });
   $("outMode").querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === c.output_mode); b.disabled = !canControl; });
-  $("capLayout").classList.toggle("hidden", c.output_mode !== "BILINGUAL");
+  $("capLayout").classList.toggle("hidden", !["BILINGUAL", "TRILINGUAL"].includes(c.output_mode));
   $("capLayout").querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === c.caption_layout); b.disabled = !canControl; });
   set("btnTest", canControl && s.output.target === "TEST" && ["CONNECTED", "LIVE", "PAUSED"].includes(st));
   $("btnTest").classList.toggle("hidden", s.output.target === "EVENT");

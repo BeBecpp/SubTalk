@@ -331,11 +331,13 @@ def cmd_eval_claude(args) -> int:
         print("Add --yes to run.")
         return 2
     t = ClaudeTranslator(cfg.translate, g, key, ledger=ledger, ledger_group=args.group or args.mode)
-    results = asyncio.run(run_eval(t, g, ids))
+    results = asyncio.run(run_eval(t, g, ids, japanese=args.japanese))
     for r in results:
         tr, en = r.out.get("tr"), r.out.get("en")
         print(f"{r.id:32s} {round(r.latency_ms):5d}ms  TR {tr.auto:8s} {(tr.text or '-')[:44]:46s} "
               f"EN {en.auto:8s} {(en.text or '-')[:44]}")
+        if "ja" in r.out:
+            print(f"{'':40s}JA {r.out['ja'].auto:8s} {r.out['ja'].text or '-'}")
         for t_, lc in r.out.items():
             for p in lc.problems:
                 print(f"{'':40s}- {t_.upper()}: {p}")
@@ -344,7 +346,7 @@ def cmd_eval_claude(args) -> int:
     print(json.dumps(s, ensure_ascii=False, indent=2))
     jl, md = write_report(results, cfg.path("bench_out"), tag=args.mode)
     print(f"Report: {md}")
-    bad = sum(s[k]["FAIL"] + s[k]["error"] for k in ("turkish", "english"))
+    bad = sum(s[k]["FAIL"] + s[k]["error"] for k in ("turkish", "english", "japanese") if k in s)
     return 0 if bad == 0 else 1
 
 
@@ -406,6 +408,7 @@ def main(argv=None) -> int:
     p.add_argument("--mode", choices=["single_request", "parallel"], default="single_request",
                    help="one request for TR+EN (default) or one request per language")
     p.add_argument("--group", help="ledger group name for the spend report")
+    p.add_argument("--japanese", action="store_true", help="also request and check Japanese (TR + EN + JA mode)")
     p.set_defaults(fn=cmd_eval_claude)
     sub.add_parser("budget", help="show the persisted live-API test budget ledger").set_defaults(fn=cmd_budget)
     p = sub.add_parser("soak", help="failure-injection soak, mock Claude + mock Zoom (free)")

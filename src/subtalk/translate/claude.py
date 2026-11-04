@@ -8,6 +8,7 @@
 * server-side refusal fallback (``fallbacks: "default"``) when enabled;
 * own timeout, then one attempt on ``fallback_model``; SDK retries disabled so
   latency stays bounded;
+* Japanese (only when the caption mode shows it) is added to the same single request;
 * Turkish + English: ``dual_mode = "single_request"`` returns both languages
   from one request (default, see docs/DECISIONS.md); ``"parallel"`` sends one
   request per language concurrently. Japanese interpretation always uses one
@@ -76,7 +77,7 @@ class ClaudeTranslator:
 
     # ----------------------------------------------------------------- public
     async def translate(self, req: TranslateRequest) -> TranslationResult:
-        if self.cfg.dual_mode == "parallel":
+        if self.cfg.dual_mode == "parallel" and "ja" not in req.targets:  # Japanese: always one request
             return await self._parallel(req)
         return await self._dual(req, interpret=False)
 
@@ -110,10 +111,11 @@ class ClaudeTranslator:
 
     # --------------------------------------------------------------- modes
     async def _dual(self, req: TranslateRequest, interpret: bool) -> TranslationResult:
-        user = build_user_message(req, self.glossary, ("tr", "en"))
+        user = build_user_message(req, self.glossary, req.targets)
         start = time.monotonic()
-        resp, model, usage = await self._attempts(user, dual_schema(interpret))
-        result = self._parse_dual(resp, model, usage, interpret)
+        japanese = "ja" in req.targets
+        resp, model, usage = await self._attempts(user, dual_schema(interpret, japanese))
+        result = self._parse_dual(resp, model, usage, interpret, japanese)
         result.latency_ms = (time.monotonic() - start) * 1000
         result.latency_ms_en = result.latency_ms
         self.latency.add(result.latency_ms)
@@ -252,16 +254,22 @@ class ClaudeTranslator:
         return {"segment_kind": data.get("segment_kind", "speech"),
                 "bible_mentions": list(data.get("bible_mentions") or [])}
 
-    def _parse_dual(self, resp, model: str, usage: Usage, interpret: bool) -> TranslationResult:
+    def _parse_dual(self, resp, model: str, usage: Usage, interpret: bool,
+                    japanese: bool = False) -> TranslationResult:
         served = getattr(resp, "model", model) or model
         data, err = self._decode(resp)
         if err:
             return TranslationResult(display=False, turkish="", source_quality="garbled", model=served,
-                                     usage=usage, error=err, display_en=False, error_en=err)
+                                     usage=usage, error=err, display_en=False, error_en=err,
+                                     error_ja=err if japanese else None)
         tr = self._lang(data.get("turkish"), "missing_language")
         en = self._lang(data.get("english"), "missing_language")
+        ja = self._lang(data.get("japanese"), "missing_language") if japanese else None
         shared = self._shared(data)
-        return TranslationResult(
+        ja_fields = {} if ja is None else dict(
+            japanese=ja["text"], display_ja=ja["display"] if ja["error"] is None else None,
+            source_quality_ja=ja["source_quality"], flags_ja=ja["flags"], error_ja=ja["error"])
+        return TranslationResult(**ja_fields,
             display=tr["display"], turkish=tr["text"], source_quality=tr["source_quality"], flags=tr["flags"],
             error=tr["error"], english=en["text"], display_en=en["display"] if en["error"] is None else None,
             source_quality_en=en["source_quality"], flags_en=en["flags"], error_en=en["error"],

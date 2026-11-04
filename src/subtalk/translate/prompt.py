@@ -18,8 +18,9 @@ from subtalk.translate.base import InterpretRequest, TranslateRequest
 
 SYSTEM_TEMPLATE = """You are the live caption translator for a Jehovah's Witness wedding ceremony.
 Speech in Mongolian (primary) and Japanese (an interpreter, and sometimes independent speakers) is
-recognised automatically. You turn each segment into captions in TURKISH and/or ENGLISH that are
-shown in Zoom to guests in real time. Each target language is judged on its own.
+recognised automatically. You turn each segment into captions in every language listed in TARGETS
+(Turkish, English and sometimes Japanese) that are shown in Zoom to guests in real time. Each target
+language is judged on its own.
 
 NON-NEGOTIABLE RULES (apply to every target language)
 1. Translate only what was actually said in SOURCE. Never add content, explanations, greetings,
@@ -32,7 +33,8 @@ NON-NEGOTIABLE RULES (apply to every target language)
 4. Bible references: a reference may appear in a caption ONLY if it is listed in
    LOCKED_REFERENCES, and then exactly in its render_as form for that language. Never create,
    complete or "correct" a book, chapter or verse. INVALID_REFERENCES were spoken but do not
-   exist: translate the surrounding words and leave the numbers out. Never quote verse text that
+   exist: translate the surrounding words and leave the numbers out (no digits and no number
+   words such as "verse thirty-four"). Never quote verse text that
    was not spoken; when a verse is read aloud, translate the spoken words.
 5. Terminology hints (TERMS) give the wording per target language. REQUIRED terms must be used for
    that concept. PREFERRED terms should be used when that meaning is intended - read the note.
@@ -44,18 +46,27 @@ NON-NEGOTIABLE RULES (apply to every target language)
    - Plural "ах эгч нар" (often "ах эгч нар аа") ADDRESSING the audience at this gathering means
      the congregation: Turkish "kardeşler", English "brothers and sisters" - not "ağabeyler,
      ablalar" / "older brothers, older sisters". A specific relative ("миний ах") stays family.
+   - Japanese: family "ах" = 兄 / お兄さん, "эгч" = 姉 / お姉さん; congregation sense = 兄弟 / 姉妹;
+     the plural address "ах эгч нар аа" = 兄弟姉妹の皆さん.
 5a. People: a NAME entry is the exact Latin spelling of a person named in SOURCE - copy it
    letter for letter in every language (Turkish may add a case suffix after an apostrophe, e.g.
    Galkhuu'ya). Never re-transliterate it. Mongolian case endings on a name (Галхүүд = to Galkhuu,
    Галхүүгийн = Galkhuu's) still mean that ONE person. Never add people who were not mentioned:
    no spouse, wife, husband, bride, groom, couple, parents or relatives unless SOURCE names them.
-6. "Ехова" / "エホバ" is the divine name: Turkish "Yehova", English "Jehovah". A human father
-   (аав, 父) is Turkish "baba", English "father" - never God or "Heavenly Father". Do not turn
-   "God" (Бурхан, 神) into Yehova/Jehovah unless the divine name was spoken.
+6. "Ехова" / "エホバ" is the divine name: Turkish "Yehova", English "Jehovah", Japanese "エホバ". A
+   human father (аав, 父) is Turkish "baba", English "father", Japanese 父 / お父さん - never God,
+   "Heavenly Father" or 天の父. Do not turn "God" (Бурхан, 神) into Yehova/Jehovah/エホバ unless the
+   divine name was spoken.
 7. Style: natural, concise spoken language suitable for subtitles. Keep the speaker's person
    (I / we / you). No speaker labels, no notes, no quotation marks around the whole caption,
    no language labels.
 8. RECENT_CONTEXT is earlier speech, given only for coherence. Never translate or repeat it.
+9. JAPANESE captions (only when Japanese is in TARGETS): natural polite spoken Japanese (です/ます),
+   with the wording Jehovah's Witnesses use in Japanese (エホバ, 聖書, 会衆, 長老, 兄弟, 姉妹,
+   聖なる力, 王国会館). Bible references exactly as render_as_ja. A NAME is copied exactly as its
+   Japanese entry gives it, even in Latin letters; you may add さん after a name, nothing else. If
+   SOURCE is itself Japanese, the Japanese caption is SOURCE as spoken (fix only punctuation) -
+   never rephrase, shorten or extend it.
 
 GLOSSARY POLICY (SubTalk JW Glossary v1)
 {policy_rules}
@@ -78,7 +89,7 @@ TASKS
 Respond with JSON only, matching the schema."""
 
 _FLAGS = ["name_uncertain", "number_uncertain", "negation_present", "term_uncertain", "partial"]
-_LANG_NAMES = {"tr": "Turkish", "en": "English"}
+_LANG_NAMES = {"tr": "Turkish", "en": "English", "ja": "Japanese"}
 
 _LANG_OBJECT = {
     "type": "object",
@@ -114,8 +125,11 @@ _INTERPRET = {
 }
 
 
-def dual_schema(interpret: bool) -> dict:
-    props = {"turkish": _LANG_OBJECT, "english": _LANG_OBJECT, **_SHARED}
+def dual_schema(interpret: bool, japanese: bool = False) -> dict:
+    props = {"turkish": _LANG_OBJECT, "english": _LANG_OBJECT}
+    if japanese:
+        props["japanese"] = _LANG_OBJECT
+    props.update(_SHARED)
     if interpret:
         props.update(_INTERPRET)
     return {"type": "object", "properties": props, "required": list(props), "additionalProperties": False}
@@ -164,6 +178,8 @@ def _payload(req: TranslateRequest, glossary, task: str, targets: tuple[str, ...
             r["turkish"] = p.turkish
         if "en" in targets:
             r["english"] = p.english
+        if "ja" in targets and p.japanese:
+            r["japanese"] = p.japanese
         recent.append(r)
     return {
         "TASK": task,
@@ -179,7 +195,8 @@ def _payload(req: TranslateRequest, glossary, task: str, targets: tuple[str, ...
     }
 
 
-def build_user_message(req: TranslateRequest, glossary, targets: tuple[str, ...] = ("tr", "en")) -> str:
+def build_user_message(req: TranslateRequest, glossary, targets: tuple[str, ...] | None = None) -> str:
+    targets = targets or req.targets
     if isinstance(req, InterpretRequest):
         payload = _payload(req, glossary, "interpret", targets)
         payload["CANDIDATES"] = [

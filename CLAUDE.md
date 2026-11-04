@@ -9,6 +9,9 @@ Output: Turkish and English captions into an existing Zoom meeting via Zoom's Ma
 > `TR: ...` line then `EN: ...` line; tested single-line fallback if Zoom strips newlines).
 > **CLOUDFLARE VIEWER = DISABLED EXPERIMENTAL FEATURE, NOT A PRODUCTION DEPENDENCY** (owner, 3 Nov).
 > Guests only: join Zoom → Show Captions → read TR + EN. No second website, no second screen.
+> **Japanese (owner, 4 Nov):** operator mode **TR + EN + JA** (`TRILINGUAL`) for the parts the
+> Japanese interpreter does NOT cover (vows, MC); during the interpreted talk: TR + EN. Every
+> guest sees the same caption and reads their own label - Zoom has no per-guest language (D-019).
 
 **After any context reset: read `docs/SESSION_HANDOFF.md` and `docs/IMPLEMENTATION_STATUS.md`
 first, check `git status`/`git log`, re-run the smallest relevant tests, continue the documented
@@ -38,7 +41,8 @@ Never claim a Thursday/Friday test passed before it was actually executed. Never
 - Remote access: private LAN or Tailscale Serve only. Never Funnel / port forwarding.
 - Turkish + English from one recognition event; see `docs/DECISIONS.md`.
 - **Zoom-first bilingual captions (owner course correction, 3 Nov, supersedes the viewer
-  priority):** default output mode BILINGUAL; Turkish only / English only remain operator options.
+  priority):** default output mode BILINGUAL; TR only / EN only / JA only / TR + EN + JA are operator options
+  (Japanese is requested from Claude only while the mode shows it; D-019).
   The guest viewer + Cloudflare relay (`output/viewer.py`, `web/viewer.html`, `relay/`) stays in
   the repo, disabled (`viewer.enabled: false`), off the production path: do not deploy Cloudflare,
   buy a plan, extend the viewer, or run more 1,000-socket load tests. See D-013 / D-014.

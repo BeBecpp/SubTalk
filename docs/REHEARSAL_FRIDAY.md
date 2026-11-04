@@ -39,6 +39,9 @@ desktop Zoom app and one on a phone, both with **Show Captions** on.
 - [ ] Vows: try both - (a) automatic captions, (b) Pause + phrase deck "Vow - groom / bride"
       + Resume. Pick one for Saturday (b avoids showing each vow line twice).
 - [ ] Music mode during a song; phrase deck "[Music]" / "[Song]".
+- [ ] **TR + EN + JA** mode for an MC part and the vows: a Japanese family member reads the JA
+      part on a phone and judges it; the Turkish/English readers still find their line. Phrase deck
+      vow in TR + EN + JA: complete, paced, readable. Switch back to TR + EN for the talk.
 - [ ] Dashboard Diagnostics ▸ latency: record p50/p95 per stage (VAD, ASR, Claude, guards, order,
       Zoom). **Target: speech end → visible p50 ≤ 4 s, p95 ≤ 7 s** (check visible time by eye on a phone
       once or twice with a stopwatch).
@@ -58,6 +61,7 @@ desktop Zoom app and one on a phone, both with **Show Captions** on.
 | TR + EN automatic captions | readable on desktop + phone, latency target met or close, no wrong names/references | TR only |
 | Japanese interpreter handling | no duplicate captions | Japanese ▸ Off during the interpreted talk |
 | Phrase deck vows | shown once, complete | automatic captions |
+| TR + EN + JA (vows / MC) | readable on desktop + phone, Japanese judged OK by a native reader | TR + EN (Japanese guests: phrase deck JA only, or none) |
 | Any critical failure | - | phrase deck only, or no captions |
 
 - [ ] Write the decisions into `docs/TEST_REPORT.md` and `docs/RUNBOOK.md`.

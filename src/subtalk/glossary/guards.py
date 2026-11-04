@@ -7,18 +7,20 @@ references, numbers, names, people and religious content - they cannot prove
 the translation is faithful.
 
 Each target language (Turkish, English) has its own word lists; the same
-source checks apply to both.
+source checks apply to both. Japanese captions (no spaces between words) get the
+same checks on character patterns instead of words (``_check_ja``).
 """
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Callable
 
 from subtalk.glossary.citations import Citation
 from subtalk.glossary.match import contains_form, mn_tokens
 from subtalk.glossary.normalize import norm_ja, norm_mn, turkish_lower
-from subtalk.glossary.numerals import digit_numbers, ja_numbers, parse_mn_numbers
+from subtalk.glossary.numerals import digit_numbers, ja_numbers, number_in_text, parse_mn_numbers
 from subtalk.glossary.store import Glossary
 
 DIVINE_TERM_CATEGORIES = ("divine_name", "theology")
@@ -97,6 +99,23 @@ EN = Profile(
     case_sensitive_books=True,  # "Numbers", "Acts", "Mark", "Job" are also ordinary words
 )
 PROFILES = {"tr": TR, "en": EN}
+
+# Japanese output: concept -> invented-content pattern (substring search, no word boundaries).
+JA_CONCEPTS = {
+    "prayer": re.compile(r"祈"),
+    "vow": re.compile(r"誓"),
+    "covenant": re.compile(r"契約"),
+    "amen": re.compile(r"アーメン"),
+    "verse": re.compile(r"聖句|(?<![季調関])節(?![約度目分])"),
+    # 丈夫 (sturdy), 工夫 (idea), 夫人 (madam) are not spouses.
+    "spouse": re.compile(r"妻|(?<![丈工])夫(?!人)|配偶|旦那|奥さん|伴侶"),
+    "groom": re.compile(r"新郎|花婿|お婿"),
+    "bride": re.compile(r"新婦|花嫁|お嫁"),
+}
+JA_JEHOVAH = "エホバ"
+JA_WITNESSES = "エホバの証人"
+# 精神 (mind), 神経 (nerves), 神聖 (sacred) are not references to God.
+JA_DIVINE = re.compile(r"エホバ|(?<!精)神(?![経聖])|天の父|天のお父|創造者|全能者")
 # English recognition aliases that are NOT rewritten (a single psalm is "Psalm 23" in English).
 _NO_REWRITE = {"Psalm"}
 
@@ -116,6 +135,20 @@ def _source_has(source: str, lang: str, stems) -> bool:
     norm = norm_mn(source)
     toks = mn_tokens(source)
     return any((" " in s and s in norm) or any(tok.startswith(s) for tok in toks) for s in stems)
+
+
+def _invalid_shown(citations: list[Citation], text: str, target: str) -> list[str]:
+    """A spoken reference that does not exist (e.g. Ephesians 5:34) must not reach a caption in
+    any form - digits or words ("verse thirty-four"). Its non-existent number is the verse, or the
+    chapter when no verse was spoken."""
+    out = []
+    for c in citations:
+        if c.status != "invalid":
+            continue
+        bad = c.verse if c.verse is not None else c.chapter
+        if bad is not None and number_in_text(bad, text, target):
+            out.append(f"invalid_reference_shown:{c.book_id} {c.chapter}:{c.verse}")
+    return out
 
 
 def _edit_distance(a: str, b: str) -> int:
@@ -187,9 +220,16 @@ class Guards:
                 tail = r"(\d+)(?:\s*:\s*(\d+)(?:\s*[-–]\s*(\d+))?|\.\s*bölüm)?"
             flags = 0 if prof.case_sensitive_books else re.IGNORECASE
             self._books[target] = (re.compile(rf"(?<![\w])({alt})\s+{tail}", flags), by_name, legacy)
+        ja_names = sorted({unicodedata.normalize("NFKC", b.ja): b.id for b in glossary.books}.items(),
+                          key=lambda x: -len(x[0]))
+        self._ja_book_by_name = dict(ja_names)
+        self._ja_ref = re.compile(
+            "(" + "|".join(re.escape(n) for n, _ in ja_names) + r")\s*(\d+)(?:\s*[:]\s*(\d+)(?:\s*[-–~〜]\s*(\d+))?|\s*章)?")
 
     def check(self, source: str, lang: str, citations: list[Citation], output: str,
               target: str = "tr") -> GuardResult:
+        if target == "ja":
+            return self._check_ja(source, lang, citations, output)
         prof = PROFILES[target]
         text = (output or "").strip()
         blocked: list[str] = []
@@ -219,6 +259,7 @@ class Guards:
                 ok = (book_id, ch, v, ve) in allowed
             if not ok:
                 blocked.append(f"unsupported_citation:{book_id} {ch}:{v}")
+        blocked.extend(_invalid_shown(citations, text, target))
         for c in citations:
             if c.status == "invalid":
                 flags.append(f"invalid_reference_in_source:{c.book_id} {c.chapter}:{c.verse}")
@@ -279,6 +320,81 @@ class Guards:
                     flags.append(f"name_spelling_unapproved:{name.id}")
 
         # 6. Length sanity (catches inserted script/verse text).
+        limit = max(self.min_len_allowance, self.max_ratio.get(lang, 3.0) * len(source.strip()))
+        if len(text) > limit:
+            blocked.append("length_ratio")
+
+        return GuardResult(not blocked, text, blocked, flags)
+
+    def _check_ja(self, source: str, lang: str, citations: list[Citation], output: str) -> GuardResult:
+        """The same rules as ``check`` for a Japanese caption, on character patterns."""
+        text = unicodedata.normalize("NFKC", (output or "").strip())  # full-width digits -> ASCII
+        blocked: list[str] = []
+        flags: list[str] = []
+        if not text:
+            return GuardResult(False, "", ["empty_output"])
+
+        # 1. Bible references must match references detected in the source.
+        allowed = {(c.book_id, c.chapter, c.verse, c.verse_end) for c in citations
+                   if c.status in ("valid", "unverified")}
+        for m in self._ja_ref.finditer(text):
+            book_id, ch = self._ja_book_by_name[m.group(1)], int(m.group(2))
+            v = int(m.group(3)) if m.group(3) else None
+            ve = int(m.group(4)) if m.group(4) else None
+            ok = (any(k[0] == book_id and k[1] == ch for k in allowed) if v is None
+                  else (book_id, ch, v, ve) in allowed)
+            if not ok:
+                blocked.append(f"unsupported_citation:{book_id} {ch}:{v}")
+        blocked.extend(_invalid_shown(citations, text, "ja"))
+        for c in citations:
+            if c.status == "invalid":
+                flags.append(f"invalid_reference_in_source:{c.book_id} {c.chapter}:{c.verse}")
+
+        # 2. Divine name preserved when spoken, never invented; no invented reference to God.
+        src_jehovah = any(contains_form(t.ja if lang == "ja" else t.mn, source, lang) for t in self._jehovah)
+        dtext = text
+        if not src_jehovah and lang == "mn" and _source_has(source, lang, ("гэрч",)):
+            dtext = text.replace(JA_WITNESSES, " ")  # "Гэрч" -> "エホバの証人" only as that phrase
+        out_jehovah = JA_JEHOVAH in dtext
+        if src_jehovah and not out_jehovah:
+            blocked.append("divine_name_missing")
+        if out_jehovah and not src_jehovah:
+            blocked.append("divine_name_invented")
+        src_divine = src_jehovah or any(
+            contains_form(t.ja if lang == "ja" else t.mn, source, lang) for t in self._divine_terms)
+        if not src_divine and JA_DIVINE.search(dtext):
+            blocked.append("divine_reference_invented")
+
+        # 3. Religious/ceremony concepts and people must come from the source.
+        for concept, pattern in JA_CONCEPTS.items():
+            stems = SRC[concept].get(lang, SRC[concept]["mn"])
+            if pattern.search(text) and not _source_has(source, lang, stems):
+                blocked.append(f"{concept}_invented")
+
+        # 4. No invented digits.
+        src_numbers = set(digit_numbers(source))
+        if lang == "ja":
+            src_numbers.update(ja_numbers(norm_ja(source)))
+        else:
+            src_numbers.update(s.value for s in parse_mn_numbers(mn_tokens(source)))
+        for c in citations:
+            src_numbers.update(x for x in (c.chapter, c.verse, c.verse_end, *c.more) if x is not None)
+        for n in digit_numbers(text):
+            if n not in src_numbers:
+                blocked.append(f"number_invented:{n}")
+
+        # 5. Event names (Latin spelling or a Japanese form) must be spoken to appear.
+        low = text.lower()
+        for name in self.g.names:
+            shown = [f for f in (name.target("ja"), *name.ja) if f]
+            if any(f.lower() in low for f in shown):
+                forms = name.ja if lang == "ja" else name.mn
+                if not forms or not contains_form(forms, source, lang):
+                    blocked.append(f"name_invented:{name.id}")
+                elif not name.approved:
+                    flags.append(f"name_spelling_unapproved:{name.id}")
+
+        # 6. Length sanity (Japanese is usually shorter than the source).
         limit = max(self.min_len_allowance, self.max_ratio.get(lang, 3.0) * len(source.strip()))
         if len(text) > limit:
             blocked.append("length_ratio")

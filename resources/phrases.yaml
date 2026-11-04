@@ -1,33 +1,42 @@
 # Operator phrase deck (manual captions). One click + confirm sends the phrase to Zoom in the
-# current caption language (TR only / EN only / TR + EN, current layout).
-# text = Turkish, en = English. status: review_required -> have native speakers check the wording.
+# current caption language (TR only / EN only / JA only / TR + EN / TR + EN + JA, current layout).
+# text = Turkish, en = English, ja = Japanese. status: review_required -> have native speakers check the wording.
 # Override per event in event/phrases.yaml (same format, gitignored; replaces this whole list).
 status: review_required
 phrases:
   - label: "Welcome / captions start"
     text: "Altyazılara hoş geldiniz. Altyazılar yapay zekâ ile otomatik olarak çevrilmektedir."
     en: "Welcome to the captions. They are translated automatically by AI."
+    ja: "字幕へようこそ。この字幕はAIによって自動的に翻訳されています。"
   - label: "Ceremony starts shortly"
     text: "Tören birazdan başlayacak."
     en: "The ceremony will begin shortly."
+    ja: "まもなく式が始まります。"
   - label: "[Music]"
     text: "[Müzik]"
     en: "[Music]"
+    ja: "[音楽]"
   - label: "[Song]"
     text: "[İlahi]"
     en: "[Song]"
+    ja: "[歌]"
   - label: "[Applause]"
     text: "[Alkış]"
     en: "[Applause]"
+    ja: "[拍手]"
   - label: "Prayer (no text)"
     text: "[Dua ediliyor]"
     en: "[Prayer]"
+    ja: "[祈り]"
   - label: "Short break"
     text: "Kısa bir ara."
     en: "A short break."
+    ja: "短い休憩です。"
   - label: "Captions paused (technical)"
     text: "Altyazılara teknik bir nedenle kısa bir ara verildi."
     en: "Captions are paused briefly for a technical reason."
+    ja: "技術的な理由により、字幕を一時停止しています。"
   - label: "Captions resumed"
     text: "Altyazılar yeniden başladı."
     en: "Captions have resumed."
+    ja: "字幕を再開しました。"

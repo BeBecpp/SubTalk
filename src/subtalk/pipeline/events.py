@@ -23,6 +23,8 @@ class SpeechEvent:
     status: str = "heard"
     turkish: str | None = None
     english: str | None = None
+    japanese: str | None = None
+    targets: tuple = ("tr", "en")  # languages requested from the translator for this event
     out: dict = field(default_factory=dict)  # target -> {"status": PASS|WITHHELD|FAILED|TIMED_OUT|STALE, "reasons": [...]}
     sent_mode: str | None = None
     reasons: list[str] = field(default_factory=list)
@@ -40,6 +42,7 @@ class SpeechEvent:
         return {
             "id": self.id, "kind": self.kind, "text": self.text, "quality": self.quality,
             "status": self.status, "turkish": self.turkish, "english": self.english,
+            "japanese": self.japanese,
             "out": self.out, "sent_mode": self.sent_mode, "reasons": self.reasons[-4:],
             "links": self.links, "flags": self.flags, "citations": self.citations,
             "relation": self.relation, "wall": self.wall, "duration": round(self.t_end - self.t_start, 2),

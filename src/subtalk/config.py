@@ -36,9 +36,10 @@ class ZoomCfg(BaseModel):
     line_breaks: bool = False
     line_chars: int = 42
     bilingual_labels: bool = True  # "TR: ... / EN: ..." prefixes in BILINGUAL mode
-    output_mode: Literal["TR", "EN", "BILINGUAL"] = "BILINGUAL"  # production default (owner, 3 Nov)
+    output_mode: Literal["TR", "EN", "JA", "BILINGUAL", "TRILINGUAL"] = "BILINGUAL"  # production default (owner, 3 Nov)
     caption_layout: Literal["two_line", "single_line"] = "single_line"  # Zoom web client drops "\n" (observed 4 Nov)
     bilingual_max_chars: int = 70  # per language line in BILINGUAL; tune after the Zoom TEST meeting
+    trilingual_max_chars: int = 50  # per language line in TRILINGUAL (TR + EN + JA; JA counts double width)
     part_read_cps: float = 15.0    # pacing between parts of one long caption
     min_interval_s: float = 1.0
     queue_max: int = 8

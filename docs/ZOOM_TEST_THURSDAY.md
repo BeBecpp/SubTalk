@@ -76,6 +76,7 @@ and a human reading the captions at real speed.
 | 15 | Host rejoin: token still valid? new token starts at seq 1? | | | | | |
 | 16 | Expired / wrong URL: alert + auto-pause, no loop | | | | | |
 | 17 | Guests without captions enabled see nothing different | | | | | |
+| 18 | TR + EN + JA mode: test caption + phrase deck vow readable (length, wrapping, Japanese glyphs) | | | | | D-019 |
 
 ### Guest viewer (only if the relay is deployed by Thursday; otherwise move to Friday)
 

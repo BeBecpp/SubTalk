@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass
+
+from subtalk.glossary.normalize import turkish_lower
 
 # Mongolian number word forms -> (value, kind). Ordinal (-дугаар/-дүгээр),
 # genitive (-ын/-ийн/-гийн) and dative forms terminate a number phrase.
@@ -150,3 +153,72 @@ TR_NUMBER_WORDS = {
     "on": 10, "yirmi": 20, "otuz": 30, "kırk": 40, "elli": 50, "altmış": 60, "yetmiş": 70,
     "seksen": 80, "doksan": 90, "yüz": 100, "bin": 1000,
 }
+
+
+# ---------------------------------------------------------------- number words in captions
+# Used to keep an INVALID Bible reference (a verse that does not exist) out of a caption even when
+# the translation spells the number out ("verse thirty-four", "otuz dördüncü ayet").
+_EN_ONES = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+_EN_ONES_ORD = ["", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth"]
+_EN_TEENS = ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+             "eighteen", "nineteen"]
+_EN_TEENS_ORD = ["tenth", "eleventh", "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth",
+                 "seventeenth", "eighteenth", "nineteenth"]
+_EN_TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+_EN_TENS_ORD = ["", "", "twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth",
+                "eightieth", "ninetieth"]
+_TR_ONES = ["", "bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz", "dokuz"]
+_TR_ONES_ORD = ["", "birinci", "ikinci", "üçüncü", "dördüncü", "beşinci", "altıncı", "yedinci", "sekizinci",
+                "dokuzuncu"]
+_TR_TENS = ["", "on", "yirmi", "otuz", "kırk", "elli", "altmış", "yetmiş", "seksen", "doksan"]
+_TR_TENS_ORD = ["", "onuncu", "yirminci", "otuzuncu", "kırkıncı", "ellinci", "altmışıncı", "yetmişinci",
+                "sekseninci", "doksanıncı"]
+
+
+def _en_words(n: int) -> list[str]:
+    """Regex alternatives for ``n`` (1-199) spelled out in English, cardinal and ordinal."""
+    head, n = (r"(?:one\s+)?hundred\s+(?:and\s+)?" if n >= 100 else ""), n % 100
+    if n == 0:
+        return [r"(?:one\s+)?hundred(?:th)?"]
+    if n < 10:
+        forms = [_EN_ONES[n], _EN_ONES_ORD[n]]
+    elif n < 20:
+        forms = [_EN_TEENS[n - 10], _EN_TEENS_ORD[n - 10]]
+    else:
+        t, o = divmod(n, 10)
+        forms = ([_EN_TENS[t], _EN_TENS_ORD[t]] if o == 0 else
+                 [rf"{_EN_TENS[t]}[\s-]+{_EN_ONES[o]}", rf"{_EN_TENS[t]}[\s-]+{_EN_ONES_ORD[o]}"])
+    return [head + f for f in forms]
+
+
+def _tr_words(n: int) -> list[str]:
+    """Regex alternatives for ``n`` (1-199) spelled out in Turkish, cardinal and ordinal."""
+    head, n = (r"yüz\s*" if n >= 100 else ""), n % 100
+    if n == 0:
+        return ["yüz"]
+    t, o = divmod(n, 10)
+    if o == 0:
+        forms = [_TR_TENS[t], _TR_TENS_ORD[t]]
+    else:
+        tens = rf"{_TR_TENS[t]}\s*" if t else ""
+        forms = [tens + _TR_ONES[o], tens + _TR_ONES_ORD[o]]
+    return [head + f for f in forms]
+
+
+def number_in_text(n: int, text: str, target: str) -> bool:
+    """True if ``text`` (a caption in ``target``: tr / en / ja) contains the number ``n`` as
+    digits, as Japanese numerals, or spelled out (cardinal or ordinal)."""
+    text = unicodedata.normalize("NFKC", text or "")
+    if n in digit_numbers(text):
+        return True
+    if target == "ja":
+        return n in ja_numbers(text)
+    if not 0 < n < 200:
+        return False
+    if target == "en":
+        low, forms, tail = text.lower(), _en_words(n), r"(?![\w-])"
+    else:
+        low, forms, tail = turkish_lower(text), _tr_words(n), r"\w*"  # Turkish case suffixes
+    return re.search(r"(?<![\w-])(?:" + "|".join(forms) + ")" + tail, low) is not None
+
+

@@ -1,9 +1,10 @@
 """Translation pipeline: recognised segments -> events -> Claude -> guards -> ordered captions.
 
-One recognition event produces Turkish and English. Each language gets its own
+One recognition event produces Turkish and English (plus Japanese while the caption mode
+shows Japanese: JA / TRILINGUAL). Each language gets its own
 status (PASS / WITHHELD / FAILED / TIMED_OUT / STALE) and its own guard check;
 a problem in one language never removes the other. The operator's output mode
-(TR / EN / BILINGUAL) decides what is sent to Zoom when the caption is released.
+(TR / EN / JA / BILINGUAL / TRILINGUAL) decides what is sent to Zoom when the caption is released.
 
 Main Speech Mode only changes interpreter-aware behaviour:
 * low-quality / uncertain Mongolian is HELD (up to hold_timeout_s) so the
@@ -24,7 +25,7 @@ from subtalk.asr.langid import Decision
 from subtalk.config import Config
 from subtalk.glossary.guards import Guards
 from subtalk.glossary.service import GlossaryService
-from subtalk.output.compose import compose_parts
+from subtalk.output.compose import MODE_LANGS, compose_parts, mode_max_chars
 from subtalk.output.controller import OutputController
 from subtalk.pipeline.emitter import OrderedEmitter
 from subtalk.pipeline.events import EventStore, SpeechEvent
@@ -49,7 +50,6 @@ from subtalk.translate.base import (
 )
 
 log = logging.getLogger("subtalk.pipeline")
-MODE_LANGS = {"TR": ("tr",), "EN": ("en",), "BILINGUAL": ("tr", "en")}
 
 
 @dataclass
@@ -60,7 +60,7 @@ class ContextState:
     auto_matching_enabled: bool = True
     music_mode: bool = False
     speaker_control_enabled: bool = True
-    output_mode: str = "BILINGUAL"  # TR | EN | BILINGUAL
+    output_mode: str = "BILINGUAL"  # TR | EN | JA | BILINGUAL | TRILINGUAL
     caption_layout: str = "two_line"  # two_line | single_line (BILINGUAL only)
 
     def to_dict(self) -> dict:
@@ -163,8 +163,13 @@ class Pipeline:
         return self.ctx.ja_policy is JaPolicy.AUTO and self.ctx.auto_matching_enabled
 
     # ------------------------------------------------------------------ requests
+    def _targets(self) -> tuple[str, ...]:
+        """Turkish + English always; Japanese only while the caption mode shows it."""
+        return TARGETS + (("ja",) if "ja" in MODE_LANGS.get(self.ctx.output_mode, ()) else ())
+
     def _request(self, ev: SpeechEvent, lang: str, cls=TranslateRequest, **extra):
         analysis = self.gsvc.analyze(ev.text, lang)
+        ev.targets = self._targets()
         ev.citations = [r for r in analysis.citation_renderings.values() if r]
         req = cls(
             event_id=ev.id, lang=lang, text=ev.text, asr_quality=ev.quality, hints=analysis.hints,
@@ -173,6 +178,7 @@ class Pipeline:
             main_speech=self.ctx.main_speech,
             script_context=self.script.context_for(ev.text, lang) if self.script.is_active() else None,
             renderings=analysis.renderings,
+            targets=ev.targets,
             **extra,
         )
         return req, analysis
@@ -208,13 +214,13 @@ class Pipeline:
 
     @staticmethod
     def _mark_all(ev: SpeechEvent, status: str, reason: str) -> None:
-        for t in TARGETS:
+        for t in ev.targets:
             ev.out[t] = {"status": status, "reasons": [reason]}
         ev.status = "failed"
 
     @staticmethod
     def _mark_unproduced(ev: SpeechEvent, result: TranslationResult) -> None:
-        for t in TARGETS:
+        for t in ev.targets:
             o = result.lang(t)
             if o.timed_out:
                 ev.out[t] = {"status": TIMED_OUT, "reasons": [o.error or "timeout"]}
@@ -234,9 +240,9 @@ class Pipeline:
                 self.emitter.skip(slot)
                 return
             self._mark_unproduced(ev, result)
-            if not any(_produced(result.lang(t)) for t in TARGETS):
+            if not any(_produced(result.lang(t)) for t in ev.targets):
                 self.emitter.skip(slot)
-                if all(ev.out.get(t, {}).get("status") in (FAILED, TIMED_OUT) for t in TARGETS):
+                if all(ev.out.get(t, {}).get("status") in (FAILED, TIMED_OUT) for t in ev.targets):
                     ev.status = "failed"
                     return
                 self._hold_or_drop(ev, f"translator:{result.source_quality}"
@@ -255,7 +261,7 @@ class Pipeline:
         texts: dict[str, str] = {}
         any_blocked = False
         g0 = time.monotonic()
-        for t in TARGETS:
+        for t in ev.targets:
             o = result.lang(t)
             if not _produced(o):
                 continue  # already marked by _mark_unproduced
@@ -272,16 +278,17 @@ class Pipeline:
                                f"{t.upper()} caption withheld ({', '.join(g.blocked)})")
         ev.stages["guards"] = (time.monotonic() - g0) * 1000
         self.output.latency.add("guards", ev.stages["guards"])
-        ev.turkish, ev.english = texts.get("tr"), texts.get("en")
+        ev.turkish, ev.english, ev.japanese = texts.get("tr"), texts.get("en"), texts.get("ja")
         if not texts:
             ev.status = "blocked" if any_blocked else "dropped"
             if any_blocked:
                 self.stats.inc("blocked")
-                ev.reasons.extend(r for t in TARGETS for r in ev.out.get(t, {}).get("reasons", []))
+                ev.reasons.extend(r for t in ev.targets for r in ev.out.get(t, {}).get("reasons", []))
             self.emitter.skip(slot)
             return False
         ev.status = "translated"
-        self.recent_pairs.append(ContextPair(lang, ev.text, texts.get("tr", ""), texts.get("en", "")))
+        self.recent_pairs.append(ContextPair(lang, ev.text, texts.get("tr", ""), texts.get("en", ""),
+                                             texts.get("ja", "")))
         self.recent_pairs = self.recent_pairs[-20:]
         ev.ready_at = time.monotonic()
         self.emitter.complete(slot, texts, ev.t_end, (ev.id,), ev.output_epoch)
@@ -317,7 +324,7 @@ class Pipeline:
             return
         ev.relation = "independent"
         self._mark_unproduced(ev, result)
-        if not any(_produced(result.lang(t)) for t in TARGETS):
+        if not any(_produced(result.lang(t)) for t in ev.targets):
             ev.status = "dropped"
             self.emitter.skip(slot)
             return
@@ -367,7 +374,7 @@ class Pipeline:
         ev.relation, ev.links = relation, links
         if relation == "covered":
             ev.status = "covered"
-            for t in TARGETS:  # the duplicate is suppressed consistently in both languages
+            for t in ev.targets:  # the duplicate is suppressed consistently in every language
                 ev.out[t] = {"status": WITHHELD, "reasons": ["interpreter_repeat"]}
             for i in links:
                 mn = self.events.get(i)
@@ -377,7 +384,7 @@ class Pipeline:
             self.emitter.skip(slot)
         elif relation == "conflict":
             ev.status = "conflict"
-            for t in TARGETS:
+            for t in ev.targets:
                 ev.out[t] = {"status": WITHHELD, "reasons": ["interpreter_conflict"]}
             self.stats.inc("ja_conflict")
             note = result.conflict_note or "Japanese interpretation differs from a shown caption"
@@ -385,7 +392,7 @@ class Pipeline:
             self.emitter.skip(slot)
         else:
             self._mark_unproduced(ev, result)
-            if not any(_produced(result.lang(t)) for t in TARGETS):
+            if not any(_produced(result.lang(t)) for t in ev.targets):
                 ev.status = "dropped"
                 self.emitter.skip(slot)
             elif self._finish(ev, slot, "ja", analysis, result) and relation == "resolves_held":
@@ -407,8 +414,7 @@ class Pipeline:
                 ev.stages["order_wait"] = (time.monotonic() - ev.ready_at) * 1000
                 self.output.latency.add("order_wait", ev.stages["order_wait"])
         z = self.cfg.zoom
-        parts = compose_parts(texts, mode, z.bilingual_max_chars if mode == "BILINGUAL" else z.max_chars,
-                              z.bilingual_labels, self.ctx.caption_layout)
+        parts = compose_parts(texts, mode, mode_max_chars(z, mode), z.bilingual_labels, self.ctx.caption_layout)
         sent_langs = [t for t in MODE_LANGS[mode] if texts.get(t)]
         accepted = False
         # The guest viewer takes every language, whatever the Zoom mode is.
