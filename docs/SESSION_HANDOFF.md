@@ -3,67 +3,61 @@
 Update this file at every milestone. It must make sense with no chat history.
 
 ## CURRENT OBJECTIVE
-Production hardening for 7 Nov 2026 (see `CLAUDE.md`). Latest owner request (3 Nov): guests
-choose Turkish or English independently via a SubTalk caption viewer behind a Cloudflare
-Worker relay; Zoom manual captions stay as the fallback (D-013, `docs/VIEWER.md`).
+Zoom-first bilingual captions for 7 Nov 2026 (owner course correction, 3 Nov): Turkish + English in
+ONE Zoom caption stream, faithful JW terminology, p50 ≤ 4 s / p95 ≤ 7 s speech-end → visible,
+reliable recovery. Guest viewer / Cloudflare relay = disabled experimental code (do not extend).
 
 ## SCHEDULE (owner-confirmed)
-- Tue 3 - Wed 4 Nov: finish everything that does not need the meeting/equipment (budget ≤ $5).
-- Thu 5 Nov: preliminary real Zoom TEST meeting + remote control + failure tests.
-- Fri 6 Nov: full dress rehearsal on production equipment; freeze the build if it passes.
+- Tue 3 - Wed 4 Nov: implementation + mock/live tests (budget ≤ $5).
+- Thu 5 Nov: real Zoom TEST meeting with desktop + phone participants.
+- Fri 6 Nov: dress rehearsal on production equipment (Computer B GPU Whisper); freeze if it passes.
 - Sat 7 Nov: wedding with the frozen release. Never claim Thu/Fri tests passed before they run.
 
 ## CURRENT GIT COMMIT
-`1d14d5f` + guest viewer work (commit "Guest caption viewer with Cloudflare relay" follows; see `git log`).
+`11cebc6` + 4 Nov work (Zoom findings, sender 403 fix, prompt fix, soak harness): see `git log`.
 
-## WORKING TREE STATUS
-Guest viewer milestone: `output/viewer.py`, controller/pipeline/engine/server integration,
-`web/viewer.html`, `relay/` (Worker + Durable Object, wrangler 4.151.2), tests, docs.
-`relay/.dev.vars` holds a LOCAL dev token only (gitignored).
-
-## LAST COMPLETED TASK
-Guest viewer built and tested locally (3 Nov):
-- Captions reach guests only through the output gate; E-STOP clears guest screens; viewer-only
-  LIVE allowed; Zoom failures suspend only Zoom while the viewer is on.
-- Relay under `wrangler dev`: 2 browser guests (TR mobile + EN desktop) saw the same events in their
-  own language; reconnect after relay restart works; bad token 401; admin paths 404.
-- Local load: 1,000 sockets, 30,000/30,000 captions, p50 309 ms, p95 1.09 s (LOCAL ONLY).
+## LAST COMPLETED TASK (4 Nov)
+- Real Zoom TEST meeting (web client, host view, separate instant meeting): bilingual captions
+  shown; `\n` NOT rendered → default layout `single_line` ("TR: … | EN: …"), observed readable;
+  Pause/Resume/Stop/E-STOP behaved; Zoom POST p50 0.49 s / p95 1.24 s.
+- Found + fixed: timeout then same-seq retry → HTTP 403 was counted as a failure (D-015).
+- Live eval 52 cases after a prompt fix ("ах эгч нар аа" → "kardeşler" / "brothers and sisters"):
+  TR 49 pass / 0 FAIL / 1 withheld (correct) / 2 n/a; EN same. Claude p50 1.64 s, p95 2.39 s.
+- Dev laptop CPU cannot run Whisper live (D-016). faster-whisper `asr` extra now installed in .venv.
+- Soak harness `subtalk soak` (mock Claude + mock Zoom, faults + invariants); 60 s run: 0 violations.
 
 ## VERIFIED TEST RESULTS
-See `docs/TEST_REPORT.md` (single source of truth for numbers).
+See `docs/TEST_REPORT.md`.
 
 ## ACTIVE BUGS / BLOCKERS
-- Relay not deployed: needs the owner's Cloudflare login (`relay/README.md`). Until deployed and
-  load-tested from outside, the public viewer and 1,000-viewer capacity are UNVERIFIED.
-- Real Zoom TEST meeting (Thu): owner starts it and pastes the caption URL into the dashboard.
-- No CUDA GPU on the dev laptop: Whisper/GPU benchmarks pending on Computer B.
-- Turkish viewer UI strings and phrase-deck `en:` lines need a native-speaker review.
-- Failure-injection / soak harness (Claude timeout, 429, bad JSON, audio gaps, memory) not built yet.
+- Whether `\n` renders in the Zoom desktop app / phone app: unknown (Thursday). Single line works.
+- GPU Whisper latency unknown until Computer B (Friday). Target needs ASR ≲ 1.2 s per segment.
+- 60 English glossary entries still `en_review_required`; Turkish/English human review pending.
+- `config/local.yaml` on the dev laptop has `allow_real_zoom: true` (TEST only; EVENT disabled).
+- A partial `large-v3` download (~196 MB) is in the HuggingFace cache (harmless; can be deleted).
 
 ## CURRENT API TEST SPEND
-$0.2595 of the $5.00 budget (ledger `state/api_test_budget.json`, 110 requests). Nothing spent on 3 Nov
-evening (viewer work is mock-only). Spend before this budget: about $0.19 (1 Nov).
+$0.4978 of $5.00 (190 requests, ledger `state/api_test_budget.json`). Spend before this budget ~$0.19.
 
 ## REMAINING TEST BUDGET
-$4.2405 before the automatic stop at $4.50.
+$4.0022 before the automatic stop at $4.50.
 
 ## EXACT NEXT ACTION
-1. Failure-injection + soak harness (mock): Claude timeout / 429 / invalid JSON / missing language,
-   Zoom 400/403/5xx/timeouts, audio gaps, relay outage; record memory + queue metrics.
-2. Owner: deploy relay (relay/README.md steps 1-4), then run `relay/loadtest.py` against the
-   deployed URL from another network (step 5).
-3. Thursday: `docs/ZOOM_TEST_THURSDAY.md` (add viewer rows: guests on phones with TR/EN).
+1. Thursday: Zoom TEST meeting with a desktop-app participant and a phone (Show Captions on):
+   check 1-line vs 2-line, readability at real speed, network loss, host rejoin / new token.
+2. Friday: Computer B — `subtalk bench-asr` on real Mongolian recordings (GPU), real audio path,
+   per-stage latency vs target; runbook rehearsal; freeze.
 
 ## COMMAND TO REPRODUCE
 ```
 .venv\Scripts\python.exe -m pytest -q -m "not live and not e2e"
-.venv312\Scripts\python.exe -m pytest -q -m "not live and not e2e"
-.venv\Scripts\python.exe -m pytest -q -m e2e          # needs Edge + relay/node_modules
-.venv\Scripts\python.exe relay\loadtest.py --clients 1000   # with `npx wrangler dev` running in relay/
+.venv\Scripts\python.exe -m pytest -q -m e2e
+.venv\Scripts\subtalk.exe soak --seconds 600 --faults 1.5
+.venv\Scripts\subtalk.exe budget
 ```
 
 ## REQUIRED HUMAN INPUT, IF ANY
-- Cloudflare account login + `wrangler deploy` + `wrangler secret put PUBLISH_TOKEN` (owner).
-- Choose Workers Free vs Paid ($5/month) for the event (owner; check current Cloudflare limits).
-- Thursday: Zoom TEST meeting caption URL pasted in the dashboard (never in chat).
-- Turkish/English reviewers for translations, glossary terms and viewer UI text.
+- Thursday: start a TEST meeting, paste its caption API token into the dashboard; a second person
+  (desktop app) and a phone join with Show Captions on.
+- Friday: Computer B with the NVIDIA GPU, mixer audio, Mongolian test recordings.
+- Turkish/English reviewers for translations and glossary terms.

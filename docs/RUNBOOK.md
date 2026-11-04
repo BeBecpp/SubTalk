@@ -9,18 +9,20 @@ SubTalk can fail completely and the wedding continues untouched. When in doubt: 
 | 13:00 | Computer B on, `scripts\start.ps1` (or autostart). `subtalk doctor` all PASS. |
 | 13:15 | Computer A: start the sender. Dashboard: Audio chip green, level moves when someone speaks. |
 | 13:30 | Sign in on the dashboard (Computer A) and, if used, the Speaker page (phone via Tailscale). |
-| 14:30 | Quick test in the **TEST meeting**: connect (TEST), go LIVE, speak, see Turkish, Stop, disconnect. |
+| 14:30 | Quick test in a separate **TEST meeting**: Connect (TEST) → Test caption → in Zoom: Show Captions → read `TR: … \| EN: …` → go LIVE, speak, see both languages → Stop → Disconnect. |
 | 15:00 | `config/local.yaml`: `zoom.allow_event_target: true`, restart SubTalk, sign in again. |
 | 15:15 | Diagnostics ▸ **Warm Claude**. |
-| 15:20 | Wedding meeting host: Captions ▸ Set up manual captioner ▸ Copy the API token → Dashboard ▸ Connect ▸ **Wedding (EVENT)** ▸ tick confirmation. Header shows WEDDING badge. Not live yet. |
-| 15:25 | Guest viewer (only if it passed Friday's rehearsal): "Guests" chip green (Relay OK). Open the public link on a phone in TR and another in EN. |
+| 15:20 | Wedding meeting host: Show Captions ▸ Host tools for captions ▸ **Manual captions on** ▸ *Copy the API token* → Dashboard ▸ Connect ▸ **Wedding (EVENT)** ▸ tick confirmation. Header shows WEDDING badge. Not live yet. |
+| 15:25 | Dashboard: caption language **TR + EN**, layout **1 line** (unless Friday showed 2 lines render on the guests' devices). |
 | 15:30 | **GO / NO-GO** (below). |
 | 15:45 | Hold **go LIVE**. Phrase deck ▸ *Welcome / captions start*. |
 
 GO only if: Audio, Whisper, Claude, Zoom chips are green; Zoom caption number is known; the
-welcome caption appeared in the meeting (ask a Turkish guest or check a second device).
-Guest viewer: GO only if the welcome caption also appeared on the TR and EN test phones; otherwise
-set `viewer.enabled: false`, restart, and use Zoom captions alone (TR or BILINGUAL), and tell the guests.
+welcome caption appeared in the meeting with **both TR and EN** (check on a second device with
+Show Captions on). Guests only need: join Zoom → **Show Captions** (CC button).
+
+Fallbacks, in order: BILINGUAL 1 line → **TR only** (Turkish guests are the primary audience) →
+phrase deck only → no captions. Decide at GO/NO-GO, not during a talk.
 
 ## During the ceremony
 
@@ -33,7 +35,7 @@ set `viewer.enabled: false`, restart, and use Zoom captions alone (TR or BILINGU
 
 | Symptom | Do this | Never |
 |---|---|---|
-| Wrong or inappropriate captions appearing | **E-STOP** (one click). It clears guest viewer screens, but cannot remove a caption Zoom already showed. Fix the cause, hold reset, go LIVE again. | Keep going hoping it improves |
+| Wrong or inappropriate captions appearing | **E-STOP** (one click). It cannot remove a caption Zoom already showed (it disappears from Zoom after ~10 s). Fix the cause, hold reset, go LIVE again. | Keep going hoping it improves |
 | Verdict NOT SENDING, Zoom chip red | Check the meeting is running. If the token changed (host rejoined): Stop → Connect with the new URL → go LIVE. Output auto-pauses after 3 rejected captions. | Paste a URL from anywhere but the host's Zoom menu |
 | "Caption number unknown" | Diagnostics ▸ **Re-read seq**. | Guess a number |
 | Audio chip red / "No audio" | Check the sender window on Computer A and the mixer input. The sender reconnects by itself. | Change Zoom's microphone settings |
@@ -42,8 +44,8 @@ set `viewer.enabled: false`, restart, and use Zoom captions alone (TR or BILINGU
 | Japanese repeats appear as duplicates | Japanese ▸ **Off** during the interpreted talk, or Diagnostics ▸ Auto matching off. | |
 | Dashboard shows "Connection lost" | The engine keeps running. Refresh the browser. | Assume output stopped |
 | "Engine restarted" | Output is OFF. Sign in, check chips, Connect (if needed), hold go LIVE. | |
-| Guests: "Guests" chip red (relay failing) | Zoom captions keep running. Check Computer B's internet. Messages older than 20 s are dropped, never shown late. If it stays red: Zoom output mode BILINGUAL so English guests still read along. | Open the dashboard to the internet |
-| Zoom chip red "Suspended" (viewer on) | Guests' viewer still runs. Fix the meeting / token, then Diagnostics ▸ **Re-read seq** (or Pause → Resume). | |
+| Guests say TR and EN run together | Caption layout ▸ **1 line** (`TR: … \| EN: …`). | |
+| Captions too long / too fast to read | Caption language ▸ **TR only** (or EN only) - one language per caption. | |
 | Total failure | Phrase deck if possible (*Captions paused*), otherwise nothing - the ceremony continues. | Touch Zoom/camera settings for SubTalk |
 
 ## After the ceremony

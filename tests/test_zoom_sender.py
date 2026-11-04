@@ -78,12 +78,39 @@ async def test_lost_response_becomes_ambiguous_then_resyncs(zoom_http, mock_zoom
     mock_zoom.script.append("accept_then_timeout")
     mock_zoom.script.extend([500] * 50)  # following retries fail definitively
     r = await s.send("ilk")
-    assert r.outcome == "abandoned" and s.seq_state is SeqState.AMBIGUOUS
+    # Zoom's own seq shows it was accepted: delivered, not a failure (no step towards auto-pause).
+    assert r.outcome == "sent" and r.seq == 1 and s.seq_state is SeqState.KNOWN
+    assert s.confirmed_by_seq_total == 1 and s.consecutive_failures == 0
     mock_zoom.script.clear()
-    r2 = await s.send("ikinci")  # resync via GET /seq first
+    r2 = await s.send("ikinci")
     assert r2.outcome == "sent" and r2.seq == 2
     assert mock_zoom.meeting().violations == []
     assert [c.text for c in mock_zoom.meeting().captions] == ["ilk", "ikinci"]
+
+
+async def test_real_zoom_timeout_then_403_on_same_seq_retry(zoom_http, mock_zoom, tmp_path):
+    """Observed in a real TEST meeting (4 Nov): the first POST timed out although Zoom had
+    shown the caption; the same-seq retry got HTTP 403. Must count as delivered, shown once."""
+    s, _ = make_sender(zoom_http, tmp_path, backoff_base=0.001)
+    s.retry_budget = 0.5
+    await s.attach(url())
+    mock_zoom.script.append("accept_then_timeout")  # following attempts hit the 403 duplicate rule
+    r = await s.send("TR: test | EN: test")
+    assert r.outcome == "sent" and r.seq == 1 and s.consecutive_failures == 0
+    assert mock_zoom.meeting().duplicate_retries >= 1
+    r2 = await s.send("sonraki")
+    assert r2.outcome == "sent" and r2.seq == 2
+    assert [c.text for c in mock_zoom.meeting().captions] == ["TR: test | EN: test", "sonraki"]
+    assert mock_zoom.meeting().violations == []
+
+
+async def test_definite_403_without_timeout_stays_a_failure(zoom_http, mock_zoom, tmp_path):
+    s, _ = make_sender(zoom_http, tmp_path, backoff_base=0.001)
+    s.retry_budget = 0.05
+    await s.attach(url())
+    mock_zoom.script.extend([403] * 50)  # e.g. expired token: never shown
+    r = await s.send("reddedildi")
+    assert r.outcome == "abandoned" and s.consecutive_failures == 1 and s.confirmed_by_seq_total == 0
 
 
 async def test_timeout_never_accepted_reuses_number_after_resync(zoom_http, mock_zoom, tmp_path):

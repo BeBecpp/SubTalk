@@ -41,13 +41,15 @@ class MockZoomCaptionService:
     * ``"accept_then_timeout"`` - accept the caption, then stall (lost response)
     """
 
-    def __init__(self, stall_seconds: float = 5.0):
+    def __init__(self, stall_seconds: float = 5.0, duplicate_status: int = 403):
         self.meetings: dict[str, MockMeeting] = {}
         self.started = True
         self.script: deque = deque()
         self.seq_endpoint_available = True
         self.stall_seconds = stall_seconds
         self.post_count = 0
+        # Real Zoom answered a same-seq retry of an already accepted caption with 403 (TEST meeting, 4 Nov).
+        self.duplicate_status = duplicate_status
 
     def meeting(self, meeting_id: str = "mock") -> MockMeeting:
         return self.meetings.setdefault(meeting_id, MockMeeting())
@@ -101,6 +103,8 @@ class MockZoomCaptionService:
         seq = int(q["seq"])
         if seq == m.last_seq and m.captions and m.captions[-1].text == body:
             m.duplicate_retries += 1  # a retry of an accepted caption: not shown twice
+            if self.duplicate_status // 100 != 2:
+                return PlainTextResponse("Forbidden", status_code=self.duplicate_status)
         elif seq != m.last_seq + 1:
             m.violations.append({"expected": m.last_seq + 1, "got": seq, "text": body})
             return PlainTextResponse("sequence violation", status_code=400)

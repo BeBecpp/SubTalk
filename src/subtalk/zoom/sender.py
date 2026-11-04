@@ -74,6 +74,7 @@ class SenderStatus:
     last_success_at: float | None
     sent_total: int
     abandoned_total: int
+    confirmed_by_seq_total: int = 0  # timed out, then confirmed delivered via GET /seq
 
 
 def normalize_caption_text(text: str) -> str:
@@ -137,6 +138,7 @@ class ZoomCaptionSender:
         self.last_success_at: float | None = None
         self.sent_total = 0
         self.abandoned_total = 0
+        self.confirmed_by_seq_total = 0
 
     # ------------------------------------------------------------------ status
     def status(self) -> SenderStatus:
@@ -153,6 +155,7 @@ class ZoomCaptionSender:
             last_success_at=self.last_success_at,
             sent_total=self.sent_total,
             abandoned_total=self.abandoned_total,
+            confirmed_by_seq_total=self.confirmed_by_seq_total,
         )
 
     # -------------------------------------------------------------- lifecycle
@@ -249,11 +252,13 @@ class ZoomCaptionSender:
                 while True:
                     attempts += 1
                     try:
+                        # Never let one attempt run past the caption's deadline (strict TTL on arrival).
+                        left = budget_end - clk.monotonic()
                         resp = await self._http.post(
                             url,
                             content=body,
                             headers={"Content-Type": CONTENT_TYPE},
-                            timeout=self.attempt_timeout,
+                            timeout=max(0.3, min(self.attempt_timeout, left)),
                         )
                         status = resp.status_code
                         if status // 100 == 2:
@@ -290,6 +295,21 @@ class ZoomCaptionSender:
                 self.seq_state = SeqState.AMBIGUOUS
                 self.last_error = "cancelled"
                 raise
+            if uncertain:
+                # An attempt timed out, so Zoom may already have this caption. Real Zoom answers
+                # a same-seq retry of an accepted caption with HTTP 403 (observed 4 Nov, TEST
+                # meeting). Ask Zoom: if its last seq already includes ours, it was delivered.
+                if await self._resync_locked() and (self.last_confirmed or 0) >= seq:
+                    self.consecutive_failures = 0
+                    self.last_error = None
+                    self.last_success_at = time.time()
+                    self.sent_total += 1
+                    self.confirmed_by_seq_total += 1
+                    self.seq_source = "zoom_seq_after_timeout"
+                    return DeliveryResult(
+                        "sent", seq=seq, attempts=attempts, http_status=status,
+                        latency_ms=(clk.monotonic() - start) * 1000, zoom_timestamp=None,
+                    )
             # Abandoned after the retry budget.
             self.abandoned_total += 1
             self.consecutive_failures += 1

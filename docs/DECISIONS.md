@@ -2,6 +2,43 @@
 
 Newest first. Each entry: decision, evidence, consequences.
 
+## D-017 (2026-11-04) Strict caption TTL on arrival
+
+- The 10-min soak showed a caption reaching Zoom 13.6 s after speech end (TTL 12 s): the gate
+  checks the deadline when an attempt starts, and one 3 s attempt could run past it.
+- Each attempt's timeout is now min(attempt_timeout, time left before the deadline), floor 0.3 s.
+  Re-run: max 10.9 s under heavy faults. A timed-out late attempt is resolved via GET /seq (D-015).
+
+## D-016 (2026-11-04) Dev laptop cannot run Whisper live; production ASR stays on Computer B's GPU
+
+- Dev laptop: Intel i7-3630QM (2012, 4 cores, AVX, no AVX2), Intel HD 4000, 7.9 GB RAM, no CUDA.
+- Measured (faster-whisper 1.2.1, CPU int8, 4 threads, 12.5 s speech clip): `small` beam 5 =
+  27.1 s (RTF 2.18), beam 1 = 21.3 s (RTF 1.71). Slower than real time even for `small`;
+  `large-v3` (~6x the parameters) would take minutes per segment. Not run (3 GB download).
+- Consequence: this laptop is for mocks, dashboard and Zoom tests only. Live captions need an
+  NVIDIA GPU (Computer B); GPU latency is measured there (bench.py), not assumed.
+
+## D-015 (2026-11-04) Real Zoom findings: single-line default, same-seq retry 403, 3 s attempt timeout
+
+Observed in a real Zoom TEST meeting (web client, host view, 4 Nov):
+- The "\n" between TR and EN is NOT rendered by the Zoom web client: both lines run together
+  ("... ö ş ü EN: ..."). Default layout is now `single_line` ("TR: ... | EN: ..."), which was seen
+  clearly separated. `two_line` stays a dashboard option until desktop/mobile apps are checked.
+- Turkish ç ğ ı İ ö ş ü and curly quotes render correctly. A caption stays visible ~8-10 s.
+- A POST timed out (1.5 s) although Zoom had accepted it; the same-seq retry got HTTP 403. The
+  sender now, after any uncertain attempt, reads GET /seq: if Zoom already has the seq, the
+  caption counts as delivered (no failure, no step towards auto-pause). Mock Zoom answers
+  duplicates with 403 like real Zoom. Attempt timeout 1.5 s -> 3 s (POST p50 0.49 s, p95 1.24 s,
+  max 1.84 s over 13 POSTs).
+
+## D-014 (2026-11-03) Zoom-first bilingual captions (owner course correction)
+
+- Production delivery = Zoom manual caption API; TR + EN in ONE caption stream, BILINGUAL default.
+- Guest viewer + Cloudflare relay (D-013) disabled, off the production path, code kept.
+- Composer: both languages split into the same number of parts at sentence/clause boundaries;
+  references, numbers, negations never split off; nothing truncated; follow-up parts paced by
+  reading time (1.5-4 s) with their deadline extended accordingly.
+
 ## D-013 (2026-11-03) Guest caption viewer with per-guest TR/EN choice (owner decision)
 
 - Supersedes the last bullet of D-011. Zoom's manual caption API stays the fallback, unchanged.

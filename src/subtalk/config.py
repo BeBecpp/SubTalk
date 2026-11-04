@@ -27,7 +27,7 @@ class ServerCfg(BaseModel):
 class ZoomCfg(BaseModel):
     allow_real_zoom: bool = False
     allow_event_target: bool = False
-    attempt_timeout_s: float = 1.5
+    attempt_timeout_s: float = 3.0  # measured Zoom POST p95 1.24 s, max 1.84 s (4 Nov)
     retry_budget_s: float = 5.0
     backoff_base_s: float = 0.1
     caption_ttl_s: float = 12.0
@@ -37,7 +37,7 @@ class ZoomCfg(BaseModel):
     line_chars: int = 42
     bilingual_labels: bool = True  # "TR: ... / EN: ..." prefixes in BILINGUAL mode
     output_mode: Literal["TR", "EN", "BILINGUAL"] = "BILINGUAL"  # production default (owner, 3 Nov)
-    caption_layout: Literal["two_line", "single_line"] = "two_line"  # single_line if Zoom drops the newline
+    caption_layout: Literal["two_line", "single_line"] = "single_line"  # Zoom web client drops "\n" (observed 4 Nov)
     bilingual_max_chars: int = 70  # per language line in BILINGUAL; tune after the Zoom TEST meeting
     part_read_cps: float = 15.0    # pacing between parts of one long caption
     min_interval_s: float = 1.0

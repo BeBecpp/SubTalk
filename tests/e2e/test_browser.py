@@ -187,7 +187,9 @@ def test_operator_flow_bilingual_live_estop(browser, server):
     page.wait_for_function("document.getElementById('outState').textContent === 'LIVE'", timeout=5000)
     page.wait_for_function("document.getElementById('onairText').textContent.includes('EN:')", timeout=15000)
     caps = mock_captions()["captions"]
-    assert caps and all("TR:" in c["text"] and "\nEN:" in c["text"] for c in caps)
+    # Default layout is single line (the Zoom web client does not render "\n", 4 Nov).
+    assert caps and all(c["text"].startswith("TR: ") and " | EN: " in c["text"] and "\n" not in c["text"]
+                        for c in caps)
     assert mock_captions()["violations"] == []
     page.click("#btnEstop")
     wait_state(page, lambda s: s["output"]["state"] == "E_STOPPED")

@@ -179,13 +179,17 @@ def test_test_caption_and_output_mode_commands(client):
     assert not cmd(c, "set_output_mode", {"mode": "FR"})["accepted"]
     assert cmd(c, "set_output_mode", {"mode": "BILINGUAL"})["accepted"]
     assert c.get("/api/state").json()["context"]["output_mode"] == "BILINGUAL"
+    r = cmd(c, "send_test_caption")  # default layout: one line (Zoom web client drops "\n")
+    assert r["data"]["text"].startswith("TR: ") and " | EN: " in r["data"]["text"]
+    assert not cmd(c, "set_caption_layout", {"layout": "three_line"})["accepted"]
+    assert cmd(c, "set_caption_layout", {"layout": "two_line"})["accepted"]
     r = cmd(c, "send_test_caption")
-    assert r["data"]["text"].startswith("TR: ") and "\nEN: " in r["data"]["text"]
-    deadline = time.monotonic() + 5
-    while time.monotonic() < deadline and len(engine.mock_zoom.meeting().captions) < 2:
+    assert "\nEN: " in r["data"]["text"]
+    deadline = time.monotonic() + 8
+    while time.monotonic() < deadline and len(engine.mock_zoom.meeting().captions) < 3:
         time.sleep(0.05)
     texts = [x.text for x in engine.mock_zoom.meeting().captions]
-    assert len(texts) == 2 and "\nEN: " in texts[1]
+    assert len(texts) == 3 and " | EN: " in texts[1] and "\nEN: " in texts[2]
     login(c, "speaker")
     assert not cmd(c, "set_output_mode", {"mode": "TR"})["accepted"]  # operator only
 
@@ -252,7 +256,7 @@ def test_real_audio_path_through_asr_worker(tmp_path):
             deadline = time.monotonic() + 10
             while time.monotonic() < deadline and not engine.mock_zoom.meeting().captions:
                 time.sleep(0.1)
-        assert [x.text for x in engine.mock_zoom.meeting().captions][0].startswith("TR: Merhaba.\nEN: ")
+        assert [x.text for x in engine.mock_zoom.meeting().captions][0].startswith("TR: Merhaba. | EN: ")
         ev = engine.pipeline.events.all()[-1]
         assert ev.kind == "MN" and ev.asr_ms is not None
 
@@ -287,9 +291,9 @@ def test_full_mock_run_reaches_zoom(tmp_path):
                 break
             time.sleep(0.1)
         texts = [x.text for x in engine.mock_zoom.meeting().captions]
-        # Production default: BILINGUAL, one POST per event, TR line first, real newline.
-        assert texts == ["TR: Değerli misafirler, hoş geldiniz.\nEN: Dear guests, welcome.",
-                         "TR: Evliliği Yehova kurdu.\nEN: Jehovah created marriage."]
+        # Production default: BILINGUAL, one POST per event, TR first, single-line layout.
+        assert texts == ["TR: Değerli misafirler, hoş geldiniz. | EN: Dear guests, welcome.",
+                         "TR: Evliliği Yehova kurdu. | EN: Jehovah created marriage."]
         assert engine.mock_zoom.meeting().violations == []
         snap = c.get("/api/state").json()
         kinds = [e["status"] for e in snap["events"]]

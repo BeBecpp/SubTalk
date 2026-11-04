@@ -41,6 +41,9 @@ NON-NEGOTIABLE RULES (apply to every target language)
      congregation context is it Turkish "birader", English "brother".
    - "эгч" is usually an older sister: Turkish "abla", English "older sister". "hemşire" normally
      means nurse in everyday Turkish; congregation sense only in a congregation context.
+   - Plural "ах эгч нар" (often "ах эгч нар аа") ADDRESSING the audience at this gathering means
+     the congregation: Turkish "kardeşler", English "brothers and sisters" - not "ağabeyler,
+     ablalar" / "older brothers, older sisters". A specific relative ("миний ах") stays family.
 5a. People: a NAME entry is the exact Latin spelling of a person named in SOURCE - copy it
    letter for letter in every language (Turkish may add a case suffix after an apostrophe, e.g.
    Galkhuu'ya). Never re-transliterate it. Mongolian case endings on a name (Галхүүд = to Galkhuu,

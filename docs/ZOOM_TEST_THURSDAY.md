@@ -28,6 +28,33 @@ screenshot in `test-artifacts/`, gitignored) < **human-read** (a person read and
 5. Failure checks: disconnect the network of the SubTalk computer for 20 s while LIVE, reconnect;
    host leaves and rejoins (does the URL still work?); paste an expired/old URL.
 
+## Preliminary run - Wed 4 Nov 2026, 13:00-13:10 (Ulaanbaatar)
+
+Separate instant meeting (random ID, not the PMI, not the wedding), Zoom **web client**, host view
+only (no second participant yet). SubTalk in mock mode on the dev laptop (prewritten TR + EN),
+real caption POSTs. Owner pasted the API token; Claude drove the dashboard and looked at the
+caption area. Evidence level: **observed** (web client, host) unless noted.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Seq endpoint / first caption | seq started at 1 on the new token; seq known |
+| 2 | Turkish ç ğ ı İ ö ş ü | correct |
+| 3 | English apostrophe, curly quotes | correct |
+| 4 | `\n` between TR and EN | **NOT rendered** in the web client - lines run together |
+| 5 | Single-line fallback `TR: ... \| EN: ...` | readable, languages clearly separated -> new default |
+| 10 | Order of captions | 13 captions in order, seq 2-16 contiguous |
+| 11 | POST latency | p50 0.49 s, p95 1.24 s, max 1.84 s (13 POSTs, HTTP-accepted) |
+| 8 | Same-seq retry | first POST timed out at 1.5 s but WAS shown; retry got **HTTP 403**; no duplicate shown. Sender fixed (D-015) |
+| 12 | Pause / Resume | 0 captions in 12 s paused; 2 in 10 s after resume (normal rate, no burst) |
+| 13 | E-STOP | 0 captions in 10 s after E-STOP; reset -> CONNECTED, not LIVE |
+| - | Stop | 0 captions in 8 s; state CONNECTED |
+| - | Caption display time | visible ~8-10 s, then the caption area clears |
+| - | Long caption parts | "TR: kadın da kocasına derin saygı göstermelidir. \| EN: and a wife must deeply respect her husband." (part 2 of 2, aligned) |
+
+Still open for Thursday: desktop app and phone as separate participants (does `\n` render there?),
+network loss while LIVE, host rejoin / expired URL, the sender fix (D-015) against real Zoom,
+and a human reading the captions at real speed.
+
 ## Results
 
 | # | Check | HTTP-accepted | Observed (desktop) | Observed (phone) | Human-read | Notes |

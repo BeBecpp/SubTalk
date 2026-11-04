@@ -43,7 +43,16 @@ Never claim a Thursday/Friday test passed before it was actually executed. Never
   the repo, disabled (`viewer.enabled: false`), off the production path: do not deploy Cloudflare,
   buy a plan, extend the viewer, or run more 1,000-socket load tests. See D-013 / D-014.
 - An HTTP 200 from Zoom does not prove both languages are readable: verify in a real Zoom client
-  (TEST meeting) before claiming it.
+  (TEST meeting) before claiming it. Observed 4 Nov (web client): `\n` NOT rendered → default
+  layout `single_line` (`TR: … | EN: …`); same-seq retry after a timeout returns 403 (D-015).
+
+## Performance target (P0, owner 3 Nov)
+
+Speech end → bilingual caption **visible in Zoom**: **p50 ≤ 4 s, p95 ≤ 7 s**, without removing
+JW checks, guards or tests. Per-stage timings: `util/latency.py` (dashboard diagnostics). Measured:
+Claude p50 1.6-1.7 s / p95 2.4-2.7 s (live), Zoom POST p50 0.49 s / p95 1.24 s (real TEST meeting).
+GPU Whisper and real-audio VAD are measured on Computer B (Friday). The dev laptop cannot run
+Whisper live (CPU only: `small` = 2.2x slower than real time, D-016).
 
 ## Architecture map (`src/subtalk/`)
 
@@ -77,6 +86,7 @@ scripts\start.ps1                                                  # mock mode -
 .venv\Scripts\subtalk.exe zoom-probe --i-confirm-test-meeting      # TEST meeting only; URL read without echo
 .venv\Scripts\subtalk.exe doctor | glossary-check                  # diagnostics
 .venv\Scripts\python.exe -I resources\glossary\validate.py         # the glossary pack's own validator
+.venv\Scripts\subtalk.exe soak --seconds 600 --faults 1.5          # failure-injection soak (mock, free)
 ```
 Production (Computer B): `docs/SETUP.md`. Use `127.0.0.1`, not `localhost` (IPv6 on this machine).
 

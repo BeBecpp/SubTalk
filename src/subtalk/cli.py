@@ -349,6 +349,24 @@ def cmd_eval_claude(args) -> int:
 
 
 # ---------------------------------------------------------------------- bench
+def cmd_soak(args) -> int:
+    """Failure-injection soak with mock Claude + mock Zoom (no paid calls)."""
+    import asyncio
+
+    from subtalk.soak import run_soak, write_report
+
+    root = Path(args.home or ".").resolve()
+    rep = asyncio.run(run_soak(args.seconds, seed=args.seed, tmp=root / "state" / "soak", fault_scale=args.faults))
+    path = write_report(rep, root / "test-artifacts")
+    print(json.dumps({"ok": rep.ok, "violations": rep.violations, "segments": rep.segments, "faults": rep.faults,
+                      "zoom_sent": rep.zoom_sent, "zoom_abandoned": rep.zoom_abandoned,
+                      "confirmed_by_seq": rep.zoom_confirmed_by_seq, "queue_max": rep.queue_max,
+                      "caption_age_ms": rep.caption_age_ms, "rss_mb": [rep.rss_mb_start, rep.rss_mb_max, rep.rss_mb_end],
+                      "cpu_percent_avg": rep.cpu_percent_avg}, indent=2, ensure_ascii=False, default=str))
+    print(f"Report: {path}")
+    return 0 if rep.ok else 1
+
+
 def cmd_bench_asr(args) -> int:
     from subtalk.bench import run_benchmark
 
@@ -390,6 +408,11 @@ def main(argv=None) -> int:
     p.add_argument("--group", help="ledger group name for the spend report")
     p.set_defaults(fn=cmd_eval_claude)
     sub.add_parser("budget", help="show the persisted live-API test budget ledger").set_defaults(fn=cmd_budget)
+    p = sub.add_parser("soak", help="failure-injection soak, mock Claude + mock Zoom (free)")
+    p.add_argument("--seconds", type=float, default=600)
+    p.add_argument("--seed", type=int, default=1)
+    p.add_argument("--faults", type=float, default=1.0, help="fault rate multiplier")
+    p.set_defaults(fn=cmd_soak)
     p = sub.add_parser("bench-asr")
     p.add_argument("dir", help="folder of 16-bit WAV files (+ optional .txt references)")
     p.add_argument("--models", default="large-v3,large-v3-turbo")

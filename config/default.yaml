@@ -12,7 +12,7 @@ server:
 zoom:
   allow_real_zoom: false      # must be true to post to *.zoom.us at all
   allow_event_target: false   # must be true to connect the wedding meeting (EVENT)
-  attempt_timeout_s: 1.5
+  attempt_timeout_s: 3.0     # measured POST p95 1.24 s / max 1.84 s (TEST meeting 4 Nov)
   retry_budget_s: 5.0         # Zoom guidance: retry ~5 s, then move on
   caption_ttl_s: 12           # never send a caption later than this after speech ended
   max_chars: 84
