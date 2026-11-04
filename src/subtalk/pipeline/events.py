@@ -33,6 +33,8 @@ class SpeechEvent:
     asr_ms: float | None = None
     translate_ms: float | None = None
     model: str | None = None
+    stages: dict = field(default_factory=dict)  # stage -> ms (see util/latency.py)
+    ready_at: float | None = None  # monotonic, translation + guards done
 
     def to_dict(self) -> dict:
         return {
@@ -42,6 +44,7 @@ class SpeechEvent:
             "links": self.links, "flags": self.flags, "citations": self.citations,
             "relation": self.relation, "wall": self.wall, "duration": round(self.t_end - self.t_start, 2),
             "asr_ms": self.asr_ms, "translate_ms": self.translate_ms, "main_speech": self.main_speech,
+            "stages": {k: round(v) for k, v in self.stages.items()},
         }
 
 

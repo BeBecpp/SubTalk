@@ -61,9 +61,13 @@
           <div>
             <div class="hint" style="margin:0 0 5px">Caption language sent to Zoom</div>
             <div class="seg" id="outMode">
-              <button data-v="TR" title="Turkish only">Türkçe</button>
-              <button data-v="EN" title="English only">English</button>
-              <button data-v="BILINGUAL" title="Both in one caption">TR + EN</button>
+              <button data-v="TR" title="Turkish only">TR only</button>
+              <button data-v="EN" title="English only">EN only</button>
+              <button data-v="BILINGUAL" title="Both in one caption (default)">TR + EN</button>
+            </div>
+            <div class="seg" id="capLayout" style="margin-top:6px" title="How TR + EN are laid out in one Zoom caption">
+              <button data-v="two_line" title="TR line, then EN line">2 lines</button>
+              <button data-v="single_line" title="Fallback if Zoom runs the two lines together">1 line</button>
             </div>
           </div>
           <div>
@@ -83,7 +87,7 @@
       <div class="onair" id="onair">
         <span class="tag" id="onairTag">ON AIR</span>
         <div class="text empty" id="onairText">Nothing sent yet</div>
-        <div class="meta"><span id="onairSeq"></span><span id="onairAgo"></span><span id="onairLat"></span></div>
+        <div class="meta"><span id="onairSeq"></span><span id="onairAgo"></span><span id="onairLat"></span><span id="onairQueue"></span></div>
       </div>
       <div class="panel grow">
         <h2><span>Live translation</span><span class="muted" id="feedCounts"></span></h2>

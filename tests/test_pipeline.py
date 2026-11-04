@@ -39,7 +39,8 @@ async def rig(zoom_http, mock_zoom, glossary, tmp_path):
     await go_live(out)
     tr = MockTranslator({}, latency_s=(0.01, 0.03), seed=1)
     alerts = []
-    p = Pipeline(cfg, GlossaryService(glossary), Guards(glossary), tr, out, ContextState(),
+    # Most tests here are about routing/ordering, asserted on Turkish-only payloads; mode tests set BILINGUAL.
+    p = Pipeline(cfg, GlossaryService(glossary), Guards(glossary), tr, out, ContextState(output_mode="TR"),
                  on_alert=lambda *a: alerts.append(a))
     p.alerts = alerts
     yield p, tr, mock_zoom
@@ -383,3 +384,35 @@ async def test_guest_viewer_gets_every_passed_language_whatever_the_zoom_mode(ri
     assert len(caps) == 1 and caps[0]["tr"] is None
     assert caps[0]["en"] == "We will look at Bible principles about marriage."
     assert caps[0]["event_id"] == ev.id and ev.status == "published" and ev.sent_mode == "VIEWER"
+
+
+async def test_rapid_mn_ja_transitions_bilingual_stream(rig):
+    """MN -> interpreter JA (covered) -> MN -> independent JA -> MN, back to back, BILINGUAL."""
+    p, tr, mz = rig
+    tr.translations = {
+        "Ехова биднийг хайрладаг.": {"tr": "Yehova bizi seviyor.", "en": "Jehovah loves us."},
+        "エホバは私たちを愛しています。": {"relation": "covered"},
+        "Миний аав өнөөдөр илтгэл тавина.": {"tr": "Babam bugün bir konuşma yapacak.",
+                                             "en": "My father will give a talk today."},
+        "おめでとうございます。": {"relation": "independent", "tr": "Tebrikler.", "en": "Congratulations."},
+        "Баярлалаа.": {"tr": "Teşekkürler.", "en": "Thank you."},
+    }
+    p.ctx.main_speech, p.ctx.output_mode = True, "BILINGUAL"
+    seq = [mn("Ехова биднийг хайрладаг."), ja("エホバは私たちを愛しています。"),
+           mn("Миний аав өнөөдөр илтгэл тавина."), ja("おめでとうございます。"), mn("Баярлалаа.")]
+    for d in seq[:2]:
+        p.submit_decision(d, now() - 1, now())
+        await asyncio.sleep(0.01)
+    await settle(p, mz, 1)
+    p.ctx.caption_layout = "single_line"  # operator switches layout mid-stream
+    for d in seq[2:]:
+        p.submit_decision(d, now() - 1, now())
+        await asyncio.sleep(0.01)
+    await settle(p, mz, 4, timeout=8)
+    assert sent(mz) == [
+        "TR: Yehova bizi seviyor.\nEN: Jehovah loves us.",
+        "TR: Babam bugün bir konuşma yapacak. | EN: My father will give a talk today.",
+        "TR: Tebrikler. | EN: Congratulations.",
+        "TR: Teşekkürler. | EN: Thank you.",
+    ]
+    assert [c.seq for c in mz.meeting().captions] == [1, 2, 3, 4] and mz.meeting().violations == []

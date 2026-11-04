@@ -252,16 +252,18 @@ def test_real_audio_path_through_asr_worker(tmp_path):
             deadline = time.monotonic() + 10
             while time.monotonic() < deadline and not engine.mock_zoom.meeting().captions:
                 time.sleep(0.1)
-        assert [x.text for x in engine.mock_zoom.meeting().captions] == ["Merhaba."]
+        assert [x.text for x in engine.mock_zoom.meeting().captions][0].startswith("TR: Merhaba.\nEN: ")
         ev = engine.pipeline.events.all()[-1]
         assert ev.kind == "MN" and ev.asr_ms is not None
 
 
 SESSION = [
-    {"gap": 1.0, "dur": 3.0, "lang": "mn", "text": "Эрхэм зочид оо, тавтай морилно уу.", "tr": "Değerli misafirler, hoş geldiniz."},
+    {"gap": 1.0, "dur": 3.0, "lang": "mn", "text": "Эрхэм зочид оо, тавтай морилно уу.", "tr": "Değerli misafirler, hoş geldiniz.",
+     "en": "Dear guests, welcome."},
     {"gap": 0.1, "dur": 3.0, "lang": "ja", "text": "皆さん、ようこそ。", "relation": "covered"},
     {"gap": 0.1, "dur": 3.0, "lang": "music", "text": ""},
-    {"gap": 0.1, "dur": 3.0, "lang": "mn", "text": "Ехова гэрлэлтийг бүтээсэн.", "tr": "Evliliği Yehova kurdu."},
+    {"gap": 0.1, "dur": 3.0, "lang": "mn", "text": "Ехова гэрлэлтийг бүтээсэн.", "tr": "Evliliği Yehova kurdu.",
+     "en": "Jehovah created marriage."},
     {"gap": 0.1, "dur": 3.0, "lang": "mn", "text": "Бид гэрлэлтийн тухай Библийн зарчим үзнэ.",
      "tr": "Kutsal Kitap ilkelerini, Efesliler 5:22'yi inceleyeceğiz.",
      "en": "We will look at Bible principles, Ephesians 5:22."},
@@ -285,7 +287,9 @@ def test_full_mock_run_reaches_zoom(tmp_path):
                 break
             time.sleep(0.1)
         texts = [x.text for x in engine.mock_zoom.meeting().captions]
-        assert texts == ["Değerli misafirler, hoş geldiniz.", "Evliliği Yehova kurdu."]
+        # Production default: BILINGUAL, one POST per event, TR line first, real newline.
+        assert texts == ["TR: Değerli misafirler, hoş geldiniz.\nEN: Dear guests, welcome.",
+                         "TR: Evliliği Yehova kurdu.\nEN: Jehovah created marriage."]
         assert engine.mock_zoom.meeting().violations == []
         snap = c.get("/api/state").json()
         kinds = [e["status"] for e in snap["events"]]

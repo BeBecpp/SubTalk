@@ -4,6 +4,7 @@ import time
 import pytest
 
 from subtalk.output.chunker import chunk_caption, two_line
+from subtalk.output.compose import reading_time_s
 from subtalk.output.controller import CommandError, OutputConfig, OutputController
 from subtalk.state import OutputState, Target
 from subtalk.zoom.sender import ZoomCaptionSender
@@ -229,9 +230,13 @@ async def test_long_caption_chunked_and_ordered(ctl, mock_zoom):
     ctl.submit(text, speech_end=time.monotonic())
     expected = len(chunk_caption(text, 84))
     assert expected >= 2
-    assert await wait_for(lambda: len(mock_zoom.meeting().captions) == expected)
-    sent = [c.text for c in mock_zoom.meeting().captions]
+    assert await wait_for(lambda: len(mock_zoom.meeting().captions) == expected, timeout=12)
+    caps = mock_zoom.meeting().captions
+    sent = [c.text for c in caps]
     assert all(len(s) <= 84 for s in sent)
+    # Follow-up parts stay on screen long enough to read (not the 0 s min interval of this fixture).
+    for prev, nxt in zip(caps, list(caps)[1:]):
+        assert nxt.received_at - prev.received_at >= reading_time_s(prev.text) - 0.05
     assert " ".join(sent) == " ".join(text.split())
 
 

@@ -28,8 +28,10 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from subtalk.output.chunker import chunk_caption, two_line
+from subtalk.output.compose import reading_time_s
 from subtalk.output.viewer import ViewerFeed
 from subtalk.state import OutputState, Target
+from subtalk.util.latency import LatencyTracker
 from subtalk.util.stats import Rolling
 from subtalk.zoom.sender import ZoomCaptionSender
 from subtalk.zoom.url import CaptionUrlError, parse_caption_url
@@ -51,6 +53,7 @@ class OutputConfig:
     line_breaks: bool = False
     line_chars: int = 42
     min_interval_s: float = 1.0
+    part_read_cps: float = 15.0  # follow-up parts of one event wait for the previous part to be read
     queue_max: int = 8
     auto_pause_after_failures: int = 3
     allow_real_zoom: bool = False
@@ -69,6 +72,8 @@ class Caption:
     deadline: float = 0.0
     part: int = 1
     parts: int = 1
+    gap_s: float = 0.0  # minimum time after the previous send (reading time of the previous part)
+    enqueued_at: float = 0.0
 
 
 @dataclass
@@ -117,6 +122,7 @@ class OutputController:
         self.on_air: CaptionRecord | None = None
         self.e2e = Rolling()
         self.zoom_latency = Rolling()
+        self.latency = LatencyTracker()
         self.counts: dict[str, int] = {}
         self.zoom_suspended = False  # viewer on + Zoom failing: Zoom path paused, viewer continues
 
@@ -316,14 +322,16 @@ class OutputController:
             chunks, shape = list(parts), False  # pre-composed (bilingual / test): send as given
         else:
             chunks, shape = chunk_caption(text, self.cfg.max_chars), self.cfg.line_breaks
-        caps = [
-            Caption(
+        caps, extra = [], 0.0
+        for i, c in enumerate(chunks):
+            gap = reading_time_s(chunks[i - 1], self.cfg.part_read_cps) if i else 0.0
+            extra += gap  # a later part's deadline moves with the pacing, so pacing never makes it stale
+            caps.append(Caption(
                 text=two_line(c, self.cfg.line_chars) if shape else c,
                 speech_end=speech_end, kind=kind, source_event_ids=source_ids,
-                epoch=self.epoch, deadline=deadline, part=i + 1, parts=len(chunks),
-            )
-            for i, c in enumerate(chunks)
-        ]
+                epoch=self.epoch, deadline=deadline + extra, part=i + 1, parts=len(chunks), gap_s=gap,
+                enqueued_at=self._clock(),
+            ))
         if front:
             for cap in reversed(caps):
                 self._queue.appendleft(cap)
@@ -373,7 +381,7 @@ class OutputController:
                 self._queue.popleft()
                 self._record(cap, reason)
                 continue
-            wait = self._last_send_end + self.cfg.min_interval_s - self._clock()
+            wait = self._last_send_end + max(self.cfg.min_interval_s, cap.gap_s) - self._clock()
             if wait > 0:
                 self._wakeup.clear()
                 try:
@@ -385,6 +393,8 @@ class OutputController:
             await self._deliver(cap)
 
     async def _deliver(self, cap: Caption) -> None:
+        if cap.part == 1:
+            self.latency.add("zoom_queue", (self._clock() - cap.enqueued_at) * 1000)
         self._inflight = asyncio.create_task(self.sender.send(cap.text, deadline=cap.deadline))
         try:
             result = await self._inflight
@@ -401,8 +411,11 @@ class OutputController:
             e2e = (self._clock() - cap.speech_end) * 1000 if cap.kind == "auto" else None
             if e2e is not None:
                 self.e2e.add(e2e)
+                if cap.part == 1:  # first part visible = the guest starts reading
+                    self.latency.add("e2e", e2e)
             if result.latency_ms is not None:
                 self.zoom_latency.add(result.latency_ms)
+                self.latency.add("zoom_post", result.latency_ms)
             self._record(cap, "sent", seq=result.seq, latency_ms=result.latency_ms, e2e_ms=e2e)
             return
         self._consecutive_failures += 1
@@ -448,6 +461,7 @@ class OutputController:
             "counts": dict(self.counts),
             "e2e_ms": self.e2e.summary(),
             "zoom_ms": self.zoom_latency.summary(),
+            "latency": self.latency.snapshot(),
             "zoom": st.__dict__,
             "zoom_suspended": self.zoom_suspended,
             "viewer": self.viewer.snapshot() if self.viewer else None,

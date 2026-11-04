@@ -98,6 +98,7 @@ COMMANDS: dict[str, tuple[set[Role], bool]] = {
     "send_phrase": ({Role.OPERATOR}, True),
     "send_test_caption": ({Role.OPERATOR}, True),
     "set_output_mode": ({Role.OPERATOR}, True),
+    "set_caption_layout": ({Role.OPERATOR}, True),
     "take_control": ({Role.OPERATOR}, False),
     "ack_alert": ({Role.OPERATOR}, False),
     "warm_cache": ({Role.OPERATOR}, True),
@@ -142,6 +143,7 @@ class Engine:
             OutputConfig(
                 caption_ttl_s=z.caption_ttl_s, manual_ttl_s=z.manual_ttl_s, max_chars=z.max_chars,
                 line_breaks=z.line_breaks, line_chars=z.line_chars, min_interval_s=z.min_interval_s,
+                part_read_cps=z.part_read_cps,
                 queue_max=z.queue_max, auto_pause_after_failures=z.auto_pause_after_failures,
                 allow_real_zoom=z.allow_real_zoom, allow_mock=self._mock_zoom_enabled,
                 allow_event_target=z.allow_event_target,
@@ -149,7 +151,7 @@ class Engine:
             on_change=self.mark_dirty, on_alert=self.alert, viewer=self.viewer,
         )
         self.context = ContextState(ja_policy=cfg.interp.ja_policy, auto_matching_enabled=cfg.interp.auto_matching_enabled,
-                                    output_mode=cfg.zoom.output_mode)
+                                    output_mode=cfg.zoom.output_mode, caption_layout=cfg.zoom.caption_layout)
         self.asr_queue: asyncio.Queue[AudioSegment] = asyncio.Queue(maxsize=cfg.asr.queue_max)
         self.segmenter = Segmenter(make_detector(cfg.vad.engine, cfg.vad.silero_model_path, cfg.vad.energy_margin_db),
                                    cfg.vad, self._on_segment)
@@ -252,7 +254,8 @@ class Engine:
     async def _asr_consumer(self) -> None:
         while True:
             seg = await self.asr_queue.get()
-            if time.monotonic() - seg.t_end > self.cfg.zoom.caption_ttl_s:
+            started = time.monotonic()
+            if started - seg.t_end > self.cfg.zoom.caption_ttl_s:
                 self.asr_dropped += 1
                 continue
             try:
@@ -261,7 +264,10 @@ class Engine:
                 self.alert("warn", "asr_error", f"Speech recognition failed for one segment: {exc}")
                 continue
             d = decide(evidence, self.cfg.langid)
-            self.pipeline.submit_decision(d, seg.t_start, seg.t_end, asr_ms=ms)
+            stages = {"vad_wait": (seg.t_closed - seg.t_end) * 1000 if seg.t_closed else None,
+                      "asr_queue": (started - seg.t_closed) * 1000 if seg.t_closed else None}
+            self.pipeline.submit_decision(d, seg.t_start, seg.t_end, asr_ms=ms,
+                                          stages={k: v for k, v in stages.items() if v is not None})
 
     def _load_phrases(self) -> list[dict]:
         for p in (self.cfg.path(self.cfg.paths.event_dir) / "phrases.yaml", self.cfg.path("resources/phrases.yaml")):
@@ -598,7 +604,8 @@ class Engine:
             mode = self.context.output_mode
             tr = f"SubTalk TEST {stamp} — Türkçe: ç ğ ı İ ö ş ü"
             en = f"SubTalk TEST {stamp} — English: it's a test, “quotes”"
-            text = {"TR": tr, "EN": en}.get(mode, f"TR: {tr}\nEN: {en}")
+            sep = "\n" if self.context.caption_layout == "two_line" else " | "
+            text = {"TR": tr, "EN": en}.get(mode, f"TR: {tr}{sep}EN: {en}")
             o.send_test(text)
             return {"text": text}
         elif ctype == "set_output_mode":
@@ -608,6 +615,13 @@ class Engine:
             self.context.output_mode = mode
             self._ctx_version += 1
             self.alert("info", "output_mode", f"Caption language: {mode} ({session.name})")
+        elif ctype == "set_caption_layout":
+            layout = str(a["layout"])
+            if layout not in ("two_line", "single_line"):
+                raise CommandError("Layout must be two_line or single_line")
+            self.context.caption_layout = layout
+            self._ctx_version += 1
+            self.alert("info", "caption_layout", f"Bilingual layout: {layout.replace('_', ' ')} ({session.name})")
         elif ctype == "take_control":
             lease.take(session)
         elif ctype == "ack_alert":

@@ -60,14 +60,15 @@ class ContextState:
     auto_matching_enabled: bool = True
     music_mode: bool = False
     speaker_control_enabled: bool = True
-    output_mode: str = "TR"  # TR | EN | BILINGUAL
+    output_mode: str = "BILINGUAL"  # TR | EN | BILINGUAL
+    caption_layout: str = "two_line"  # two_line | single_line (BILINGUAL only)
 
     def to_dict(self) -> dict:
         return {
             "main_speech": self.main_speech, "main_speech_by": self.main_speech_by,
             "ja_policy": self.ja_policy.value, "auto_matching_enabled": self.auto_matching_enabled,
             "music_mode": self.music_mode, "speaker_control_enabled": self.speaker_control_enabled,
-            "output_mode": self.output_mode,
+            "output_mode": self.output_mode, "caption_layout": self.caption_layout,
         }
 
 
@@ -117,11 +118,16 @@ class Pipeline:
         self.recent_pairs: list[ContextPair] = []
 
     # ------------------------------------------------------------------ entry
-    def submit_decision(self, d: Decision, t_start: float, t_end: float, asr_ms: float | None = None) -> SpeechEvent:
+    def submit_decision(self, d: Decision, t_start: float, t_end: float, asr_ms: float | None = None,
+                        stages: dict | None = None) -> SpeechEvent:
         kind = "MUSIC" if self.ctx.music_mode else d.kind
         ev = SpeechEvent(kind=kind, text=d.text, t_start=t_start, t_end=t_end, quality=d.quality,
                          main_speech=self.ctx.main_speech, reasons=list(d.reasons), asr_ms=asr_ms,
-                         output_epoch=self.output.epoch)
+                         output_epoch=self.output.epoch, stages=dict(stages or {}))
+        if asr_ms is not None:
+            ev.stages["asr"] = asr_ms
+        for k, v in ev.stages.items():
+            self.output.latency.add(k, v)
         self.events.add(ev)
         self.stats.inc(f"seg_{kind}")
         if kind == "MUSIC":
@@ -193,6 +199,9 @@ class Pipeline:
             self._mark_all(ev, FAILED, str(exc)[:80])
             return None
         ev.translate_ms = result.latency_ms
+        if result.latency_ms is not None:
+            ev.stages["claude"] = result.latency_ms
+            self.output.latency.add("claude", result.latency_ms)
         ev.model = result.model
         ev.flags = list(result.flags)
         return result
@@ -245,6 +254,7 @@ class Pipeline:
         """Guard each produced language; release the PASS ones together, in speech order."""
         texts: dict[str, str] = {}
         any_blocked = False
+        g0 = time.monotonic()
         for t in TARGETS:
             o = result.lang(t)
             if not _produced(o):
@@ -260,6 +270,8 @@ class Pipeline:
                 self.stats.inc(f"blocked_{t}")
                 self._on_alert("info", "guard_blocked",
                                f"{t.upper()} caption withheld ({', '.join(g.blocked)})")
+        ev.stages["guards"] = (time.monotonic() - g0) * 1000
+        self.output.latency.add("guards", ev.stages["guards"])
         ev.turkish, ev.english = texts.get("tr"), texts.get("en")
         if not texts:
             ev.status = "blocked" if any_blocked else "dropped"
@@ -271,6 +283,7 @@ class Pipeline:
         ev.status = "translated"
         self.recent_pairs.append(ContextPair(lang, ev.text, texts.get("tr", ""), texts.get("en", "")))
         self.recent_pairs = self.recent_pairs[-20:]
+        ev.ready_at = time.monotonic()
         self.emitter.complete(slot, texts, ev.t_end, (ev.id,), ev.output_epoch)
         return True
 
@@ -388,7 +401,14 @@ class Pipeline:
     def _emit(self, texts: dict[str, str], speech_end: float, source_ids: tuple,
               origin_epoch: int | None = None) -> None:
         mode = self.ctx.output_mode
-        parts = compose_parts(texts, mode, self.cfg.zoom.max_chars, self.cfg.zoom.bilingual_labels)
+        for i in source_ids:
+            ev = self.events.get(i)
+            if ev and ev.ready_at is not None:
+                ev.stages["order_wait"] = (time.monotonic() - ev.ready_at) * 1000
+                self.output.latency.add("order_wait", ev.stages["order_wait"])
+        z = self.cfg.zoom
+        parts = compose_parts(texts, mode, z.bilingual_max_chars if mode == "BILINGUAL" else z.max_chars,
+                              z.bilingual_labels, self.ctx.caption_layout)
         sent_langs = [t for t in MODE_LANGS[mode] if texts.get(t)]
         accepted = False
         # The guest viewer takes every language, whatever the Zoom mode is.

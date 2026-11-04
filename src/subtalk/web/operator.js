@@ -111,6 +111,8 @@ $("jaPolicy").querySelectorAll("button").forEach((b) => b.addEventListener("clic
   run(b, "set_ja_policy", { policy: b.dataset.v }, (s) => s.context.ja_policy === b.dataset.v)));
 $("outMode").querySelectorAll("button").forEach((b) => b.addEventListener("click", () =>
   run(b, "set_output_mode", { mode: b.dataset.v }, (s) => s.context.output_mode === b.dataset.v)));
+$("capLayout").querySelectorAll("button").forEach((b) => b.addEventListener("click", () =>
+  run(b, "set_caption_layout", { layout: b.dataset.v }, (s) => s.context.caption_layout === b.dataset.v)));
 $("btnTest").addEventListener("click", async () => {
   const ok = await run($("btnTest"), "send_test_caption", {});
   if (ok) ST.toast("Test caption queued for the TEST meeting - check it in Zoom");
@@ -246,7 +248,7 @@ function renderOnAir(o) {
   } else {
     t.textContent = "Nothing sent yet"; t.classList.add("empty");
     $("onairSeq").textContent = $("onairAgo").textContent = $("onairLat").textContent = "";
-  }
+  }  $("onairQueue").textContent = o.queue ? `${o.queue} waiting for Zoom` : "";
 }
 
 const seen = new Set();
@@ -368,6 +370,8 @@ function renderControls(s) {
   $("tMusic").classList.toggle("on", c.music_mode);
   $("jaPolicy").querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === c.ja_policy); b.disabled = !canControl; });
   $("outMode").querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === c.output_mode); b.disabled = !canControl; });
+  $("capLayout").classList.toggle("hidden", c.output_mode !== "BILINGUAL");
+  $("capLayout").querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === c.caption_layout); b.disabled = !canControl; });
   set("btnTest", canControl && s.output.target === "TEST" && ["CONNECTED", "LIVE", "PAUSED"].includes(st));
   $("btnTest").classList.toggle("hidden", s.output.target === "EVENT");
   ["btnEngineStart", "btnEngineStop", "btnResync", "btnWarm", "btnAutoMatch", "btnSpeakerCtl"].forEach((id) => set(id, canControl));
@@ -379,7 +383,7 @@ function renderControls(s) {
   let hint = "";
   if (!canControl && !stale) hint = `Read-only: ${s.lease.holder} has control.`;
   else if (st === "CONNECTED" && s.health && s.health.zoom.seq_state !== "known") hint = "Caption number unknown - use “Re-read seq” in diagnostics.";
-  else if (st === "LIVE" && s.output.zoom_suspended) hint = "Zoom captions SUSPENDED after failures - guest viewer continues. Fix the meeting, then Re-read seq.";
+  else if (st === "LIVE" && s.output.zoom_suspended) hint = "Zoom captions SUSPENDED after failures. Fix the meeting, then Re-read seq.";
   else if (st === "LIVE") hint = "E-STOP halts output instantly (and clears guest screens). Zoom itself is never affected.";
   $("controlHint").textContent = hint;
 }

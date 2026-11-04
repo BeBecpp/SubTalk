@@ -36,7 +36,10 @@ class ZoomCfg(BaseModel):
     line_breaks: bool = False
     line_chars: int = 42
     bilingual_labels: bool = True  # "TR: ... / EN: ..." prefixes in BILINGUAL mode
-    output_mode: Literal["TR", "EN", "BILINGUAL"] = "TR"  # initial mode; the operator can switch
+    output_mode: Literal["TR", "EN", "BILINGUAL"] = "BILINGUAL"  # production default (owner, 3 Nov)
+    caption_layout: Literal["two_line", "single_line"] = "two_line"  # single_line if Zoom drops the newline
+    bilingual_max_chars: int = 70  # per language line in BILINGUAL; tune after the Zoom TEST meeting
+    part_read_cps: float = 15.0    # pacing between parts of one long caption
     min_interval_s: float = 1.0
     queue_max: int = 8
     auto_pause_after_failures: int = 3

@@ -62,6 +62,21 @@ GOOD = {
                                 "Especially, express your thanks every day."),
     "adv_jehovah_witnesses_org": ("Yehova'nın Şahitleri cemaatinden birçok birader ve hemşire geldi.",
                                   "Many brothers and sisters came from a congregation of Jehovah's Witnesses."),
+    "en_jehovah_loves_us": ("Yehova bizi seviyor.", "Jehovah loves us."),
+    "en_father_gives_talk": ("Babam bugün bir konuşma yapacak.", "My father will give a talk today."),
+    "en_holy_spirit": ("Kutsal ruh bize güç verir.", "Holy spirit gives us strength."),
+    "en_jesus_christ": ("İsa Mesih bize güzel bir örnek bıraktı.", "Jesus Christ set a fine example for us."),
+    "en_husband_wife": ("Karı koca birbirine saygı göstermeli.", "Husband and wife should respect each other."),
+    "en_elder_talk": ("Cemaatin ihtiyarı olan birader düğün konuşmasını yapacak.",
+                      "A congregation elder will give the wedding talk."),
+    "en_marriage_not_contract": ("Evlilik sadece bir sözleşme değildir.", "Marriage is not just a contract."),
+    "en_promise_not_vow": ("Galkhuu, Akane'ye verdiği sözü tutacağını söyledi.",
+                           "Galkhuu said he would keep the promise he made to Akane."),
+    "en_parents_family": ("Akane'nin annesi ve babası Japonya'dan geldi.", "Akane's parents came from Japan."),
+    "en_bible_word_of_god": ("Kutsal Kitap Tanrı'nın Sözüdür.", "The Bible is God's Word."),
+    "en_chapter_only": ("Başlangıç kitabının 2. bölümünü okuyacağız.", "We will read Genesis chapter 2."),
+    "en_brothers_sisters": ("Kardeşler, hoş geldiniz.", "Brothers and sisters, welcome."),
+    "en_never_leaves_us": ("Yehova bizi asla terk etmez.", "Jehovah will never leave us."),
 }
 # Typical wrong renderings the checker must flag, per language.
 BAD = {
@@ -94,6 +109,18 @@ BAD = {
         "Ephesians 5:33 says: each one of you must love his wife as he does himself, and the wife should have "
         "deep respect for her husband."),
     ("adv_no_vow_from_love", "en"): "They promised to respect each other.",
+    ("en_father_gives_talk", "en"): "My Father, Jehovah, will speak today.",
+    ("en_father_gives_talk", "tr"): "Babamız Tanrı bugün konuşacak.",
+    ("en_holy_spirit", "en"): "The Holy Ghost gives us strength.",
+    ("en_elder_talk", "en"): "The congregation leader will give the wedding talk.",
+    ("en_elder_talk", "tr"): "Toplantının başkanı düğün konuşmasını yapacak.",  # measured parallel-mode failure
+    ("en_marriage_not_contract", "en"): "Marriage is just a contract.",
+    ("en_promise_not_vow", "en"): "Galkhuu promised his wife Akane.",
+    ("en_parents_family", "en"): "Akane's husband came from Japan.",
+    ("en_bible_word_of_god", "en"): "The Bible is Jehovah's Word.",
+    ("en_chapter_only", "en"): "We will read Genesis 2:1.",
+    ("en_brothers_sisters", "en"): "Siblings, welcome.",
+    ("en_never_leaves_us", "en"): "Jehovah will leave us.",
 }
 
 

@@ -7,6 +7,7 @@ last 2 s so words are rarely split; the remainder starts the next segment.
 """
 from __future__ import annotations
 
+import time
 from collections import deque
 from dataclasses import dataclass
 from typing import Callable
@@ -26,6 +27,7 @@ class AudioSegment:
     t_start: float     # monotonic
     t_end: float       # monotonic (end of last speech frame)
     forced_cut: bool = False
+    t_closed: float = 0.0  # monotonic, when the VAD closed the segment (t_closed - t_end = end-of-speech wait)
 
     @property
     def duration(self) -> float:
@@ -105,7 +107,8 @@ class Segmenter:
         if dur < self.cfg.min_segment_s:
             return
         speech_end = max((t for _, t, p in frames if p >= self.cfg.off_threshold), default=frames[-1][1])
-        seg = AudioSegment(audio=audio, t_start=frames[0][1] - FRAME_S, t_end=speech_end, forced_cut=forced)
+        seg = AudioSegment(audio=audio, t_start=frames[0][1] - FRAME_S, t_end=speech_end, forced_cut=forced,
+                           t_closed=time.monotonic())
         self.segments_emitted += 1
         self.on_segment(seg)
 
