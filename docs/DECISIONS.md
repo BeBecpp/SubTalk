@@ -2,13 +2,12 @@
 
 Newest first. Each entry: decision, evidence, consequences.
 
-## D-020 (2026-11-04) The talk files are tracked in git (private repo only)
+## D-020 (2026-11-04) The talk files are tracked in git
 
 - Owner request: commit `event/talk/` (the Mongolian S-41 talk and the owner's TR + EN translation)
-  so it travels with the repo; the owner makes the GitHub repo private.
+  so it travels with the repo. Owner: the talk script is not secret; pushing it is fine even while
+  the repo is public. Only keys (`.env`) and caption URLs must never be pushed.
 - Only `event/talk/` is unignored. `event_names.json`, `phrases.yaml` and approvals stay untracked.
-- Pushed only after `gh repo view` reported the repo private. If the repo ever becomes public again,
-  these files must be removed from history first.
 
 ## D-019 (2026-11-04) Japanese captions: operator mode TR + EN + JA for non-interpreted parts
 

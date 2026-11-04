@@ -11,8 +11,7 @@ Record every result in `docs/TEST_REPORT.md` (evidence level: observed / human-r
 - [ ] Computer B: NVIDIA driver current; `scripts\install.ps1 -Engine`; `subtalk doctor` shows the GPU.
 - [ ] Download `large-v3` once (3 GB, slow link): start SubTalk with `asr.engine: whisper` and wait
       until the Whisper chip is green, or run `subtalk bench-asr` on any WAV.
-- [ ] Copy `event/` (`event_names.json`, `phrases.yaml`; `event/talk/` also comes with `git clone`,
-      private repo only) to Computer B. The rest of `event/` never into git.
+- [ ] Copy `event/` (`event_names.json`, `phrases.yaml`; `event/talk/` also comes with `git clone`) to Computer B. The rest of `event/` never into git.
 - [ ] `.env` on Computer B: `ANTHROPIC_API_KEY`, `SUBTALK_AUDIO_TOKEN` (same token on Computer A).
 - [ ] Windows Update paused until 8 Nov, sleep off, no GPU driver updates after this.
 
