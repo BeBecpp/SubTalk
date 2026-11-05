@@ -20,7 +20,7 @@
       <div class="chip" id="hClaude"><span class="led"></span><span class="k">Claude</span><span class="v"></span></div>
       <div class="chip" id="hZoom"><span class="led"></span><span class="k">Zoom</span><span class="v"></span></div>
       <div class="chip hidden" id="hViewer" title="Guest caption viewer (TR/EN per guest)"><span class="led"></span><span class="k">Guests</span><span class="v"></span></div>
-      <div class="chip" title="Speech end → Zoom accepted (p50 / p95)"><span class="k">Delay</span><span class="latency" id="latency">—</span></div>
+      <div class="chip lat" title="Speech end → Zoom accepted (p50 / p95)"><span class="k">Delay</span><span class="latency" id="latency">—</span></div>
     </div>
     <div class="conn" id="leaseInfo"></div>
   </header>
@@ -51,15 +51,15 @@
         <h2>Context</h2>
         <div class="stack">
           <div class="toggle main" id="tMain" role="switch" tabindex="0">
-            <div><div class="lbl">Main Speech</div><div class="desc">Interpreter-aware · never stops translation</div></div>
+            <div><div class="lbl">Main Speech</div><div class="desc" title="Interpreter-aware routing · never stops translation">Interpreter-aware routing</div></div>
             <span class="switch"></span>
           </div>
           <div class="toggle music" id="tMusic" role="switch" tabindex="0">
-            <div><div class="lbl">Music / ceremony mode</div><div class="desc">No speech captions</div></div>
+            <div><div class="lbl">Music / ceremony</div><div class="desc">No speech captions</div></div>
             <span class="switch"></span>
           </div>
           <div>
-            <div class="hint" style="margin:0 0 5px">Caption language sent to Zoom</div>
+            <div class="sub-label">Caption language in Zoom</div>
             <div class="seg" id="outMode">
               <button data-v="TR" title="Turkish only">TR only</button>
               <button data-v="EN" title="English only">EN only</button>
@@ -67,14 +67,14 @@
               <button data-v="BILINGUAL" title="Turkish + English in one caption (default; the interpreted talk)">TR + EN</button>
               <button data-v="TRILINGUAL" title="Turkish + English + Japanese in one caption: vows, MC - parts the interpreter does not cover" style="grid-column: span 2">TR + EN + JA</button>
             </div>
-            <div class="hint" style="margin:5px 0 0">TR + EN + JA: vows / MC. During the interpreted talk: TR + EN.</div>
+            <div class="hint" style="margin:4px 0 0">Talk: TR + EN · vows / MC: TR + EN + JA</div>
             <div class="seg" id="capLayout" style="margin-top:6px" title="How the languages are laid out in one Zoom caption">
               <button data-v="two_line" title="TR line, then EN line">2 lines</button>
               <button data-v="single_line" title="Fallback if Zoom runs the two lines together">1 line</button>
             </div>
           </div>
           <div>
-            <div class="hint" style="margin:0 0 5px">Japanese speech</div>
+            <div class="sub-label">Japanese speech</div>
             <div class="seg" id="jaPolicy">
               <button data-v="AUTO" title="Match the interpreter; caption only new content">Auto</button>
               <button data-v="CAPTION_ALL" title="Translate every Japanese segment">All</button>
@@ -90,7 +90,7 @@
       <div class="onair" id="onair">
         <span class="tag" id="onairTag">ON AIR</span>
         <div class="text empty" id="onairText">Nothing sent yet</div>
-        <div class="meta"><span id="onairSeq"></span><span id="onairAgo"></span><span id="onairLat"></span><span id="onairQueue"></span></div>
+        <div class="meta"><span id="onairSeq"></span><span id="onairAgo"></span><span id="onairLat"></span><span id="onairQueue"></span><span class="mode-pill" id="onairMode" title="Caption language and layout currently sent to Zoom"></span></div>
       </div>
       <div class="panel grow">
         <h2><span>Live translation</span><span class="muted" id="feedCounts"></span></h2>

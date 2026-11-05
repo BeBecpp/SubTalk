@@ -155,6 +155,9 @@ document.querySelectorAll('input[name="target"]').forEach((r) => r.addEventListe
   $("eventWarn").classList.toggle("hidden", r.value !== "EVENT" || !r.checked);
 }));
 $("connectCancel").addEventListener("click", () => $("connect").classList.add("hidden"));
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !$("connect").classList.contains("hidden")) { $("zoomUrl").value = ""; $("connect").classList.add("hidden"); }
+});
 $("connectForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const target = document.querySelector('input[name="target"]:checked').value;
@@ -173,7 +176,7 @@ function setChip(id, h) {
   const el = $(id);
   if (!h) return;
   el.querySelector(".led").className = "led " + (h.level || "grey");
-  el.querySelector(".v").textContent = h.label || "";
+  el.querySelector(".v").textContent = (h.label || "").replace(/^claude-/, "");  // "sonnet-5-5" fits the chip
   el.title = h.label || "";
 }
 
@@ -217,16 +220,16 @@ function render(s) {
   $("latency").textContent = e2e.n ? `${ST.ms(e2e.p50)} / ${ST.ms(e2e.p95)}` : "—";
   $("leaseInfo").textContent = s.you.has_control ? `● ${s.you.name} · in control`
     : (s.lease.holder ? `Read-only · ${s.lease.holder} has control` : `${s.you.name}`);
+  $("leaseInfo").classList.toggle("ctl", !!s.you.has_control);
+  $("leaseInfo").title = $("leaseInfo").textContent;
 
   const [title, sub] = STATE_TEXT[o.state] || [o.state, ""];
   $("outState").textContent = title;
   $("outState").style.color = o.state === "LIVE" ? "var(--green)" : o.state === "E_STOPPED" ? "var(--red)" : o.state === "PAUSED" ? "var(--amber)" : "";
-  const modeLabel = { TR: "Turkish", EN: "English", JA: "Japanese", BILINGUAL: "Turkish + English",
-    TRILINGUAL: "Turkish + English + Japanese" }[s.context.output_mode] || "";
   $("outSub").textContent = o.reason === "zoom_failures" ? "Auto-paused: Zoom rejected captions"
-    : (o.state === "LIVE" ? `${sub} · ${modeLabel}` : sub);
+    : sub;
 
-  renderOnAir(o);
+  renderOnAir(o, s.context);
   renderFeed(s.events || [], s.pipeline || {});
   renderHistory(o.history || []);
   renderAlerts(s.alerts || []);
@@ -235,8 +238,13 @@ function render(s) {
   renderDiag(s);
 }
 
-function renderOnAir(o) {
+const MODE_SHORT = { TR: "TR", EN: "EN", JA: "JA", BILINGUAL: "TR + EN", TRILINGUAL: "TR + EN + JA" };
+
+function renderOnAir(o, c) {
   const a = o.on_air;
+  const multi = c.output_mode === "BILINGUAL" || c.output_mode === "TRILINGUAL";
+  $("onairMode").textContent = "Now: " + (MODE_SHORT[c.output_mode] || c.output_mode || "")
+    + (multi ? (c.caption_layout === "two_line" ? " · 2 lines" : " · 1 line") : "");
   const box = $("onair");
   box.classList.toggle("live", o.state === "LIVE");
   $("onairTag").textContent = o.state === "LIVE" ? (o.target === "EVENT" ? "● ON AIR · WEDDING" : "● ON AIR · TEST") : "LAST SENT";
@@ -249,7 +257,8 @@ function renderOnAir(o) {
   } else {
     t.textContent = "Nothing sent yet"; t.classList.add("empty");
     $("onairSeq").textContent = $("onairAgo").textContent = $("onairLat").textContent = "";
-  }  $("onairQueue").textContent = o.queue ? `${o.queue} waiting for Zoom` : "";
+  }
+  $("onairQueue").textContent = o.queue ? `${o.queue} waiting for Zoom` : "";
 }
 
 const seen = new Set();
@@ -281,7 +290,7 @@ function renderFeed(events, p) {
     if (e.relation) why.push(e.relation.replace("_", " "));
     if (e.citations && e.citations.length) why.push("📖 " + e.citations.join(", "));
     if (e.status === "blocked" || e.status === "dropped" || e.status === "failed" || e.status === "held") why.push(...(e.reasons || []).slice(-2));
-    if (e.flags && e.flags.length) why.push(e.flags.filter((f) => !f.startsWith("source_number")).slice(-2).join(" · "));
+    if (e.flags && e.flags.length) why.push(e.flags.filter((f) => !/(^|:)source_number/.test(f)).slice(-2).join(" · "));
     if (e.translate_ms) why.push("translate " + ST.ms(e.translate_ms));
     if (e.asr_ms) why.push("ASR " + ST.ms(e.asr_ms));
     const w = why.filter(Boolean).join(" · ");
@@ -301,8 +310,10 @@ function renderHistory(hist) {
   [...hist].reverse().slice(0, 14).forEach((r) => {
     const row = ST.el("div", "h");
     row.appendChild(ST.el("span", "t", ST.clock(r.at)));
-    row.appendChild(ST.el("span", "", r.text));
-    row.appendChild(ST.el("span", "s " + r.status, r.status.replace("dropped_", "drop:") + (r.seq ? " #" + r.seq : "")));
+    row.appendChild(ST.el("span", "s " + r.status, r.status.replace("dropped_", "drop:").replace("_", " ") + (r.seq ? " #" + r.seq : "")));
+    const x = ST.el("span", "x", r.text);
+    x.title = r.text;
+    row.appendChild(x);
     frag.appendChild(row);
   });
   box.replaceChildren(frag);
@@ -385,7 +396,7 @@ function renderControls(s) {
   if (!canControl && !stale) hint = `Read-only: ${s.lease.holder} has control.`;
   else if (st === "CONNECTED" && s.health && s.health.zoom.seq_state !== "known") hint = "Caption number unknown - use “Re-read seq” in diagnostics.";
   else if (st === "LIVE" && s.output.zoom_suspended) hint = "Zoom captions SUSPENDED after failures. Fix the meeting, then Re-read seq.";
-  else if (st === "LIVE") hint = "E-STOP halts output instantly (and clears guest screens). Zoom itself is never affected.";
+  else if (st === "LIVE") hint = "E-STOP halts caption output instantly. The Zoom meeting itself is never affected.";
   $("controlHint").textContent = hint;
 }
 

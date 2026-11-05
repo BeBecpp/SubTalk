@@ -14,7 +14,7 @@ reliable recovery. Guest viewer / Cloudflare relay = disabled experimental code 
 - Sat 7 Nov: wedding with the frozen release. Never claim Thu/Fri tests passed before they run.
 
 ## CURRENT GIT COMMIT
-`5504b5e` (Japanese captions, CI green on 3.12 + 3.13) + this docs note: see `git log`.
+Latest `main` (5 Nov: line-break probe + operator UI polish): see `git log`.
 
 ## LAST COMPLETED TASK (4 Nov)
 - Real Zoom TEST meeting (web client, host view, separate instant meeting): bilingual captions
@@ -35,6 +35,12 @@ reliable recovery. Guest viewer / Cloudflare relay = disabled experimental code 
   an invalid verse spelled out in words. JA phrase deck = Claude draft, needs a native check.
   Names stay in Latin letters in Japanese captions (owner decision, 4 Nov; no katakana).
 
+- 5 Nov (Thu morning): `zoom-probe --linebreak-test` (tries `\r\n`, `\r`, U+2028, U+2029, `<br>`
+  between TR and EN). Operator UI polish: header never overflows, dev banner no longer pushes the
+  header, left-column panels never clip, current caption mode shown on the ON AIR panel ("Now: TR +
+  EN · 1 line"), cleaner delivery history, empty states, Esc closes the connect dialog, stale
+  guest-viewer wording removed. All suites + e2e + 120 s soak pass.
+
 ## VERIFIED TEST RESULTS
 See `docs/TEST_REPORT.md`.
 
@@ -53,7 +59,7 @@ $3.6273 before the automatic stop at $4.50.
 
 ## EXACT NEXT ACTION
 1. Thursday: Zoom TEST meeting with a desktop-app participant and a phone (Show Captions on);
-   include row 18 (TR + EN + JA readability).
+   run `zoom-probe ... --linebreak-test` (row 4b) and include row 18 (TR + EN + JA readability).
 2. Before Friday: Computer B install + `large-v3` download (`docs/REHEARSAL_FRIDAY.md` section 0).
 3. Friday: follow `docs/REHEARSAL_FRIDAY.md`; decide vows (auto vs phrase deck); freeze.
 

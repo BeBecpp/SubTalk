@@ -23,6 +23,11 @@ Budget arithmetic (not a measurement): 0.65 VAD + ASR(GPU, unknown) + 1.64 Claud
 
 | Date | Suite | Result |
 |---|---|---|
+| 5 Nov | After operator UI polish: unit + integration | **457 passed on Python 3.12 and on 3.13** |
+| 5 Nov | Browser e2e (Edge), all 11, after the UI polish | 11 passed |
+| 5 Nov | Soak 120 s, seed 1, faults x1.5 (32 Zoom, 13 Claude faults, E-STOP / reconnect / pause / mode / layout) | 0 violations; caption age p50 6.4 s / max 9.1 s (within 12 s TTL) under injected faults; RSS flat 61 MB |
+| 5 Nov | Glossary pack validator; `glossary-check` | PASS; names approved; 38 terms still await a Turkish JW reviewer |
+| 5 Nov | Operator UI checked in the browser (mock) at 1366x768, 1280x720, 1920x1080; speaker page at 375x812 | no horizontal overflow; left column fits at 1366x768 without the mock banner; LIVE / E-STOP / connect dialog rendered |
 | 4 Nov (late) | + `zoom-probe --linebreak-test` against the strict mock (`tests/test_zoom_probe.py`) | **457 passed on Python 3.12 and on 3.13** |
 | 4 Nov (evening) | Unit + integration incl. Japanese modes / guards / composer, invalid-reference words | **455 passed on Python 3.12 and on 3.13** |
 | 4 Nov (evening) | Browser e2e (Edge), all 11 | 11 passed |
