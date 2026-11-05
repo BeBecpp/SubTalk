@@ -23,6 +23,7 @@ Budget arithmetic (not a measurement): 0.65 VAD + ASR(GPU, unknown) + 1.64 Claud
 
 | Date | Suite | Result |
 |---|---|---|
+| 4 Nov (late) | + `zoom-probe --linebreak-test` against the strict mock (`tests/test_zoom_probe.py`) | **457 passed on Python 3.12 and on 3.13** |
 | 4 Nov (evening) | Unit + integration incl. Japanese modes / guards / composer, invalid-reference words | **455 passed on Python 3.12 and on 3.13** |
 | 4 Nov (evening) | Browser e2e (Edge), all 11 | 11 passed |
 | 4 Nov | Unit + integration incl. composer, sender 403 fix, layout command, 2 soak tests | **409 passed on Python 3.12 and on 3.13** |

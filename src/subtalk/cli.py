@@ -174,6 +174,30 @@ def cmd_doctor(args) -> int:
 
 
 # ---------------------------------------------------------------------- zoom probe
+# Line-break candidates for the TR line / EN line layout. The 4 Nov web client did not render "\n";
+# the sender's normaliser strips "\r", so these are posted RAW (bypassing it) to see what Zoom does.
+LINEBREAK_VARIANTS = (
+    ("lf", "\n"),
+    ("crlf", "\r\n"),
+    ("cr", "\r"),
+    ("u2028", " "),   # LINE SEPARATOR
+    ("u2029", " "),   # PARAGRAPH SEPARATOR
+    ("br_tag", "<br>"),    # most likely shown literally; recorded so nobody has to wonder
+)
+
+
+def linebreak_payloads(stamp: str) -> list[tuple[str, bytes]]:
+    """One caption per variant; the variant's name is on both lines so the observer can tell which
+    one they are looking at, and whether the second line appears on its own row."""
+    import unicodedata
+    out = []
+    for i, (name, sep) in enumerate(LINEBREAK_VARIANTS, 1):
+        text = (f"TR: [{name}] {stamp} {i}/{len(LINEBREAK_VARIANTS)} Hepinize hoş geldiniz!"
+                f"{sep}EN: [{name}] Welcome, everyone!")
+        out.append((name, unicodedata.normalize("NFC", text).encode("utf-8")))
+    return out
+
+
 def cmd_zoom_probe(args) -> int:
     """M0-A: validate Zoom caption delivery in a TEST meeting."""
     import httpx
@@ -233,8 +257,24 @@ def cmd_zoom_probe(args) -> int:
                                     headers={"Content-Type": "text/plain; charset=utf-8"}, timeout=5)
                 report["same_seq_retry"] = {"seq": same, "status": r.status_code}
                 print(f"same-seq retry of seq={same}: HTTP {r.status_code} -> check in Zoom that it was NOT shown twice")
-            if args.gap_test and s.last_confirmed:
-                gap = s.last_confirmed + 2
+            last = s.last_confirmed
+            if args.linebreak_test and last:
+                print("\nLine-break variants (watch EVERY client: is the EN line on its own row?):")
+                for name, body in linebreak_payloads(stamp):
+                    seq = last + 1
+                    t = time.monotonic()
+                    r = await http.post(url.post_url(seq), content=body,
+                                        headers={"Content-Type": "text/plain; charset=utf-8"}, timeout=5)
+                    ms = round((time.monotonic() - t) * 1000)
+                    if 200 <= r.status_code < 300:
+                        last = seq
+                    print(f"  {name:7s} seq={seq} HTTP {r.status_code} {ms}ms")
+                    report.setdefault("linebreak_posts", []).append(
+                        {"variant": name, "seq": seq, "http": r.status_code, "ms": ms,
+                         "observed": "fill in per client: desktop / phone / web = two rows | one row | garbled"})
+                    await asyncio.sleep(args.linebreak_pause)  # time to look at each one in every client
+            if args.gap_test and last:
+                gap = last + 2
                 r = await http.post(url.post_url(gap), content=f"SubTalk TEST {stamp} — seq gap".encode(),
                                     headers={"Content-Type": "text/plain; charset=utf-8"}, timeout=5)
                 report["gap_post"] = {"seq": gap, "status": r.status_code}
@@ -394,6 +434,9 @@ def main(argv=None) -> int:
     p.add_argument("--interval", type=float, default=3.0)
     p.add_argument("--retry-test", action="store_true")
     p.add_argument("--gap-test", action="store_true")
+    p.add_argument("--linebreak-test", action="store_true",
+                   help="post TR/EN with \\n, \\r\\n, \\r, U+2028, U+2029, <br> (raw) to see which renders as two rows")
+    p.add_argument("--linebreak-pause", type=float, default=8.0, help="seconds between line-break variants")
     p.set_defaults(fn=cmd_zoom_probe)
     p = sub.add_parser("replay")
     p.add_argument("file")

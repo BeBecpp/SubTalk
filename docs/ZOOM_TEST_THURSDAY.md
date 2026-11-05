@@ -19,8 +19,10 @@ screenshot in `test-artifacts/`, gitignored) < **human-read** (a person read and
 2. Computer running SubTalk: `config/local.yaml` has `zoom: {allow_real_zoom: true}` (NOT allow_event_target).
 3. Probe (URL is read hidden, never typed on the command line):
    ```powershell
-   .venv\Scripts\subtalk.exe zoom-probe --i-confirm-test-meeting --retry-test --gap-test
+   .venv\Scripts\subtalk.exe zoom-probe --i-confirm-test-meeting --retry-test --gap-test --linebreak-test
    ```
+   `--linebreak-test` posts TR / EN joined by `\n`, `\r\n`, `\r`, U+2028, U+2029 and `<br>` (8 s apart;
+   the variant name is in each caption). In EVERY client note: EN on its own row / one row / garbled.
    Report: `test-artifacts/zoom_probe_*.json` (contains no URL).
 4. Dashboard: sign in → Connect… (target **Test meeting**, paste the URL) → **Test caption** in each
    language mode (Türkçe / English / TR + EN) → hold **go LIVE** → run the mock session or speak →
@@ -63,6 +65,7 @@ and a human reading the captions at real speed.
 | 2 | Turkish characters ç ğ ı İ ö ş ü | | | | | |
 | 3 | English punctuation, apostrophes, “quotes” | | | | | |
 | 4 | Two lines (`\n`) render as two lines | | | | | set `zoom.line_breaks` accordingly |
+| 4b | Line-break variants (`--linebreak-test`): which of crlf / cr / u2028 / u2029 / br_tag gives two rows? | | | | | if one works in ALL clients: sender must keep it (its normaliser strips `\r` today) + composer uses it; else stay `single_line` |
 | 5 | Bilingual payload readable | | | | | |
 | 6 | Long text (~130 chars) display | | | | | |
 | 7 | Empty text is never posted | probe: `empty_text = blocked` | - | - | - | |
